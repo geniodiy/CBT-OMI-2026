@@ -93,22 +93,27 @@
     }
     ['keyup', 'mouseup', 'touchend'].forEach(function (n) { area.addEventListener(n, segarkanRata); });
 
-    var tb = el('div', { class: 'editor-tb' },
-      tombolTb('B', 'Tebal', perintah('bold')),
-      tombolTb('I', 'Miring', perintah('italic')),
-      tombolTb('U', 'Garis bawah', perintah('underline')),
-      tombolTb('x₂', 'Subskrip', perintah('subscript')),
-      tombolTb('x²', 'Superskrip', perintah('superscript')));
+    var pisah = function () { return el('span', { class: 'tb-pisah', 'aria-hidden': 'true' }); };
+    var tb = el('div', { class: 'editor-tb', role: 'toolbar', 'aria-label': 'Format teks' },
+      tombolTb(el('span', { class: 'tb-b' }, 'B'), 'Tebal', perintah('bold')),
+      tombolTb(el('span', { class: 'tb-i' }, 'I'), 'Miring', perintah('italic')),
+      tombolTb(el('span', { class: 'tb-u' }, 'U'), 'Garis bawah', perintah('underline')),
+      tombolTb(el('span', null, 'x', el('sub', null, '2')), 'Subskrip', perintah('subscript')),
+      tombolTb(el('span', null, 'x', el('sup', null, '2')), 'Superskrip', perintah('superscript')));
     if (!mini) {
-      tb.appendChild(rata('kiri', 'Kiri', 'Rata kiri', 'justifyLeft'));
-      tb.appendChild(rata('tengah', 'Tengah', 'Rata tengah', 'justifyCenter'));
-      tb.appendChild(rata('kanan', 'Kanan', 'Rata kanan', 'justifyRight'));
-      tb.appendChild(rata('penuh', 'Kiri-kanan', 'Rata kiri dan kanan (justify)', 'justifyFull'));
-      tb.appendChild(tombolTb('Daftar', 'Daftar berpoin', perintah('insertUnorderedList')));
-      tb.appendChild(tombolTb('Nomor', 'Daftar bernomor', perintah('insertOrderedList')));
-      tb.appendChild(tombolTb('Hapus format', 'Hapus format', perintah('removeFormat')));
+      tb.appendChild(pisah());
+      tb.appendChild(rata('kiri', window.ikon('rataKiri', 16), 'Rata kiri', 'justifyLeft'));
+      tb.appendChild(rata('tengah', window.ikon('rataTengah', 16), 'Rata tengah', 'justifyCenter'));
+      tb.appendChild(rata('kanan', window.ikon('rataKanan', 16), 'Rata kanan', 'justifyRight'));
+      tb.appendChild(rata('penuh', window.ikon('rataPenuh', 16), 'Rata kiri dan kanan (justify)', 'justifyFull'));
+      tb.appendChild(pisah());
+      tb.appendChild(tombolTb(window.ikon('daftar', 16), 'Daftar berpoin', perintah('insertUnorderedList')));
+      tb.appendChild(tombolTb(window.ikon('daftarNomor', 16), 'Daftar bernomor', perintah('insertOrderedList')));
+      tb.appendChild(pisah());
+      tb.appendChild(tombolTb(window.ikon('hapusFormat', 16), 'Hapus format', perintah('removeFormat')));
     }
-    tb.appendChild(tombolTb('∑ Rumus', 'Sisipkan rumus', function () {
+    tb.appendChild(pisah());
+    tb.appendChild(tombolTb(el('span', { class: 'tb-sigma' }, '\u2211'), 'Sisipkan rumus', function () {
       if (!panel) { panel = panelRumus(masukkan); wrap.insertBefore(panel, area); }
       else panel.hidden = !panel.hidden;
       if (!panel.hidden) panel.querySelector('textarea').focus();
@@ -212,7 +217,7 @@
     o.pra.addEventListener('error', function () { o.pra.hidden = true; o.status.textContent = 'Gambar tidak dapat dimuat dari URL ini.'; });
     o.url.addEventListener('input', aturPra);
 
-    var tbUnggah = el('button', { type: 'button', class: 'btn btn-kecil', onclick: function () { o.file.click(); } }, 'Unggah');
+    var tbUnggah = el('button', { type: 'button', class: 'btn btn-kecil', onclick: function () { o.file.click(); } }, window.ikon('unggah', 14), 'Unggah');
     o.file.addEventListener('change', function () {
       var f = o.file.files && o.file.files[0];
       o.file.value = '';
@@ -241,8 +246,8 @@
     o.root = el('div', { class: 'bagian' },
       el('div', { class: 'bagian-kepala' }, o.judul, o.pilih,
         el('span', { class: 'spacer' }),
-        el('button', { type: 'button', class: 'btn btn-teks btn-kecil', onclick: function () { ctx.geser(o, -1); } }, 'Naik'),
-        el('button', { type: 'button', class: 'btn btn-teks btn-kecil', onclick: function () { ctx.geser(o, 1); } }, 'Turun')),
+        el('button', { type: 'button', class: 'adm-ikon', title: 'Naikkan bagian', 'aria-label': 'Naikkan bagian', onclick: function () { ctx.geser(o, -1); } }, window.ikon('naik', 16)),
+        el('button', { type: 'button', class: 'adm-ikon', title: 'Turunkan bagian', 'aria-label': 'Turunkan bagian', onclick: function () { ctx.geser(o, 1); } }, window.ikon('turunSoal', 16))),
       o.teks.el, sekGambar);
     aturMode();
     if (o.mode === 'gambar') aturPra();
@@ -307,7 +312,7 @@
     var tbTambahBagian = el('button', { type: 'button', class: 'btn btn-teks btn-kecil', onclick: function () {
       if (bagian.length >= 8) { window.toast('Maksimal 8 bagian.', true); return; }
       bagian.push(buatBagian(null, ctx)); gambarUrutBagian();
-    } }, 'Tambah bagian');
+    } }, window.ikon('tambah', 14), 'Tambah bagian');
 
     var pilihTipe = window.dropdown({ aria: 'Tipe soal', nilai: s ? s.tipe : 'pg',
       pilihan: Object.keys(TIPE_LABEL).map(function (k) { return { nilai: k, label: TIPE_LABEL[k] }; }) });
@@ -321,10 +326,10 @@
       r.huruf = el('span', { class: 'opsi-huruf kotak' });
       r.ed = editorTeks(op ? op.h : '', true);
       r.kontrol = el('span', { class: 'kontrol-kunci' });
-      r.hapus = el('button', { type: 'button', class: 'btn btn-teks btn-kecil', onclick: function () {
+      r.hapus = el('button', { type: 'button', class: 'adm-ikon adm-ikon-hapus', title: 'Hapus opsi', 'aria-label': 'Hapus opsi', onclick: function () {
         if (opsiRows.length <= 2) { window.toast('Minimal 2 opsi.', true); return; }
         simpanBenar(); opsiRows.splice(opsiRows.indexOf(r), 1); gambarOpsi();
-      } }, 'Hapus');
+      } }, window.ikon('hapus', 16));
       r.root = el('div', { class: 'opsi-baris' }, r.huruf, el('div', { class: 'opsi-ed' }, r.ed.el), r.kontrol, r.hapus);
       return r;
     }
@@ -351,7 +356,7 @@
     var tbTambahOpsi = el('button', { type: 'button', class: 'btn btn-teks btn-kecil', onclick: function () {
       if (opsiRows.length >= 8) return;
       simpanBenar(); opsiRows.push(barisOpsi(null, false)); gambarOpsi();
-    } }, 'Tambah opsi');
+    } }, window.ikon('tambah', 14), 'Tambah opsi');
 
     var opsiAwal = (s && s.opsi && s.opsi.length) ? s.opsi : [{ k: 'A', h: '' }, { k: 'B', h: '' }, { k: 'C', h: '' }, { k: 'D', h: '' }];
     opsiAwal.forEach(function (op) { opsiRows.push(barisOpsi(op, s && s.tipe !== 'isian' && kunciAwal.indexOf(op.k) >= 0)); });
