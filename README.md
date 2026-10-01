@@ -42,7 +42,7 @@ Setiap kali kode berubah: `clasp push`, lalu Deploy > Manage deployments > edit 
 
 **Masuk.** Buka web app, klik "Login admin", isi kata sandi (nilai `ADMIN_PASSWORD`). Sesi berlaku 6 jam. Mengganti sandi dilakukan di Script Properties.
 
-**Membuat ujian (tab Ujian).** Klik "Tambah ujian". Isi nama, jenjang, mapel, durasi, dan token (tombol "Acak" membuat token baru). Centang "Tampil di beranda" agar siswa melihatnya. "Catatan dari pengawas" muncul di layar sebelum mulai. Bagikan token ke siswa lewat pengawas, jangan ditempel di layar yang bisa dilihat siswa lain.
+**Membuat ujian (tab Ujian).** Klik "Tambah ujian". Isi nama, jenjang, mapel, durasi, dan token (tombol "Acak" membuat token baru). Centang "Tampil di beranda" agar siswa melihatnya. "Catatan dari pengawas" muncul di layar sebelum mulai. Bagikan token ke siswa lewat pengawas, jangan ditempel di layar yang bisa dilihat siswa lain. "Buka otomatis" dan "Tutup otomatis" (opsional) mengatur kapan ujian tampil di beranda; setelah waktu tutup tidak ada peserta baru, tetapi siswa yang sudah mulai boleh menyelesaikannya. "Duplikat" menyalin ujian dan soalnya sebagai ujian nonaktif bertoken baru, cocok untuk sesi kedua dengan soal yang sama.
 
 **Mengisi soal (tab Soal).** Pilih ujian, lalu:
 - *Manual*: "Tambah soal". Isi soal terdiri dari beberapa bagian (teks atau gambar) yang urutannya bisa ditukar dengan Naik dan Turun. Rumus lewat tombol "Rumus" (LaTeX, kimia dengan `\ce{}`). Teks Arab boleh ditempel langsung, harakat tetap utuh. Klik "Pratinjau" untuk melihat tampilan siswa.
@@ -52,7 +52,7 @@ Setiap kali kode berubah: `clasp push`, lalu Deploy > Manage deployments > edit 
 
 **Saat ujian.** Siswa memasukkan nama, nomor peserta, dan token. Jika halaman tertutup, siswa membuka lagi, memasukkan data yang sama, dan melanjutkan; waktu tidak berhenti. Jawaban terkirim otomatis saat waktu habis.
 
-**Hasil (tab Hasil).** Peringkat berdasarkan nilai, lalu benar terbanyak, salah tersedikit, dan waktu tercepat. "Ekspor CSV" membuka rapi di Excel berbahasa Indonesia. "Hapus" menghilangkan satu hasil agar siswa dapat mengulang. PDF siswa tidak memuat kunci jawaban.
+**Hasil (tab Hasil).** Peringkat berdasarkan nilai, lalu benar terbanyak, salah tersedikit, dan waktu tercepat. "Ekspor CSV" membuka rapi di Excel berbahasa Indonesia. "Reset" menghapus satu hasil agar siswa dapat mengulang. PDF siswa tidak memuat kunci jawaban.
 
 **Jika ada masalah.** Siswa yang melihat "Server sedang sibuk" cukup menunggu beberapa detik dan mencoba lagi; jawabannya tersimpan di perangkat. Bila sinkron gagal berulang, lihat kuota di Apps Script (menu Executions) dan `docs/UJI-BEBAN.md`.
 

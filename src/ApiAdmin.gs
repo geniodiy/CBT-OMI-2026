@@ -47,6 +47,33 @@ function adminUjianHapus(tok, id) {
   return true;
 }
 
+/** Salin ujian beserta soalnya. Hasil siswa tidak disalin. Salinan nonaktif, bertoken baru, tanpa jadwal. */
+function adminUjianDuplikat(tok, id) {
+  guard_(tok);
+  var asal = sb_('GET', 'ujian?id=eq.' + enc_(id));
+  if (!asal || !asal.length) throw new Error('Ujian tidak ditemukan. Mungkin sudah dihapus.');
+  var u = asal[0];
+  var baru = sb_('POST', 'ujian', {
+    nama: String(u.nama).slice(0, 138) + ' (salinan)', jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi,
+    token: tokenAcak_(6), durasi_menit: u.durasi_menit, aktif: false, acak_soal: u.acak_soal, acak_opsi: u.acak_opsi,
+    tampil_kunci: u.tampil_kunci, catatan: u.catatan, buka_at: null, tutup_at: null
+  })[0];
+  try {
+    var soal = sb_('GET', 'soal?ujian_id=eq.' + enc_(id) + '&order=urutan.asc,created_at.asc') || [];
+    var baris = soal.map(function (s) {
+      return { ujian_id: baru.id, urutan: s.urutan, tipe: s.tipe, blok: s.blok, opsi: s.opsi, kunci: s.kunci, bobot: s.bobot };
+    });
+    for (var i = 0; i < baris.length; i += POTONGAN_INSERT_) {
+      sb_('POST', 'soal', baris.slice(i, i + POTONGAN_INSERT_), { Prefer: 'return=minimal' });
+    }
+  } catch (e) {
+    try { sb_('DELETE', 'ujian?id=eq.' + enc_(baru.id), null, { Prefer: 'return=minimal' }); } catch (e2) { Logger.log('Gagal membatalkan salinan: ' + e2); }
+    throw e;
+  }
+  CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  return baru;
+}
+
 // ---- Soal ----
 
 function adminSoalList(tok, ujianId) {

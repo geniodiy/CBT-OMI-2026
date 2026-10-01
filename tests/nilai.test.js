@@ -38,3 +38,15 @@ console.log('peringatan contoh:',r.peringatan.length);console.log('uji import lu
 const o=ctx.urutKontainer_(L).map(x=>x.id);a.strictEqual(JSON.stringify(o),JSON.stringify([6,3,4,5,1,7,2]));
 a(ctx.tokenCocok_(' ab12 ','AB12'));a(!ctx.tokenCocok_('','')) ;a(!ctx.tokenCocok_('x','y'));
 console.log('uji beranda lulus');}
+
+{const n=ctx.normUjian_;const ok={nama:'A',jenjang:'MA',mapel:'M',token:'t',durasi_menit:60};
+const r=n({...ok,buka_at:'2026-10-01T01:00:00Z',tutup_at:'2026-10-01T03:00:00Z'});a.strictEqual(r.buka_at,'2026-10-01T01:00:00.000Z');
+a.strictEqual(n(ok).buka_at,null);a.strictEqual(n({...ok,buka_at:''}).tutup_at,null);
+a.throws(()=>n({...ok,buka_at:'bukan tanggal'}),/Waktu buka tidak valid/);
+a.throws(()=>n({...ok,buka_at:'2026-10-01T03:00:00Z',tutup_at:'2026-10-01T03:00:00Z'}),/Waktu tutup harus setelah waktu buka/);
+const t=Date.parse('2026-10-01T01:00:00Z');
+a.strictEqual(ctx.formatWaktu_(t),'1 Oktober 2026, 08.00 WIB');a.strictEqual(ctx.formatWaktu_(Date.parse('2026-12-31T17:05:00Z')),'1 Januari 2027, 00.05 WIB');
+const j={buka_at:'2026-10-01T01:00:00Z',tutup_at:'2026-10-01T03:00:00Z'};
+a.strictEqual(ctx.statusJadwal_(j,t-1),'belum');a.strictEqual(ctx.statusJadwal_(j,t),'buka');a.strictEqual(ctx.statusJadwal_(j,t+2*3600000),'tutup');a.strictEqual(ctx.statusJadwal_({},t),'buka');a.strictEqual(ctx.statusJadwal_({buka_at:null,tutup_at:null},t),'buka');
+a(/^[A-HJ-NP-Z2-9]{6}$/.test(ctx.tokenAcak_(6)));
+console.log('uji jadwal lulus');}

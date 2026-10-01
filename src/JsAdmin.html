@@ -124,15 +124,54 @@
         el('td', null, u.durasi_menit + ' menit'),
         el('td', null, String(u.jumlah_soal)),
         el('td', null, el('code', null, u.token)),
-        el('td', null, el('span', { class: u.aktif ? 'status-aktif' : 'status-mati' }, u.aktif ? 'Aktif' : 'Nonaktif')),
+        el('td', null, statusUjian(u)),
         el('td', { class: 'aksi' },
           el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { bukaForm(u); } }, 'Ubah'),
+          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { duplikatUjian(u); } }, 'Duplikat'),
           el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { konfirmasiHapus(u); } }, 'Hapus'))));
     });
     var tabel = el('table', { class: 'tabel' },
       el('thead', null, el('tr', null, ['Nama', 'Jenjang', 'Mapel', 'Sesi', 'Durasi', 'Soal', 'Token', 'Status', ''].map(function (t) { return el('th', null, t); }))),
       tbody);
     p.appendChild(el('div', { class: 'tabel-bungkus' }, tabel));
+  }
+
+
+  function statusUjian(u) {
+    var sekarang = Date.now(), b = u.buka_at ? Date.parse(u.buka_at) : NaN, t = u.tutup_at ? Date.parse(u.tutup_at) : NaN;
+    if (!u.aktif) return el('span', { class: 'status-mati' }, 'Nonaktif');
+    if (!isNaN(b) && sekarang < b) return el('span', { class: 'status-mati' }, 'Belum dibuka', el('div', { class: 'redup' }, tanggalRingkas(u.buka_at)));
+    if (!isNaN(t) && sekarang >= t) return el('span', { class: 'status-mati' }, 'Ditutup', el('div', { class: 'redup' }, tanggalRingkas(u.tutup_at)));
+    return el('span', { class: 'status-aktif' }, 'Aktif', !isNaN(t) ? el('div', { class: 'redup' }, 'Tutup ' + tanggalRingkas(u.tutup_at)) : null);
+  }
+
+  /** Nilai untuk input datetime-local (jam perangkat) dari ISO. */
+  function keInputWaktu(iso) {
+    var t = iso ? new Date(iso) : null;
+    if (!t || isNaN(t.getTime())) return '';
+    var dua = function (n) { return (n < 10 ? '0' : '') + n; };
+    return t.getFullYear() + '-' + dua(t.getMonth() + 1) + '-' + dua(t.getDate()) + 'T' + dua(t.getHours()) + ':' + dua(t.getMinutes());
+  }
+  function dariInputWaktu(v) {
+    if (!v) return '';
+    var t = new Date(v);
+    return isNaN(t.getTime()) ? '' : t.toISOString();
+  }
+
+  function duplikatUjian(u) {
+    window.openModal({
+      judul: 'Duplikat ujian?',
+      isi: 'Ujian "' + u.nama + '" disalin beserta ' + u.jumlah_soal + ' soalnya. Hasil siswa tidak disalin. Salinan berstatus nonaktif dan memakai token baru.',
+      tombol: [
+        { teks: 'Batal' },
+        { teks: 'Duplikat', utama: true, aksi: function () {
+          window.call('adminUjianDuplikat', tokenAdmin, u.id).then(function (b) {
+            window.toast('Ujian disalin dengan token ' + b.token + '. Aktifkan bila sudah siap.');
+            muatUjian();
+          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
+        } }
+      ]
+    });
   }
 
   function tokenAcak() {
@@ -163,6 +202,8 @@
       el('div', { class: 'baris-token' }, f.token,
         el('button', { class: 'btn', type: 'button', onclick: function () { f.token.value = tokenAcak(); } }, 'Acak')));
     f.catatan = el('textarea', { rows: 3, value: d.catatan || '' });
+    f.buka_at = el('input', { type: 'datetime-local', value: keInputWaktu(d.buka_at), 'aria-label': 'Buka otomatis' });
+    f.tutup_at = el('input', { type: 'datetime-local', value: keInputWaktu(d.tutup_at), 'aria-label': 'Tutup otomatis' });
     var galat = el('div', { class: 'galat', role: 'alert' });
 
     var badan = el('div', null,
@@ -171,6 +212,10 @@
       el('div', { class: 'grid2' }, isian('sesi', 'Sesi (opsional)', 'text', { placeholder: 'Contoh: Sesi 1' }),
         isian('durasi_menit', 'Durasi (menit) *', 'number', { min: 1, step: 1 })),
       tokenField,
+      el('div', { class: 'grid2' },
+        el('label', { class: 'field' }, el('span', null, 'Buka otomatis (opsional)'), f.buka_at),
+        el('label', { class: 'field' }, el('span', null, 'Tutup otomatis (opsional)'), f.tutup_at)),
+      el('p', { class: 'redup' }, 'Kosongkan agar tidak dibatasi waktu. Ujian tampil di beranda hanya di antara waktu buka dan tutup. Waktu mengikuti jam perangkat ini. Siswa yang sudah mulai tetap dapat menyelesaikan ujiannya setelah waktu tutup.'),
       el('label', { class: 'field' }, el('span', null, 'Catatan dari pengawas (opsional)'), f.catatan),
       cek('aktif', 'Tampil di beranda (aktif)'),
       cek('acak_soal', 'Acak urutan soal'),
@@ -183,6 +228,7 @@
         id: u ? u.id : undefined,
         nama: f.nama.value, jenjang: f.jenjang.value, mapel: f.mapel.value, sesi: f.sesi.value,
         token: f.token.value, durasi_menit: Number(f.durasi_menit.value), catatan: f.catatan.value,
+        buka_at: dariInputWaktu(f.buka_at.value), tutup_at: dariInputWaktu(f.tutup_at.value),
         aktif: f.aktif.checked, acak_soal: f.acak_soal.checked, acak_opsi: f.acak_opsi.checked, tampil_kunci: f.tampil_kunci.checked
       };
       tombol.disabled = true; galat.textContent = '';
@@ -609,7 +655,7 @@ Aturan:
         el('td', null, el('strong', null, String(r.skor))),
         el('td', null, waktuRingkas(r.durasi_detik)),
         el('td', null, tanggalRingkas(r.selesai_at)),
-        el('td', { class: 'aksi' }, el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { hapusHasil(r); } }, 'Hapus'))));
+        el('td', { class: 'aksi' }, el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { hapusHasil(r); } }, 'Reset'))));
     });
     var judul = ['Peringkat', 'Nama', 'Nomor', 'Kelas', 'Sekolah', 'Benar', 'Salah', 'Kosong', 'Nilai', 'Waktu', 'Selesai', ''];
     d.appendChild(el('div', { class: 'tabel-bungkus' }, el('table', { class: 'tabel' },
@@ -618,13 +664,13 @@ Aturan:
 
   function hapusHasil(r) {
     window.openModal({
-      judul: 'Hapus hasil ini?',
-      isi: 'Hasil ' + r.nama + ' (nilai ' + r.skor + ') akan dihapus. Siswa bisa mengulang ujian. Tindakan ini tidak bisa dibatalkan.',
+      judul: 'Reset hasil ini?',
+      isi: 'Hasil ' + r.nama + ' (nilai ' + r.skor + ') akan dihapus agar ia dapat mengulang ujian dari awal. Tindakan ini tidak bisa dibatalkan.',
       tombol: [
         { teks: 'Batal' },
-        { teks: 'Hapus hasil', bahaya: true, aksi: function () {
+        { teks: 'Reset hasil', bahaya: true, aksi: function () {
           window.call('adminSesiHapus', tokenAdmin, r.id).then(function () {
-            window.toast('Hasil dihapus.'); muatHasil();
+            window.toast('Hasil direset. Siswa dapat mengulang ujian.'); muatHasil();
           }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
         } }
       ]

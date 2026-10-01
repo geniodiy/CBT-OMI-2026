@@ -235,12 +235,23 @@ function normUjian_(u) {
   if (!isFinite(durasi) || durasi < 1 || Math.floor(durasi) !== durasi) {
     throw new Error('Durasi harus berupa bilangan bulat minimal 1 menit.');
   }
+  function waktu(v, label) {
+    var t = teks(v);
+    if (!t) return null;
+    var ms = Date.parse(t);
+    if (isNaN(ms)) throw new Error(label + ' tidak valid.');
+    return new Date(ms).toISOString();
+  }
+  var buka = waktu(u.buka_at, 'Waktu buka'), tutup = waktu(u.tutup_at, 'Waktu tutup');
+  if (buka && tutup && Date.parse(tutup) <= Date.parse(buka)) throw new Error('Waktu tutup harus setelah waktu buka.');
   return {
     nama: nama,
     jenjang: jenjang,
     mapel: mapel,
     sesi: teks(u.sesi) || null,
     token: token,
+    buka_at: buka,
+    tutup_at: tutup,
     durasi_menit: durasi,
     aktif: u.aktif === true,
     acak_soal: u.acak_soal === true,
@@ -336,4 +347,28 @@ function normPeserta_(p) {
   var o = { nama: t(p && p.nama), nomor: t(p && p.nomor), kelas: t(p && p.kelas), sekolah: t(p && p.sekolah) };
   if (!o.nama) throw new Error('Nama peserta wajib diisi.');
   return o;
+}
+
+var BULAN_ID_ = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+/** "1 Oktober 2026, 08.00 WIB" dari milidetik UTC (zona waktu proyek Asia/Jakarta = UTC+7). */
+function formatWaktu_(ms) {
+  var d = new Date(ms + 7 * 3600000);
+  function dua(n) { return (n < 10 ? '0' : '') + n; }
+  return d.getUTCDate() + ' ' + BULAN_ID_[d.getUTCMonth()] + ' ' + d.getUTCFullYear() + ', ' + dua(d.getUTCHours()) + '.' + dua(d.getUTCMinutes()) + ' WIB';
+}
+
+/** 'belum' sebelum buka_at, 'tutup' sejak tutup_at, selain itu 'buka'. Tanpa jadwal = selalu 'buka'. */
+function statusJadwal_(u, sekarang) {
+  var b = u.buka_at ? Date.parse(u.buka_at) : NaN, t = u.tutup_at ? Date.parse(u.tutup_at) : NaN;
+  if (!isNaN(b) && sekarang < b) return 'belum';
+  if (!isNaN(t) && sekarang >= t) return 'tutup';
+  return 'buka';
+}
+
+/** Token acak 6 karakter tanpa huruf/angka yang mudah tertukar (0, O, 1, I). */
+function tokenAcak_(n) {
+  var abjad = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', t = '';
+  for (var i = 0; i < (n || 6); i++) t += abjad.charAt(Math.floor(Math.random() * abjad.length));
+  return t;
 }

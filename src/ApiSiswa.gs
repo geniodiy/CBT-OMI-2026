@@ -7,7 +7,10 @@ function apiBeranda() {
   var cache = CacheService.getScriptCache();
   var ada = cache.get(CACHE_BERANDA_);
   if (ada) return JSON.parse(ada);
-  var baris = sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + '&aktif=eq.true') || [];
+  var sekarang = Date.now();
+  var baris = (sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + ',buka_at,tutup_at&aktif=eq.true') || [])
+    .filter(function (u) { return statusJadwal_(u, sekarang) === 'buka'; })
+    .map(function (u) { delete u.buka_at; delete u.tutup_at; return u; });
   var hasil = urutKontainer_(baris);
   try { cache.put(CACHE_BERANDA_, JSON.stringify(hasil), CACHE_BERANDA_DETIK_); } catch (e) { /* terlalu besar: lewati cache */ }
   return hasil;
@@ -15,20 +18,30 @@ function apiBeranda() {
 
 function apiCekToken(ujianId, token) {
   var u = ujianDiBuka_(ujianId, token);
+  if (u.ditutup) throw new Error(pesanTutup_(u));
+  delete u.ditutup; delete u.tutup_at;
   return { ujian: u };
+}
+
+function pesanTutup_(u) {
+  return 'Ujian ini sudah ditutup pada ' + formatWaktu_(Date.parse(u.tutup_at)) + '.';
 }
 
 /** Ujian aktif + token cocok + punya soal. Hasil tanpa token. Dipakai juga oleh apiMulai (M6). */
 function ujianDiBuka_(ujianId, token) {
-  var baris = sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + ',token,catatan,acak_soal,acak_opsi&aktif=eq.true&id=eq.' + enc_(ujianId || ''));
+  var baris = sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + ',token,catatan,acak_soal,acak_opsi,buka_at,tutup_at&aktif=eq.true&id=eq.' + enc_(ujianId || ''));
   if (!baris || !baris.length) throw new Error('Ujian tidak ditemukan atau belum dibuka.');
   var u = baris[0];
   if (!tokenCocok_(token, u.token)) {
     Utilities.sleep(500);
     throw new Error('Token tidak cocok. Periksa kembali token dari pengawas.');
   }
+  var jadwal = statusJadwal_(u, Date.now());
+  if (jadwal === 'belum') throw new Error('Ujian ini belum dibuka. Dibuka pada ' + formatWaktu_(Date.parse(u.buka_at)) + '.');
   if (!u.jumlah_soal) throw new Error('Ujian ini belum memiliki soal.');
-  delete u.token;
+  // Ujian yang sudah ditutup tidak menerima peserta baru, tetapi sesi yang sedang berjalan boleh dilanjutkan.
+  u.ditutup = jadwal === 'tutup';
+  delete u.token; delete u.buka_at;
   return u;
 }
 
@@ -67,6 +80,7 @@ function apiMulai(ujianId, token, peserta) {
   var sekarang = Date.now();
   var sesi = cariSesiBerjalan_(u, p, sekarang);
   var lanjut = !!sesi;
+  if (!sesi && u.ditutup) throw new Error(pesanTutup_(u));
   if (!sesi) {
     sesi = sb_('POST', 'sesi', {
       ujian_id: u.id, nama: p.nama, nomor_peserta: p.nomor || null, kelas: p.kelas || null,

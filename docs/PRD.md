@@ -16,8 +16,8 @@ Menyediakan simulasi CBT bergaya OMI 2026 untuk siswa bimbel, dengan pengelolaan
 ### Tahap 1 (dikerjakan sekarang)
 Beranda kontainer, popup data diri dan token, layar info sebelum mulai, halaman ujian, hasil, PDF, panel admin (ujian, soal, hasil), editor soal kaya teks, import JSON, upload gambar.
 
-### Opsional di akhir Tahap 1 (kerjakan jika waktu ada)
-Jadwal buka/tutup otomatis, duplikat ujian, hapus satu percobaan siswa agar bisa mengulang.
+### Opsional di akhir Tahap 1 (sudah dikerjakan)
+Jadwal buka/tutup otomatis (ujian di luar jadwal disembunyikan dan token ditolak; sesi yang sudah berjalan boleh selesai), duplikat ujian (nonaktif, token baru), dan Reset hasil agar siswa bisa mengulang.
 
 ### Tahap 2 (belum)
 Pembahasan soal, analisis per soal, skor parsial PG kompleks, ganti kata sandi admin dari web, soal esai, deteksi pindah tab/anti-curang, webcam/mikrofon.

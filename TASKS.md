@@ -114,9 +114,11 @@ Hasil perapian: kontras `--biru` diperbaiki (4,31 menjadi 4,66 dengan teks putih
 
 ## Opsional di akhir Tahap 1
 
-- [ ] Jadwal buka/tutup otomatis (`buka_at`, `tutup_at`) memengaruhi kemunculan kontainer dan pengecekan token.
-- [ ] `adminUjianDuplikat`.
-- [ ] Tombol "Reset" per hasil agar siswa bisa mengulang (memakai `adminSesiHapus`).
+- [x] Jadwal buka/tutup otomatis (`buka_at`, `tutup_at`): ujian tampil di beranda hanya di antara keduanya; token ditolak dengan pesan "belum dibuka" atau "sudah ditutup". Siswa yang sudah mulai tetap boleh melanjutkan dan menyelesaikan ujian setelah waktu tutup.
+- [x] `adminUjianDuplikat`: menyalin ujian dan soal; salinan nonaktif, token baru, tanpa jadwal.
+- [x] Tombol "Reset" per hasil agar siswa bisa mengulang (memakai `adminSesiHapus`).
+
+Status uji: logika jadwal, duplikat, dan batas tutup lulus uji Node (`node tests/jalankan.js`); formulir, status tabel, duplikat, dan Reset lulus uji browser. Belum dicentang: uji di Apps Script asli.
 
 ## Tahap 2 (belum)
 

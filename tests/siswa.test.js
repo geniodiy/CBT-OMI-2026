@@ -82,4 +82,32 @@ const hs=ctx.adminHasil('T','U1');
 a.strictEqual(hs.map(x=>x.nama).join(),'Cici,Dedi,Budi,Fani,Ani','urut: nilai, benar, salah, waktu; tanpa sesi berjalan');
 a(hs.every(x=>!('jawaban' in x)),'tanpa kolom jawaban');
 ctx.adminSesiHapus('T','c');a.strictEqual(ctx.adminHasil('T','U1').length,4);
+
+// ---- jadwal buka/tutup ----
+DB.ujian[0].tampil_kunci=false;DB.ujian[0].acak_soal=false;
+const jam=h=>new Date(Date.now()+h*3600000).toISOString();
+const cacheBersih=()=>vm.runInContext("CacheService.getScriptCache=function(){return {get:function(k){return k==='adm_T'?'1':null},put(){},remove(){}}}",ctx);cacheBersih();
+DB.ujian[0].buka_at=jam(2);
+a.throws(()=>ctx.apiCekToken('U1','tok1'),/belum dibuka\. Dibuka pada \d+ \w+ \d{4}, \d\d\.\d\d WIB/);
+a.throws(()=>ctx.apiMulai('U1','tok1',{nama:'X'}),/belum dibuka/);
+a.strictEqual(ctx.apiBeranda().length,0,'belum dibuka tidak tampil di beranda');
+DB.ujian[0].buka_at=jam(-2);DB.ujian[0].tutup_at=jam(2);
+a.strictEqual(ctx.apiBeranda().length,1);a(!('buka_at' in ctx.apiBeranda()[0])&&!('tutup_at' in ctx.apiBeranda()[0]));
+a(ctx.apiCekToken('U1','tok1').ujian.id==='U1');
+const sdhMulai=ctx.apiMulai('U1','tok1',{nama:'Wati',nomor:'7'});
+DB.ujian[0].tutup_at=jam(-1);
+a.throws(()=>ctx.apiCekToken('U1','tok1'),/sudah ditutup pada/);
+a.throws(()=>ctx.apiMulai('U1','tok1',{nama:'Baru'}),/sudah ditutup/);
+a.strictEqual(ctx.apiMulai('U1','tok1',{nama:'Wati',nomor:'7'}).lanjut,true,'sesi berjalan boleh dilanjutkan setelah ditutup');
+a.doesNotThrow(()=>ctx.apiSelesai(sdhMulai.sesiId,{}),'sesi berjalan boleh diselesaikan setelah ditutup');
+a.strictEqual(ctx.apiBeranda().length,0,'ditutup tidak tampil');
+DB.ujian[0].buka_at=null;DB.ujian[0].tutup_at=null;
+// ---- duplikat ----
+const n0=DB.ujian.length,s0=DB.soal.length;
+const dup=ctx.adminUjianDuplikat('T','U1');
+a.strictEqual(DB.ujian.length,n0+1);a.strictEqual(DB.soal.length,s0*2,'soal ikut disalin');
+a.strictEqual(dup.aktif,false);a(dup.nama.endsWith(' (salinan)'));a.notStrictEqual(dup.token,'TOK1');a.strictEqual(dup.token.length,6);a(!dup.buka_at&&!dup.tutup_at);
+const sal=DB.soal.filter(x=>x.ujian_id===dup.id);a.strictEqual(sal.length,s0);a.strictEqual(JSON.stringify(sal.map(x=>x.urutan)),JSON.stringify(DB.soal.filter(x=>x.ujian_id==='U1').map(x=>x.urutan)));
+a(sal.every(x=>x.id!==undefined&&!DB.soal.some(o=>o!==x&&o.id===x.id)),'id soal unik');
+a.throws(()=>ctx.adminUjianDuplikat('T','tidak-ada'),/tidak ditemukan/);
 console.log('uji siswa lulus');

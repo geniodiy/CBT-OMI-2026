@@ -21,8 +21,8 @@ create table if not exists ujian (
   acak_opsi     boolean not null default false,
   tampil_kunci  boolean not null default false, -- kunci tampil di hasil siswa
   catatan       text,                           -- catatan khusus admin di layar info sebelum mulai
-  buka_at       timestamptz,                    -- cadangan untuk jadwal otomatis (belum dipakai)
-  tutup_at      timestamptz,                    -- cadangan untuk jadwal otomatis (belum dipakai)
+  buka_at       timestamptz,                    -- jadwal buka otomatis (kosong = tanpa batas)
+  tutup_at      timestamptz,                    -- jadwal tutup otomatis (kosong = tanpa batas)
   created_at    timestamptz not null default now()
 );
 

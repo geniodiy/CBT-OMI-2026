@@ -21,10 +21,10 @@ type KontainerUjian = {
 ## Siswa (tanpa autentikasi)
 
 ### `apiBeranda(): KontainerUjian[]`
-Ujian dengan `aktif = true` dari view `ujian_ringkas`, **tanpa token**. Urut: jenjang (MI, MTs, MA lebih dulu, sisanya abjad), mapel, nama. Di-cache 60 detik (`CacheService`, kunci `beranda_v1`).
+Ujian dengan `aktif = true` dan jadwal terbuka (di antara `buka_at` dan `tutup_at` bila diisi) dari view `ujian_ringkas`, **tanpa token**. Urut: jenjang (MI, MTs, MA lebih dulu, sisanya abjad), mapel, nama. Di-cache 60 detik (`CacheService`, kunci `beranda_v1`).
 
 ### `apiCekToken(ujianId, token): { ujian: KontainerUjian & { catatan: string|null } }`
-Langkah 1 popup. Mengecek `aktif` dan token (trim, tidak peka huruf). Galat: "Ujian tidak ditemukan atau belum dibuka.", "Token tidak cocok. Periksa kembali token dari pengawas.", "Ujian ini belum memiliki soal."
+Langkah 1 popup. Mengecek `aktif` dan token (trim, tidak peka huruf). Galat: "Ujian tidak ditemukan atau belum dibuka.", "Ujian ini belum dibuka. Dibuka pada 1 Oktober 2026, 08.00 WIB.", "Ujian ini sudah ditutup pada ...", "Token tidak cocok. Periksa kembali token dari pengawas.", "Ujian ini belum memiliki soal."
 
 ### `apiMulai(ujianId, token, peserta): SesiMulai`
 `peserta = { nama, nomor, kelas, sekolah }` (nama wajib, maks. 100 karakter; lainnya opsional).
@@ -68,9 +68,9 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 
 ### Ujian
 - `adminUjianList(tok): (UjianRow & { jumlah_soal, n_pg, n_pgk, n_isian })[]` (termasuk token dan semua kolom).
-- `adminUjianSimpan(tok, u): UjianRow` tanpa `id` = tambah, dengan `id` = ubah. Validasi: nama, jenjang, mapel, token wajib; durasi ≥ 1. Hanya kolom yang diizinkan. Menghapus cache `beranda_v1`.
+- `adminUjianSimpan(tok, u): UjianRow` tanpa `id` = tambah, dengan `id` = ubah. Validasi: nama, jenjang, mapel, token wajib; durasi ≥ 1; `buka_at`/`tutup_at` opsional (ISO), tutup harus setelah buka. Hanya kolom yang diizinkan. Menghapus cache `beranda_v1`.
 - `adminUjianHapus(tok, id): true` menghapus beserta soal dan sesi.
-- (Opsional) `adminUjianDuplikat(tok, id): UjianRow` menyalin ujian dan soalnya; token baru acak, `aktif = false`, nama + " (salinan)".
+- `adminUjianDuplikat(tok, id): UjianRow` menyalin ujian dan soalnya (hasil siswa tidak disalin); token baru acak, `aktif = false`, tanpa jadwal, nama + " (salinan)". Bila penyalinan soal gagal, ujian salinan dibatalkan.
 
 ### Soal
 - `adminSoalList(tok, ujianId): SoalRow[]` urut `urutan`, lalu `created_at`; termasuk `kunci`.
