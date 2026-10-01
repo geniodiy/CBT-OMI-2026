@@ -703,11 +703,10 @@ html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem
 }
 input, select, textarea, [contenteditable="true"] { scroll-margin-block: 96px; }
 @media (max-width: 900px) { body.kbd-aktif .u-nav, body.kbd-fokus .u-nav { display: none; } body.kbd-aktif .ujian { padding-bottom: 24px; } }
-/* keyboard layar: tata letak tidak diangkat. Halaman diberi ruang kosong seukuran keyboard agar bagian bawahnya bisa digulir ke atas keyboard,
-   dan popup disusutkan supaya seluruhnya berada di atas keyboard (isinya menggulir). */
+/* keyboard layar: tata letak tidak diubah. Halaman diberi ruang kosong seukuran keyboard di bawahnya, dan badan popup diberi ruang kosong yang sama
+   (ukuran dan posisi popup tetap), sehingga baris yang sedang diisi dapat digulir tepat di atas keyboard dan baris lain tetap ada. */
 body.kbd-fokus { padding-bottom: var(--kb, 0px); }
-body.kbd-fokus .modal-latar { padding-bottom: calc(var(--kb-popup, 0px) + 6px); }
-body.kbd-fokus .modal { max-height: 100%; }
+body.kbd-fokus .modal-badan { padding-bottom: calc(var(--kb, 0px) + 12px); }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */
