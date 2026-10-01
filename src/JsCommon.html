@@ -1,6 +1,6 @@
 <script>
 (function () {
-  var TAG_BOLEH = ['b', 'strong', 'i', 'em', 'u', 'sub', 'sup', 'br', 'p', 'div', 'span', 'ul', 'ol', 'li'];
+  var TAG_BOLEH = ['b', 'strong', 'i', 'em', 'u', 'sub', 'sup', 'br', 'p', 'div', 'span', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td'];
   var ARAB = '[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]';
   var RE_ARAB = new RegExp(ARAB + '+(?:[\\s\\u200C\\u200D]+' + ARAB + '+)*', 'g');
   var RE_ARAB_ADA = new RegExp(ARAB);
@@ -187,13 +187,21 @@
   // Satu-satunya atribut yang diizinkan: class, dan hanya tiga nilai perataan teks.
   var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan', 'rata-penuh'];
   DOMPurify.addHook('afterSanitizeAttributes', function (node) {
-    if (!node.hasAttribute || !node.hasAttribute('class')) return;
-    var ok = node.getAttribute('class').split(/\s+/).filter(function (c) { return KELAS_BOLEH.indexOf(c) >= 0; });
-    if (ok.length) node.setAttribute('class', ok.join(' ')); else node.removeAttribute('class');
+    if (!node.hasAttribute) return;
+    if (node.hasAttribute('class')) {
+      var ok = node.getAttribute('class').split(/\s+/).filter(function (c) { return KELAS_BOLEH.indexOf(c) >= 0; });
+      if (ok.length) node.setAttribute('class', ok.join(' ')); else node.removeAttribute('class');
+    }
+    // Sel tabel yang digabung: hanya angka 2 sampai 12.
+    ['colspan', 'rowspan'].forEach(function (a) {
+      if (!node.hasAttribute(a)) return;
+      var n = parseInt(node.getAttribute(a), 10);
+      if (n >= 2 && n <= 12) node.setAttribute(a, String(n)); else node.removeAttribute(a);
+    });
   });
 
   window.clean = function (html) {
-    return DOMPurify.sanitize(String(html == null ? '' : html), { ALLOWED_TAGS: TAG_BOLEH, ALLOWED_ATTR: ['class'] });
+    return DOMPurify.sanitize(String(html == null ? '' : html), { ALLOWED_TAGS: TAG_BOLEH, ALLOWED_ATTR: ['class', 'colspan', 'rowspan'] });
   };
 
   /** Sama dengan normArab_ di Nilai.gs (jaga keduanya tetap seragam). Dipakai saat tempel. */
@@ -324,6 +332,7 @@
     keluar: [['path', { d: 'M10 5H6a1.5 1.5 0 0 0-1.5 1.5v11A1.5 1.5 0 0 0 6 19h4M14 8l4 4-4 4M18 12H9' }]],
     beranda: [['path', { d: 'M4 11l8-7 8 7M6 10v9h12v-9' }]],
     peringatan: [['path', { d: 'M12 4l9 16H3z' }], ['path', { d: 'M12 10v4M12 17h.01' }]],
+    tabel: [['rect', { x: 4, y: 5, width: 16, height: 14, rx: 2 }], ['path', { d: 'M4 10h16M4 14.5h16M10 5v14' }]],
     cetak: [['path', { d: 'M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2' }], ['rect', { x: 7, y: 14, width: 10, height: 6, rx: 1 }]],
     orang: [['circle', { cx: 12, cy: 8, r: 3.5 }], ['path', { d: 'M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5' }]],
     gembok: [['rect', { x: 5, y: 10.5, width: 14, height: 9.5, rx: 2.5 }], ['path', { d: 'M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2' }]],

@@ -35,7 +35,9 @@ Import menerima array soal, atau objek `{ "soal": [ ... ] }`. Pembungkus pagar k
 
 ## Pemformatan teks
 
-**HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`. Satu-satunya atribut yang lolos adalah `class` dengan nilai `rata-kiri`, `rata-tengah`, `rata-kanan`, atau `rata-penuh` (perataan teks dari editor; `rata-penuh` = rata kiri dan kanan/justify); nilai class lain dibuang, begitu juga `style` dan atribut lain.
+**HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`, serta tabel: `table`, `thead`, `tbody`, `tr`, `th`, `td`. Atribut yang lolos: `class` dengan nilai `rata-kiri`, `rata-tengah`, `rata-kanan`, atau `rata-penuh` (perataan teks dari editor; `rata-penuh` = rata kiri dan kanan/justify); nilai class lain dibuang, begitu juga `style` dan atribut lain.
+
+**Tabel**: tabel dibuat dengan tombol tabel di toolbar editor (jumlah baris dan kolom, opsi baris judul; saat kursor berada di dalam tabel muncul tombol tambah/hapus baris, tambah/hapus kolom, dan hapus tabel; Tab pindah antar sel). Tabel yang disalin dari Word atau Excel otomatis menjadi tabel (baris pertama sebagai judul). Di JSON, tabel ditulis sebagai HTML di dalam blok teks, satu tabel satu blok: `<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>`. Sel digabung dengan `colspan='2'` atau `rowspan='2'` (hanya angka 2 sampai 12); atribut lain (`style`, `border`, `width`) dibuang. Tabel tidak didukung di dalam opsi jawaban (editor opsi memakai versi mini).
 
 **LaTeX** dirender KaTeX:
 - Sebaris: `$ ... $` (juga `\( ... \)`)
@@ -107,14 +109,14 @@ ATURAN TIPE DAN KUNCI
 
 ATURAN ISI SOAL (blok)
 7. Susun isi soal per bagian, satu bagian satu blok, dengan urutan seperti di dokumen: (a) kalimat pengantar, (b) ayat atau hadis, (c) cerita, data, atau stimulus, (d) gambar, (e) pertanyaan. Jangan menggabungkan bagian yang berbeda ke satu blok, dan jangan memecah satu bagian ke banyak blok. Blok pertanyaan diawali <b>Pertanyaan</b><br> lalu kalimat pertanyaannya. Di dalam satu blok, pisahkan paragraf dengan <br><br>.
-8. Bila soal memiliki gambar, grafik, diagram, tabel bergambar, atau peta, sisipkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu (di atas, tengah, atau bawah teks). Biarkan "isi" KOSONG. Gambar diunggah manual di website. Satu soal boleh punya beberapa blok gambar.
+8. Bila soal memiliki gambar, grafik, diagram, tabel berupa gambar atau foto, atau peta, sisipkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu (di atas, tengah, atau bawah teks). Biarkan "isi" KOSONG. Gambar diunggah manual di website. Satu soal boleh punya beberapa blok gambar.
 9. Bila SEBUAH OPSI berupa gambar, tulis teks opsinya "(gambar)" dan sebutkan nomor soal itu di CATATAN AKHIR.
-10. Tabel data biasa: website tidak mendukung tag tabel. Ubah menjadi teks yang rapi, misalnya satu baris per data dengan <br>, atau daftar <ul><li>...</li></ul>. Bila tabelnya rumit, jadikan blok gambar kosong.
+10. TABEL: bila di dokumen ada tabel berisi teks atau angka, WAJIB dibuat sebagai tabel HTML, jangan diubah menjadi daftar atau teks biasa. Taruh satu tabel dalam satu blok teks tersendiri, pada posisi yang sama dengan di dokumen (kalimat pengantar dan pertanyaan di blok lain). Bentuk: <table><thead><tr><th>Kolom 1</th><th>Kolom 2</th></tr></thead><tbody><tr><td>isi</td><td>isi</td></tr></tbody></table>. Baris judul memakai <th> di dalam <thead>; bila tabel tidak punya baris judul, langsung <tbody> berisi <td>. Sel yang digabung memakai colspan='2' atau rowspan='2' (tanda kutip tunggal, angka 2 sampai 12). Isi sel boleh memakai <b>, <i>, <sup>, <sub>, <br>, dan rumus $...$. Jangan memakai atribut lain (style, border, width). Batas: sampai 8 kolom dan 12 baris. Tabel yang lebih besar, berupa foto atau hasil pindai, atau berisi gambar di dalam selnya, dijadikan blok gambar kosong dan dicatat di CATATAN AKHIR. Tabel tidak boleh berada di dalam opsi jawaban: bila sebuah opsi berupa tabel, tulis opsi itu sebagai teks ringkas dengan <br> dan catat nomor soalnya di CATATAN AKHIR.
 11. Pertahankan nomor, urutan, kata, dan angka apa adanya. Jangan memperbaiki, menyingkat, atau menerjemahkan. Buang nomor soal ("1.", "2.") dari awal teks, tetapi jangan ubah isinya.
 12. Buang header, footer, nomor halaman, nama instansi, dan petunjuk umum ujian yang bukan bagian soal.
 
 ATURAN FORMAT TEKS
-13. HTML yang boleh dipakai HANYA: <b>, <strong>, <i>, <em>, <u>, <sub>, <sup>, <br>, <p>, <div>, <span>, <ul>, <ol>, <li>. Tag lain dan atribut style dilarang.
+13. HTML yang boleh dipakai HANYA: <b>, <strong>, <i>, <em>, <u>, <sub>, <sup>, <br>, <p>, <div>, <span>, <ul>, <ol>, <li>, serta <table>, <thead>, <tbody>, <tr>, <th>, <td> (atribut yang boleh hanya class pada perataan dan colspan/rowspan pada <th>/<td>). Tag lain dan atribut style dilarang.
 14. Baris baru di dalam teks ditulis <br>, bukan karakter enter di dalam string JSON.
 15. Perataan teks (hanya bila di dokumen memang rata tengah, rata kanan, atau rata kiri-kanan): bungkus dengan <div class='rata-tengah'>...</div>, <div class='rata-kanan'>...</div>, atau <div class='rata-penuh'>...</div>. Selalu pakai tanda kutip TUNGGAL pada atribut class agar JSON tidak rusak. Teks biasa tidak perlu dibungkus.
 16. Cetak tebal, miring, garis bawah, pangkat, dan indeks di dokumen dipertahankan dengan <b>, <i>, <u>, <sup>, <sub>.
@@ -143,6 +145,7 @@ ATURAN TEKS ARAB
 PEMERIKSAAN SEBELUM MENJAWAB
 Sebelum mengeluarkan hasil, periksa dalam hati:
 - Jumlah soal di JSON = jumlah soal di dokumen.
+- Setiap tabel teks di dokumen menjadi <table> di dalam blok teks (bukan daftar atau teks biasa), dengan jumlah baris dan kolom yang sama.
 - Semua "tipe" hanya pg, pgk, atau isian.
 - pg memiliki tepat 1 kunci; pgk memiliki 1 atau lebih; semua huruf kunci ada di opsi.
 - isian tidak punya "opsi".

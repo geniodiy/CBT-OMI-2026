@@ -98,6 +98,8 @@ Perbaruan desain hasil (opsi 1, rapor ringkas): nilai ditulis per maksimum (84/1
 
 Perbaruan desain beranda (opsi 2, header datar): hero berfoto `hero.jpg` (opsional), langkah, kartu paket dengan ikon mapel, bagian OMI berupa kartu, footer putih beraksen kuning, menu header menggulir. Lulus uji Node dan uji browser (1280 px, 390 px).
 
+Perbaruan tabel di soal: tombol tabel di toolbar editor (baris, kolom, baris judul; tambah/hapus baris dan kolom, hapus tabel, Tab antar sel, tempel dari Word/Excel menjadi tabel), tag `table/thead/tbody/tr/th/td` plus atribut `colspan/rowspan` (2 sampai 12) masuk whitelist DOMPurify, gaya tabel di editor/pratinjau/siswa, dan prompt AI (rule 10 dan 13) diperbarui agar tabel di dokumen diimpor sebagai tabel HTML. Lulus uji Node dan uji browser; belum diuji di Apps Script asli.
+
 ## M8. Admin: hasil
 
 - [x] `adminHasil` dengan urutan skor, benar, salah (sedikit), waktu (cepat); tab Hasil; ekspor CSV; `adminSesiHapus`.

@@ -637,6 +637,22 @@ html.adm-aktif .popover-kolom input { font-size: .9rem; }
 html.adm-aktif .adm-cari input, html.adm-aktif .cb-input { font-size: .88rem; }
 html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem; }
 
+/* tabel di isi soal (editor, pratinjau, siswa): garis tipis dan judul tebal; teks panjang dalam sel dipatahkan agar tabel tidak melebihi lebar kartu */
+.blok-teks table, .editor-area table, .kartu-badan table, .opsi-teks table { max-width: 100%; border-collapse: collapse; margin: .5em 0; font-size: .95em; }
+.blok-teks th, .blok-teks td, .editor-area th, .editor-area td, .kartu-badan th, .kartu-badan td { border: 1px solid #c9d3cc; padding: 4px 9px; text-align: left; vertical-align: top; min-width: 34px; line-height: 1.45; overflow-wrap: anywhere; }
+.blok-teks th, .editor-area th, .kartu-badan th { background: #f1f5f2; font-weight: 700; }
+.editor-area td:empty, .editor-area th:empty { height: 1.6em; }
+.tb-tabel { gap: 4px; padding-top: 5px; padding-bottom: 5px; border-top: 1px dashed var(--garis); flex-wrap: wrap; }
+.tb-tabel[hidden] { display: none; }
+.tb-tabel-label { display: inline-flex; align-items: center; gap: 5px; margin-right: 4px; font-size: .78rem; font-weight: 700; color: var(--teks-redup); }
+.tb-tabel .btn-kecil { padding: 0 8px; font-size: .78rem; }
+.panel-tabel { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; padding: 8px 10px; border-bottom: 1px solid var(--garis); background: #f9fbf9; }
+.panel-tabel[hidden] { display: none; }
+.panel-tabel label { display: grid; gap: 2px; font-size: .78rem; font-weight: 600; color: var(--teks-redup); }
+.panel-tabel .tbl-angka { width: 64px; min-height: 30px; padding: 0 8px; border: 1px solid var(--garis); border-radius: 8px; font: inherit; font-size: .86rem; }
+.panel-tabel .tbl-cek { display: inline-flex; align-items: center; gap: 6px; padding-bottom: 6px; }
+.panel-tabel .galat { flex-basis: 100%; margin: 0; }
+
 /* indikator muat */
 #bilahMuat { position: fixed; left: 0; right: 0; top: 0; height: 3px; z-index: 80; overflow: hidden; opacity: 0; pointer-events: none; transition: opacity .25s; }
 #bilahMuat.aktif { opacity: 1; }
