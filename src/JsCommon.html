@@ -351,8 +351,12 @@
     var lebar = Math.max(r.width, lebarMin || 0);
     panel.style.minWidth = lebar + 'px';
     var tinggi = panel.offsetHeight, lebarPanel = panel.offsetWidth;
-    var atas = r.bottom + 6;
-    if (atas + tinggi > window.innerHeight - 8 && r.top - tinggi - 6 > 8) atas = r.top - tinggi - 6;
+    var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    var atas;
+    if (tinggi <= vh - r.bottom - 8) atas = r.bottom + 6;
+    else if (tinggi <= r.top - 8) atas = r.top - tinggi - 6;
+    else if (tinggi <= vh - 16) atas = vh - tinggi - 8;          // tidak muat di atas maupun bawah: geser agar seluruhnya terlihat
+    else { atas = 8; panel.style.maxHeight = (vh - 16) + 'px'; panel.style.overflowY = 'auto'; }
     panel.style.top = Math.max(8, Math.round(atas)) + 'px';
     panel.style.left = Math.max(8, Math.min(Math.round(r.left), window.innerWidth - lebarPanel - 8)) + 'px';
     tombol.setAttribute('aria-expanded', 'true');
@@ -501,7 +505,8 @@
         panel.appendChild(window.el('div', { class: 'dd-hari' }, NAMA_HARI.map(function (h) { return window.el('span', null, h); })));
         var grid = window.el('div', { class: 'dd-tgl' });
         var pertama = new Date(st.y, st.m, 1), geserAwal = (pertama.getDay() + 6) % 7;
-        for (var i = 0; i < 42; i++) {
+        var hariBulan = new Date(st.y, st.m + 1, 0).getDate(), jumlahSel = Math.ceil((geserAwal + hariBulan) / 7) * 7;
+        for (var i = 0; i < jumlahSel; i++) {
           var tgl = new Date(st.y, st.m, 1 - geserAwal + i);
           var kelas = 'dd-sel';
           if (tgl.getMonth() !== st.m) kelas += ' o';

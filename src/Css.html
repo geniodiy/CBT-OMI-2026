@@ -518,7 +518,10 @@ body[data-halaman="admin"] #app { max-width: none; padding: 0; }
 .adm-kaki { margin-top: auto; display: grid; gap: 1px; }
 .adm-nav-btn { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 32px; padding: 0 9px; font: inherit; font-weight: 600; color: var(--teks-redup); background: none; border: 0; border-radius: 9px; cursor: pointer; text-align: left; transition: background-color .2s, color .2s; }
 .adm-nav-btn:hover { background: var(--latar); color: var(--teks); }
-.adm-nav-btn[aria-current="page"] { background: var(--biru-muda); color: var(--biru-tua); }
+.adm-nav-btn[aria-current="page"] { color: var(--biru-tua); }
+.adm-nav { position: relative; }
+.adm-nav-btn { position: relative; z-index: 1; }
+.adm-nav .adm-penanda { background: var(--biru-muda); border-radius: 9px; }
 .adm-nav-btn em { margin-left: auto; font-style: normal; font-size: .78rem; padding: 0 7px; border-radius: 99px; background: var(--latar); color: var(--teks-redup); }
 .adm-nav-btn[aria-current="page"] em { background: var(--putih); }
 .adm-keluar:hover { color: var(--merah); }
@@ -532,7 +535,10 @@ body[data-halaman="admin"] #app { max-width: none; padding: 0; }
 .adm-seg { display: flex; align-items: stretch; box-sizing: border-box; height: var(--tk); max-width: 100%; overflow-x: auto; padding: 2px; background: var(--putih); border: 1px solid var(--garis); border-radius: 10px; }
 .adm-seg button { display: inline-flex; align-items: center; white-space: nowrap; font: inherit; line-height: 1; font-size: .88rem; font-weight: 600; min-height: 0; padding: 0 10px; color: var(--teks-redup); background: none; border: 0; border-radius: 8px; cursor: pointer; }
 .adm-seg button small { margin-left: 4px; opacity: .6; font-size: inherit; }
-.adm-seg button[aria-pressed="true"] { background: var(--teks); color: #fff; }
+.adm-seg button[aria-pressed="true"] { color: #fff; }
+.adm-seg { position: relative; }
+.adm-seg button { position: relative; z-index: 1; transition: color .2s; }
+.adm-seg .adm-penanda { background: var(--teks); border-radius: 8px; }
 .adm-cari { margin-left: auto; display: flex; align-items: center; gap: 7px; box-sizing: border-box; height: var(--tk); min-height: var(--tk); width: 250px; max-width: 100%; padding: 0 10px; background: var(--putih); border: 1px solid var(--garis); border-radius: 10px; color: var(--teks-redup); }
 .adm-cari input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: .92rem; color: var(--teks); }
 .adm-cari:focus-within { border-color: var(--biru); box-shadow: 0 0 0 3px rgba(31, 138, 76, .16); }
@@ -726,4 +732,18 @@ html.adm-aktif input[type="checkbox"]:focus-visible, html.adm-aktif input[type="
 html.adm-aktif input[type="radio"]:checked:focus-visible { box-shadow: inset 0 0 0 3.5px var(--putih), 0 0 0 3px rgba(31, 138, 76, .22); }
 html.adm-aktif input[type="checkbox"]:disabled, html.adm-aktif input[type="radio"]:disabled { opacity: .5; cursor: default; }
 html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* animasi panel admin */
+.adm-penanda { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 0; pointer-events: none; transition: transform .38s var(--ease-pegas), width .38s var(--ease-pegas), height .38s var(--ease-pegas); }
+.adm-masuk { animation: admMasuk .4s var(--ease-pegas) backwards; }
+@keyframes admMasuk { from { opacity: 0; transform: translateX(var(--dx, 16px)); } }
+.adm-anim .adm-baris:not(.adm-kepala), .adm-anim .adm-sbaris:not(.adm-kepala) { animation: admBaris .45s var(--ease-pegas) backwards; animation-delay: calc(var(--n, 0) * 35ms); }
+@keyframes admBaris { from { opacity: 0; transform: translateY(8px); } }
+.adm-hbaris { display: grid; grid-template-columns: 70px minmax(0, 1.6fr) 60px minmax(0, 1.4fr) 56px 56px 56px 70px; align-items: center; gap: 10px; min-height: 38px; padding: 0 14px; border-bottom: 1px solid var(--garis); font-size: .92rem; }
+.adm-memuat .adm-skel-baris { animation: none; }
+.adm-skel { display: block; height: 10px; max-width: 100%; border-radius: 6px; background: #dfe9e2; animation: skelDenyut 1.3s ease-in-out infinite; animation-delay: calc(var(--n, 0) * 90ms); }
+@keyframes skelDenyut { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.adm-memuat .adm-baris.adm-skel-baris { min-height: 42px; }
+.adm-memuat .adm-sbaris.adm-skel-baris { min-height: 38px; }
+@media (prefers-reduced-motion: reduce) { .adm-penanda { transition: none; } .adm-masuk, .adm-anim .adm-baris, .adm-anim .adm-sbaris, .adm-skel { animation: none; } }
 </style>

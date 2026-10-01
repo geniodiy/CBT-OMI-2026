@@ -81,6 +81,21 @@
   var ujianTerpilih = null;
   var daftarSoal = [];
 
+  /** Tabel kosong berdenyut sebagai tanda sedang memuat; kolomnya sama dengan tabel aslinya. */
+  function kerangkaTabel(kelasBaris, labels, jumlah, lebar, kelasKolom) {
+    var t = el('div', { class: 'adm-tabel adm-memuat', 'aria-busy': 'true', 'aria-label': 'Memuat data' });
+    t.appendChild(el('div', { class: kelasBaris + ' adm-kepala' }, labels.map(function (h) { return el('span', null, h); })));
+    for (var i = 0; i < jumlah; i++) {
+      t.appendChild(el('div', { class: kelasBaris + ' adm-skel-baris', style: '--n:' + i },
+        labels.map(function (h, k) { return el('span', { class: (kelasKolom && kelasKolom[k]) || null }, h === '' ? null : el('i', { class: 'adm-skel', style: 'width:' + lebar[(i + k) % lebar.length] + '%' })); })));
+    }
+    return t;
+  }
+  var LABEL_UJIAN = ['UJIAN', 'JENJANG', 'SOAL (PG/PGK/ISIAN)', 'DURASI', 'TOKEN', 'JADWAL', 'SELESAI', 'STATUS', ''];
+  var KOLOM_UJIAN = ['adm-nama', 'adm-jenjang', 'adm-soal', 'adm-durasi', 'adm-tk', 'adm-jadwal', 'adm-selesai', 'adm-st', 'adm-aksi'];
+  var KOLOM_SOAL = ['adm-sno', '', 'adm-soal-isi', 'adm-sopsi', 'adm-kunci', 'adm-sbobot', 'adm-sgambar', 'adm-aksi'];
+  var LABEL_SOAL = ['NO', 'TIPE', 'ISI SOAL', 'OPSI', 'KUNCI', 'BOBOT', 'GAMBAR', ''];
+
   var NAV = [['ujian', 'Ujian', 'ujian'], ['soal', 'Soal', 'bantuan'], ['hasil', 'Hasil', 'hasil']];
 
   function jumlahNav(t) {
@@ -93,7 +108,8 @@
   function tampilAdmin() {
     var s = document.querySelector('[data-view="admin"]');
     s.textContent = '';
-    var navEl = el('nav', { class: 'adm-nav', 'aria-label': 'Menu admin' });
+    var navEl = el('nav', { class: 'adm-nav', 'aria-label': 'Menu admin' }, el('span', { class: 'adm-penanda', 'aria-hidden': 'true' }));
+    navSiap = false;
     NAV.forEach(function (t) {
       var jml = el('em', { 'data-jml': t[0] }, String(jumlahNav(t[0])));
       navEl.appendChild(el('button', { class: 'adm-nav-btn', type: 'button', 'data-tab': t[0], onclick: function () { pilihTab(t[0]); } },
@@ -123,11 +139,36 @@
     document.getElementById('btnAdmin').textContent = 'Panel admin';
   }
 
+  var navSiap = false;
+
+  /** Menggeser kotak penanda ke elemen aktif (satu penanda untuk menu samping, satu untuk tiap kelompok saringan). */
+  function geserPenanda(wadah, aktif, animasi) {
+    var pn = wadah && wadah.querySelector('.adm-penanda');
+    if (!pn || !aktif) return;
+    if (!animasi) pn.style.transition = 'none';
+    pn.style.width = aktif.offsetWidth + 'px'; pn.style.height = aktif.offsetHeight + 'px';
+    pn.style.transform = 'translate(' + aktif.offsetLeft + 'px,' + aktif.offsetTop + 'px)';
+    if (!animasi) { void pn.offsetWidth; pn.style.transition = ''; }
+  }
+  function penandaNav(animasi) {
+    var nav = document.querySelector('.adm-nav');
+    if (nav) geserPenanda(nav, nav.querySelector('.adm-nav-btn[aria-current="page"]'), animasi);
+  }
+  function penandaSeg(seg, animasi) { geserPenanda(seg, seg.querySelector('button[aria-pressed="true"]'), animasi); }
+  window.addEventListener('resize', function () { penandaNav(false); document.querySelectorAll('.adm-seg').forEach(function (g) { penandaSeg(g, false); }); });
+
   function pilihTab(t) {
+    var dari = NAV.map(function (x) { return x[0]; }).indexOf(tabAktif), ke = NAV.map(function (x) { return x[0]; }).indexOf(t);
     tabAktif = t;
     document.querySelectorAll('.adm-nav-btn[data-tab]').forEach(function (b) {
       b.setAttribute('aria-current', b.getAttribute('data-tab') === t ? 'page' : 'false');
     });
+    penandaNav(navSiap); navSiap = true;
+    var panel = document.getElementById('panelAdmin');
+    if (panel && dari !== ke) {
+      panel.style.setProperty('--dx', (ke > dari ? 18 : -18) + 'px');
+      panel.classList.remove('adm-masuk'); void panel.offsetWidth; panel.classList.add('adm-masuk');
+    }
     if (t === 'soal') tampilSoalTab();
     else if (t === 'hasil') tampilHasilTab();
     else muatUjian();
@@ -147,7 +188,7 @@
   function muatUjian() {
     var p = document.getElementById('panelAdmin');
     if (daftarUjian.length) gambarUjian();
-    else { p.textContent = ''; p.appendChild(el('div', { class: 'kerangka' })); p.appendChild(el('div', { class: 'kerangka' })); }
+    else { p.textContent = ''; p.appendChild(el('div', { class: 'adm-atas' }, el('h1', null, 'Ujian'))); p.appendChild(kerangkaTabel('adm-baris', LABEL_UJIAN, 6, [70, 40, 55, 80, 60], KOLOM_UJIAN)); }
     window.call('adminUjianList', tokenAdmin).then(function (d) {
       daftarUjian = d;
       segarkanNav();
@@ -200,9 +241,9 @@
       return;
     }
 
-    var seg = el('div', { class: 'adm-seg', role: 'group', 'aria-label': 'Saring status' });
+    var seg = el('div', { class: 'adm-seg', role: 'group', 'aria-label': 'Saring status' }, el('span', { class: 'adm-penanda', 'aria-hidden': 'true' }));
     [['semua', 'Semua'], ['aktif', 'Aktif'], ['belum', 'Terjadwal'], ['nonaktif', 'Nonaktif'], ['ditutup', 'Ditutup']].forEach(function (x) {
-      seg.appendChild(el('button', { type: 'button', 'aria-pressed': filterStatus === x[0] ? 'true' : 'false', onclick: function () { filterStatus = x[0]; isiTabelUjian(); tandaiSeg(seg); } },
+      seg.appendChild(el('button', { type: 'button', 'aria-pressed': filterStatus === x[0] ? 'true' : 'false', onclick: function () { filterStatus = x[0]; isiTabelUjian(); tandaiSeg(seg); penandaSeg(seg, true); } },
         x[1], el('small', null, String(hitung[x[0]]))));
     });
     var jenjang = daftarUjian.map(function (u) { return u.jenjang; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
@@ -220,9 +261,11 @@
 
     p.appendChild(el('div', { class: 'adm-alat' }, seg, selJenjang, selUrut,
       el('label', { class: 'adm-cari' }, window.ikon('cari', 15), kolomCari)));
-    p.appendChild(el('div', { class: 'adm-tabel', id: 'admTabel' }));
+    p.appendChild(el('div', { class: 'adm-tabel adm-anim', id: 'admTabel' }));
     p.appendChild(el('div', { class: 'adm-kaki-tabel', id: 'admKaki' }));
     isiTabelUjian();
+    requestAnimationFrame(function () { penandaSeg(seg, false); });
+    setTimeout(function () { var t = document.getElementById('admTabel'); if (t) t.classList.remove('adm-anim'); }, 900);
   }
 
   function tandaiSeg(seg) {
@@ -247,7 +290,7 @@
     tabel.appendChild(el('div', { class: 'adm-baris adm-kepala' },
       ['UJIAN', 'JENJANG', 'SOAL (PG/PGK/ISIAN)', 'DURASI', 'TOKEN', 'JADWAL', 'SELESAI', 'STATUS', ''].map(function (t) { return el('span', null, t); })));
     if (!tampil.length) tabel.appendChild(el('p', { class: 'kosong' }, 'Tidak ada ujian yang cocok dengan saringan ini.'));
-    tampil.forEach(function (u) { tabel.appendChild(barisUjian(u)); });
+    tampil.forEach(function (u, n) { var b = barisUjian(u); b.style.setProperty('--n', Math.min(n, 12)); tabel.appendChild(b); });
     kaki.textContent = '';
     kaki.appendChild(el('span', null, 'Menampilkan ' + tampil.length + ' dari ' + daftarUjian.length + ' ujian'));
     kaki.appendChild(el('span', null, 'Selesai = peserta yang sudah mengirim jawaban. Angka +n = sedang mengerjakan.'));
@@ -467,7 +510,7 @@
   function muatSoal() {
     var d = document.getElementById('daftarSoal');
     d.textContent = '';
-    d.appendChild(el('div', { class: 'kerangka' }));
+    d.appendChild(kerangkaTabel('adm-sbaris', LABEL_SOAL, 9, [85, 40, 70, 90, 55], KOLOM_SOAL));
     var untuk = ujianTerpilih;
     window.call('adminSoalList', tokenAdmin, untuk).then(function (h) {
       if (untuk !== ujianTerpilih) return;
@@ -500,12 +543,13 @@
       d.appendChild(el('div', { class: 'adm-tabel' }, el('p', { class: 'kosong' }, 'Belum ada soal di ujian ini. Klik "Tambah soal" atau "Import JSON".')));
       return;
     }
-    var seg = el('div', { class: 'adm-seg', role: 'group', 'aria-label': 'Saring tipe soal' });
+    var seg = el('div', { class: 'adm-seg', role: 'group', 'aria-label': 'Saring tipe soal' }, el('span', { class: 'adm-penanda', 'aria-hidden': 'true' }));
     var KUNCI_SEG = [['semua', 'Semua'], ['pg', 'PG'], ['pgk', 'PGK'], ['isian', 'Isian'], ['kosong', 'Gambar kosong']];
     KUNCI_SEG.forEach(function (x) {
       seg.appendChild(el('button', { type: 'button', 'aria-pressed': filterTipeSoal === x[0] ? 'true' : 'false', onclick: function () {
         filterTipeSoal = x[0];
         seg.querySelectorAll('button').forEach(function (b, i) { b.setAttribute('aria-pressed', KUNCI_SEG[i][0] === filterTipeSoal ? 'true' : 'false'); });
+        penandaSeg(seg, true);
         isiDaftarSoal();
       } }, x[1], el('small', null, String(jumlah[x[0]]))));
     });
@@ -519,9 +563,11 @@
       d.appendChild(el('div', { class: 'adm-peringatan' }, window.ikon('peringatan', 15),
         el('span', null, el('strong', null, kosongNo.length + ' soal'), ' punya gambar yang belum diisi (' + kosongNo.join(', ') + '). Soal itu belum tampil ke siswa sampai gambarnya diisi.')));
     }
-    d.appendChild(el('div', { class: 'adm-tabel', id: 'tabelSoal' }));
+    d.appendChild(el('div', { class: 'adm-tabel adm-anim', id: 'tabelSoal' }));
     d.appendChild(el('div', { class: 'adm-kaki-tabel', id: 'kakiSoal' }));
     isiDaftarSoal();
+    requestAnimationFrame(function () { penandaSeg(seg, false); });
+    setTimeout(function () { var t = document.getElementById('tabelSoal'); if (t) t.classList.remove('adm-anim'); }, 900);
   }
 
   function ringkasanTeks(x) {
@@ -545,7 +591,8 @@
       var teks = (x.blok || []).filter(function (b) { return b.tipe === 'teks'; }).map(function (b) { return b.isi; }).join(' ').replace(/<[^>]+>/g, ' ').toLowerCase();
       if (kata && teks.indexOf(kata) < 0) return;
       tampil++;
-      t.appendChild(barisSoal(x, i, disaring));
+      var bs = barisSoal(x, i, disaring); bs.style.setProperty('--n', Math.min(tampil, 12));
+      t.appendChild(bs);
     });
     if (!tampil) t.appendChild(el('p', { class: 'kosong' }, 'Tidak ada soal yang cocok dengan saringan ini.'));
     kaki.textContent = '';
@@ -894,7 +941,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
   function muatHasil() {
     var d = document.getElementById('daftarHasil');
     d.textContent = '';
-    d.appendChild(el('div', { class: 'kerangka' }));
+    d.appendChild(kerangkaTabel('adm-hbaris', ['PERINGKAT', 'NAMA', 'KELAS', 'SEKOLAH', 'BENAR', 'SALAH', 'SKOR', 'WAKTU'], 8, [60, 85, 40, 75, 35]));
     var untuk = ujianTerpilih;
     window.call('adminHasil', tokenAdmin, untuk).then(function (h) {
       if (untuk !== ujianTerpilih) return;
