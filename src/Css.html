@@ -736,17 +736,17 @@ body.kbd-fokus .popover { max-height: 52vh; overflow-y: auto; }
 .hasil-kaki { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--garis); font-size: .8rem; color: var(--teks-redup); }
 /* HP: susunan sama dengan desktop, hanya diperkecil (nilai tetap di kanan, empat angka tetap sebaris). */
 @media (max-width: 600px) {
-  .hasil { padding: 12px; font-size: .78rem; }
-  .hasil h1 { font-size: 1rem; }
-  .hasil-atas { flex-wrap: nowrap; gap: 10px; }
-  .hasil-baris { grid-template-columns: 84px 1fr; gap: 6px; }
-  .hasil-skor { font-size: 2.1rem; }
-  .hasil-maks { font-size: .9rem; }
-  .hasil-angka > div { padding: 8px 8px; }
-  .hasil-angka strong { font-size: .95rem; }
-  .hasil-judul { font-size: .85rem; }
-  .hasil-tabel th, .hasil-tabel td { padding: 6px 6px; font-size: .78rem; }
-  .hasil-selesai { padding: 8px 10px; }
+  .hasil:not(.hasil-pdf) { padding: 12px; font-size: .78rem; }
+  .hasil:not(.hasil-pdf) h1 { font-size: 1rem; }
+  .hasil:not(.hasil-pdf) .hasil-atas { flex-wrap: nowrap; gap: 10px; }
+  .hasil:not(.hasil-pdf) .hasil-baris { grid-template-columns: 84px 1fr; gap: 6px; }
+  .hasil:not(.hasil-pdf) .hasil-skor { font-size: 2.1rem; }
+  .hasil:not(.hasil-pdf) .hasil-maks { font-size: .9rem; }
+  .hasil:not(.hasil-pdf) .hasil-angka > div { padding: 8px 8px; }
+  .hasil:not(.hasil-pdf) .hasil-angka strong { font-size: .95rem; }
+  .hasil:not(.hasil-pdf) .hasil-judul { font-size: .85rem; }
+  .hasil:not(.hasil-pdf) .hasil-tabel th, .hasil:not(.hasil-pdf) .hasil-tabel td { padding: 6px 6px; font-size: .78rem; }
+  .hasil:not(.hasil-pdf) .hasil-selesai { padding: 8px 10px; }
 }
 .tabel-gulir { overflow-x: auto; }
 .hasil-tabel td { overflow-wrap: anywhere; }
@@ -758,6 +758,8 @@ body.kbd-fokus .popover { max-height: 52vh; overflow-y: auto; }
 .status-salah { color: var(--merah); font-weight: 600; }
 .status-kosong { color: var(--teks-redup); font-weight: 600; }
 .hasil-aksi { max-width: 760px; margin: 16px auto 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+/* html2pdf memusatkan wadahnya (margin: auto); selisih lebar jendela asli dan jendela tangkapan membuat hasil bergeser dan terpotong di HP */
+.html2pdf__container { margin: 0 !important; }
 .pdf-gudang { position: fixed; left: -10000px; top: 0; width: 190mm; background: #ffffff; color: #1c2733; }
 .pdf-gudang .hasil { border: 0; padding: 0; border-radius: 0; max-width: none; }
 
