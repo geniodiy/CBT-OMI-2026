@@ -44,14 +44,16 @@ Berkas: `src/JsEditor.html`, bagian soal di `ApiAdmin.gs` dan `JsAdmin.html`.
 
 Uji: buat satu soal tiap tipe dengan rumus `\frac`, `\sqrt`, `\ce{}`, tebal/miring/garis bawah di soal **dan** opsi; gambar di atas, di tengah, di bawah; geser posisi; unggah gambar dan muncul; simpan, buka ulang, isi tetap sama; kunci tidak lengkap ditolak dengan pesan jelas; tempel kalimat Arab berharakat (mis. ayat dan kalimat campur Arab-Indonesia) di soal dan di opsi: harakat utuh, huruf menyambung, arah benar, tersimpan dan terbuka ulang sama persis.
 
-Status uji: logika server lulus uji Node; alur editor (tempel Arab berharakat, rumus, opsi, kunci, pratinjau, simpan, ubah, urut, hapus, penanda gambar kosong) lulus uji browser dengan server tiruan. Belum dicentang: uji di Apps Script asli, termasuk unggah gambar ke Supabase Storage.
+Status uji: logika server lulus uji Node; alur editor (tempel Arab berharakat, rumus, opsi, kunci, pratinjau, simpan, ubah, urut, hapus, penanda gambar kosong) lulus uji browser dengan server tiruan. Uji di Apps Script asli: lulus.
 
 ## M4. Import JSON
 
-- [ ] `adminSoalImport` (dry run, tambah, ganti) dengan peringatan LaTeX tanpa garis miring.
-- [ ] Modal import: tempel/unggah, salin prompt AI (`String.raw`), periksa, pratinjau rumus, impor.
+- [x] `adminSoalImport` (dry run, tambah, ganti) dengan peringatan LaTeX tanpa garis miring.
+- [x] Modal import: tempel/unggah, salin prompt AI (`String.raw`), periksa, pratinjau rumus, impor.
 
 Uji: impor `contoh/soal-contoh.json` (6 soal; satu gambar kosong terdeteksi); JSON yang rusak memberi pesan baris/posisi; "sqrt17" tanpa `\` memicu peringatan; mode ganti meminta konfirmasi; JSON berisi teks Arab berharakat tampil benar di pratinjau.
+
+Status uji: `ringkasImport_` lulus uji Node dengan `contoh/soal-contoh.json` (6 soal, gambar kosong di soal 2); modal import lulus uji browser (JSON rusak memberi baris dan kolom, sqrt tanpa backslash memberi peringatan, pagar kode dibuang, mode ganti meminta konfirmasi). Belum dicentang: uji di Apps Script asli.
 
 ## M5. Beranda, token, info sebelum mulai
 

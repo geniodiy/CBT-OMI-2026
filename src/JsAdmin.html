@@ -248,6 +248,7 @@
     pilih.addEventListener('change', function () { ujianTerpilih = pilih.value; muatSoal(); });
     p.appendChild(el('div', { class: 'bar' },
       el('label', { class: 'field', style: 'margin:0;flex:1;min-width:220px' }, el('span', null, 'Ujian'), pilih),
+      el('button', { class: 'btn', type: 'button', onclick: bukaImport }, 'Import JSON'),
       el('button', { class: 'btn btn-utama', type: 'button', onclick: function () { bukaEditor(null); } }, 'Tambah soal')));
     p.appendChild(el('div', { id: 'daftarSoal' }));
     muatSoal();
@@ -301,6 +302,176 @@
           el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { hapusSoal(x, i); } }, 'Hapus'))));
     });
     d.appendChild(daftar);
+  }
+
+
+  var PROMPT_AI = String.raw`Ubah soal pada dokumen terlampir menjadi JSON array dengan format di bawah.
+Keluarkan HANYA JSON yang valid, tanpa penjelasan dan tanpa pagar kode.
+
+Format tiap soal:
+{
+  "tipe": "pg" | "pgk" | "isian",
+  "blok": [ {"tipe":"teks","isi":"..."}, {"tipe":"gambar","isi":""} ],
+  "opsi": {"A":"...","B":"...","C":"...","D":"..."},
+  "kunci": ["B"],
+  "bobot": 1
+}
+
+Aturan:
+1. pg = satu kunci, contoh ["B"]. pgk = satu atau lebih kunci, contoh ["A","C"].
+   isian = tanpa "opsi"; "kunci" berisi semua jawaban yang diterima, contoh ["12,5","12.5"].
+2. Teks boleh memakai HTML sederhana: <b>, <i>, <u>, <sub>, <sup>, <br>. Jangan pakai tag lain.
+3. Semua rumus matematika, fisika, dan kimia ditulis dalam LaTeX di antara tanda dolar,
+   contoh $\\frac{a}{b}$, $x^{2}$, $\\sqrt{17}$, $\\ce{H2O}$.
+   Karena ini JSON, setiap garis miring terbalik WAJIB ditulis dua kali (\\frac, \\sqrt, \\ce).
+   Jangan menulis rumus sebagai teks biasa seperti "sqrt17" atau "x^2" tanpa tanda dolar.
+4. Jika soal punya gambar, tambahkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu
+   (di atas, tengah, atau bawah teks). Biarkan "isi" kosong. Gambar diisi manual di website.
+5. Satu soal boleh memiliki beberapa blok teks dan beberapa blok gambar. Urutan blok mengikuti
+   urutan tampil pada soal. Bagian "Pertanyaan" boleh menjadi blok teks tersendiri.
+6. Pertahankan nomor, urutan, dan isi soal apa adanya. Jangan mengubah angka atau kata.
+7. Teks Arab (termasuk harakat) ditulis sebagai karakter Unicode Arab biasa dalam urutan logis
+   (kanan ke kiri saat dibaca), bukan gambar, bukan transliterasi, dan bukan urutan visual hasil salinan PDF.
+8. Jika kunci jawaban tidak tertera di dokumen, isi dengan jawaban yang paling tepat menurut Anda;
+   admin akan memeriksanya.`;
+
+  /** Buang pagar kode, urai JSON, beri posisi baris dan kolom bila rusak. Mengembalikan array/objek. */
+  function uraiImport(teks) {
+    var t = String(teks || '').trim();
+    var pagar = t.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (pagar) t = pagar[1].trim();
+    if (!t) throw new Error('Tempel atau unggah JSON soal terlebih dulu.');
+    try { return JSON.parse(t); }
+    catch (e) {
+      var m = /position (\d+)/.exec(e.message), lk = /line (\d+) column (\d+)/.exec(e.message);
+      var lokasi = '';
+      if (lk) lokasi = ' pada baris ' + lk[1] + ', kolom ' + lk[2];
+      else if (m) {
+        var sebelum = t.slice(0, Number(m[1])).split('\n');
+        lokasi = ' pada baris ' + sebelum.length + ', kolom ' + (sebelum[sebelum.length - 1].length + 1);
+      }
+      throw new Error('JSON tidak valid' + lokasi + '. Pastikan garis miring terbalik di rumus ditulis dua kali (\\\\frac). Detail: ' + e.message);
+    }
+  }
+
+  function salinTeks(teks) {
+    function cadangan() {
+      var ta = el('textarea', { value: teks, style: 'position:fixed;opacity:0' });
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+      window.toast(ok ? 'Prompt disalin.' : 'Tidak bisa menyalin otomatis. Salin dari kotak yang ditampilkan.', !ok);
+      return ok;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(teks).then(function () { window.toast('Prompt disalin.'); }).catch(cadangan);
+    } else cadangan();
+  }
+
+  function bukaImport() {
+    var u = daftarUjian.filter(function (x) { return x.id === ujianTerpilih; })[0];
+    var kotak = el('textarea', { rows: 10, class: 'import-ta', spellcheck: false, placeholder: 'Tempel JSON soal di sini', 'aria-label': 'JSON soal' });
+    var berkas = el('input', { type: 'file', accept: '.json,application/json,text/plain', 'aria-label': 'Unggah berkas JSON' });
+    var modeTambah = el('input', { type: 'radio', name: 'modeImport', value: 'tambah', checked: true });
+    var modeGanti = el('input', { type: 'radio', name: 'modeImport', value: 'ganti' });
+    var hasil = el('div', { class: 'import-hasil', 'aria-live': 'polite' });
+    var galat = el('div', { class: 'galat', role: 'alert' });
+    var terperiksa = null;
+
+    berkas.addEventListener('change', function () {
+      var f = berkas.files && berkas.files[0];
+      if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () { kotak.value = fr.result; setel(null); };
+      fr.onerror = function () { galat.textContent = 'Berkas tidak dapat dibaca.'; };
+      fr.readAsText(f, 'UTF-8');
+    });
+    kotak.addEventListener('input', function () { setel(null); });
+    modeTambah.addEventListener('change', function () { setel(null); });
+    modeGanti.addEventListener('change', function () { setel(null); });
+
+    function setel(h) {
+      terperiksa = h;
+      tbImpor.disabled = !h;
+      if (!h) { hasil.textContent = ''; galat.textContent = ''; }
+    }
+
+    function kirim(dry) {
+      galat.textContent = '';
+      var daftar;
+      try { daftar = uraiImport(kotak.value); } catch (e) { galat.textContent = e.message; return Promise.reject(e); }
+      var mode = modeGanti.checked ? 'ganti' : 'tambah';
+      return window.call('adminSoalImport', tokenAdmin, ujianTerpilih, daftar, mode, dry);
+    }
+
+    function tampilHasil(h) {
+      hasil.textContent = '';
+      hasil.appendChild(el('p', null, el('strong', null, h.jumlah + ' soal valid'), ': ' +
+        h.per_tipe.pg + ' pilihan ganda, ' + h.per_tipe.pgk + ' pilihan ganda kompleks, ' + h.per_tipe.isian + ' isian.'));
+      if (h.gambar_kosong.length) {
+        hasil.appendChild(el('p', { class: 'tanda-gambar' }, 'Gambar belum diisi pada soal ' + h.gambar_kosong.join(', ') + '. Isi lewat editor soal setelah impor.'));
+      }
+      if (h.peringatan.length) {
+        hasil.appendChild(el('p', { class: 'redup' }, 'Peringatan (tidak menghentikan impor):'));
+        hasil.appendChild(el('ul', null, h.peringatan.map(function (x) { return el('li', null, x); })));
+      }
+      hasil.appendChild(el('h3', null, 'Pratinjau' + (h.jumlah > h.pratinjau.length ? ' (' + h.pratinjau.length + ' soal pertama)' : '')));
+      h.pratinjau.forEach(function (soal, n) {
+        var w = el('div', { class: 'import-pra' }, window.soalSiswaEl(soal, n + 1, h.jumlah));
+        hasil.appendChild(w);
+      });
+    }
+
+    var tbPeriksa = el('button', { type: 'button', class: 'btn', onclick: function () {
+      tbPeriksa.disabled = true; setel(null);
+      kirim(true).then(function (h) { setel(h); tampilHasil(h); })
+        .catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) galat.textContent = e.message; })
+        .then(function () { tbPeriksa.disabled = false; });
+    } }, 'Periksa');
+    var tbSalin = el('button', { type: 'button', class: 'btn btn-teks', onclick: function () { salinTeks(PROMPT_AI); } }, 'Salin prompt untuk AI');
+
+    function jalankan(modal) {
+      tbImpor.disabled = true;
+      kirim(false).then(function (h) {
+        modal.close();
+        window.toast(h.jumlah + ' soal diimpor.');
+        muatSoal();
+      }).catch(function (e) {
+        tbImpor.disabled = false;
+        if (e.message.indexOf('SESI_ADMIN') !== 0) galat.textContent = e.message;
+      });
+    }
+    function impor(modal) {
+      if (!terperiksa) { galat.textContent = 'Klik "Periksa" dulu sebelum mengimpor.'; return false; }
+      if (modeGanti.checked && daftarSoal.length) {
+        window.openModal({
+          judul: 'Ganti semua soal?',
+          isi: 'Semua ' + daftarSoal.length + ' soal yang ada di ujian ini akan dihapus dan diganti ' + terperiksa.jumlah + ' soal dari import. Tindakan ini tidak bisa dibatalkan.',
+          tombol: [{ teks: 'Batal' }, { teks: 'Ganti semua', bahaya: true, aksi: function () { jalankan(modal); } }]
+        });
+        return false;
+      }
+      jalankan(modal);
+      return false;
+    }
+
+    var badan = el('div', null,
+      el('p', { class: 'redup' }, 'Ujian: ' + (u ? labelUjian(u) : '')),
+      el('div', { class: 'bar' }, tbSalin, berkas),
+      kotak,
+      el('div', { class: 'cek-baris' },
+        el('label', { class: 'cek' }, modeTambah, el('span', null, 'Tambahkan ke soal yang ada')),
+        el('label', { class: 'cek' }, modeGanti, el('span', null, 'Ganti semua soal'))),
+      galat, hasil);
+    var modal = window.openModal({
+      judul: 'Import JSON', isi: badan, lebar: true, tutupDiLuar: false,
+      tombol: [{ teks: 'Batal' }, { teks: 'Periksa dan impor', utama: true, aksi: impor }]
+    });
+    modal.el.querySelector('.modal-kaki').insertBefore(tbPeriksa, modal.el.querySelector('.modal-kaki').firstChild);
+    var tbImpor = modal.el.querySelector('.btn-utama');
+    tbImpor.textContent = 'Impor';
+    tbImpor.disabled = true;
   }
 
   function bukaEditor(soal, indeks) {

@@ -78,7 +78,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 - `adminSoalHapus(tok, id): true`
 - `adminSoalUrut(tok, ujianId, idsBerurutan: string[]): true` menulis ulang `urutan` 1..n.
 - `adminSoalImport(tok, ujianId, daftar, mode, dryRun): { jumlah: number; per_tipe: {pg,pgk,isian}; gambar_kosong: number[]; peringatan: string[] }`
-  `mode` = `'tambah'` | `'ganti'`. `dryRun = true` hanya memeriksa. Galat pertama menghentikan dengan pesan "Soal #N: ...". Peringatan (tidak menghentikan): kata LaTeX tanpa garis miring (`sqrt`, `frac`, `alpha`, `times`, dst.) di luar tanda `$`, tanda `$` tidak berpasangan, teks soal sangat pendek. Insert dalam potongan ≤ 50 baris.
+  `mode` = `'tambah'` | `'ganti'`. `dryRun = true` hanya memeriksa. Galat pertama menghentikan dengan pesan "Soal #N: ...". Peringatan (tidak menghentikan): kata LaTeX tanpa garis miring (`sqrt`, `frac`, `alpha`, `times`, dst.) di luar tanda `$`, tanda `$` tidak berpasangan, teks soal sangat pendek. Insert dalam potongan ≤ 50 baris. Mode `ganti` memasukkan soal baru lebih dulu, baru menghapus soal lama, supaya gagal di tengah tidak menghilangkan soal. `daftar` boleh array atau `{soal: [...]}`. Hasil juga memuat `pratinjau`: maks. 10 soal pertama setelah normalisasi (untuk pratinjau di modal).
 
 ### Gambar
 - `adminUpload(tok, base64, mime, nama): string` (URL publik). `mime` ∈ image/png, image/jpeg, image/webp, image/gif. Maks. 3 MB. Galat: "Format gambar harus PNG, JPG, WEBP, atau GIF."

@@ -267,3 +267,23 @@ function urutanBerubah_(ada, ids) {
   });
   return out;
 }
+
+/**
+ * Validasi seluruh daftar import. Daftar boleh array atau {soal: [...]}.
+ * Galat pertama menghentikan dengan pesan "Soal #N: ...".
+ * Mengembalikan { soal: [normalisasi], peringatan, per_tipe, gambar_kosong: [nomor 1-based] }.
+ */
+function ringkasImport_(daftar) {
+  var arr = Array.isArray(daftar) ? daftar : (daftar && Array.isArray(daftar.soal) ? daftar.soal : null);
+  if (!arr) throw new Error('Isi import harus berupa daftar soal (array JSON) atau objek {"soal": [...]}.');
+  if (!arr.length) throw new Error('Daftar soal kosong.');
+  var out = { soal: [], peringatan: [], per_tipe: { pg: 0, pgk: 0, isian: 0 }, gambar_kosong: [] };
+  arr.forEach(function (x, n) {
+    var r = normSoal_(x, n + 1);
+    out.soal.push(r.soal);
+    out.peringatan = out.peringatan.concat(r.peringatan);
+    out.per_tipe[r.soal.tipe]++;
+    if (r.soal.blok.some(function (b) { return b.tipe === 'gambar' && b.isi === ''; })) out.gambar_kosong.push(n + 1);
+  });
+  return out;
+}

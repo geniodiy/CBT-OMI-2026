@@ -140,6 +140,12 @@ h3 { margin-top: 18px; }
 .soal-aksi { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px; }
 @media (max-width: 600px) { .soal-baris { grid-template-columns: 36px 1fr; } .soal-aksi { grid-column: 1 / -1; justify-content: flex-start; } }
 
+/* import */
+.import-ta { width: 100%; padding: 10px 12px; font: .9rem/1.45 ui-monospace, Consolas, monospace; border: 1px solid var(--garis); border-radius: var(--radius); }
+.cek-baris { display: flex; gap: 20px; flex-wrap: wrap; margin: 10px 0; }
+.import-hasil ul { margin: 0 0 12px; padding-left: 20px; }
+.import-pra { margin-bottom: 12px; }
+
 /* toast */
 #toastRoot { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 8px; align-items: center; width: calc(100% - 24px); max-width: 420px; pointer-events: none; }
 .toast { pointer-events: auto; padding: 10px 16px; border-radius: var(--radius); background: var(--teks); color: var(--putih); font-size: .95rem; }

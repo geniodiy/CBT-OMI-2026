@@ -116,3 +116,36 @@ function adminUpload(tok, base64, mime, nama) {
   }
   return dasar + '/storage/v1/object/public/soal-img/' + jalur;
 }
+
+// ---- Import JSON ----
+
+var MAKS_SOAL_IMPORT_ = 300;
+var POTONGAN_INSERT_ = 50;
+
+function adminSoalImport(tok, ujianId, daftar, mode, dryRun) {
+  guard_(tok);
+  if (!ujianId) throw new Error('Ujian belum dipilih.');
+  if (mode !== 'tambah' && mode !== 'ganti') throw new Error('Mode import harus "tambah" atau "ganti".');
+  var r = ringkasImport_(daftar);
+  if (r.soal.length > MAKS_SOAL_IMPORT_) throw new Error('Maksimal ' + MAKS_SOAL_IMPORT_ + ' soal sekali import.');
+  var ringkas = {
+    jumlah: r.soal.length, per_tipe: r.per_tipe, gambar_kosong: r.gambar_kosong, peringatan: r.peringatan,
+    pratinjau: r.soal.slice(0, 10)
+  };
+  if (dryRun) return ringkas;
+
+  // Soal baru dimasukkan lebih dulu; mode "ganti" baru menghapus yang lama setelah semuanya berhasil.
+  var akhir = sb_('GET', 'soal?select=urutan&ujian_id=eq.' + enc_(ujianId) + '&order=urutan.desc&limit=1');
+  var maksLama = akhir && akhir.length ? akhir[0].urutan : 0;
+  var baris = r.soal.map(function (s, n) {
+    return { ujian_id: ujianId, urutan: maksLama + n + 1, tipe: s.tipe, blok: s.blok, opsi: s.opsi, kunci: s.kunci, bobot: s.bobot };
+  });
+  for (var i = 0; i < baris.length; i += POTONGAN_INSERT_) {
+    sb_('POST', 'soal', baris.slice(i, i + POTONGAN_INSERT_), { Prefer: 'return=minimal' });
+  }
+  if (mode === 'ganti' && maksLama > 0) {
+    sb_('DELETE', 'soal?ujian_id=eq.' + enc_(ujianId) + '&urutan=lte.' + maksLama, null, { Prefer: 'return=minimal' });
+  }
+  CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  return ringkas;
+}
