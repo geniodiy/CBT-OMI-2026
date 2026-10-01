@@ -19,8 +19,8 @@
 
   /** execCommand menulis perataan sebagai style atau atribut align; ubah ke kelas yang lolos sanitasi. */
   function normRata(html) {
-    var wadah = document.createElement('div');
-    wadah.innerHTML = html;
+    // DOMParser menghasilkan dokumen inert: skrip dan gambar di dalamnya tidak dijalankan atau dimuat.
+    var wadah = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html').body;
     var peta = { left: 'rata-kiri', start: 'rata-kiri', center: 'rata-tengah', right: 'rata-kanan', end: 'rata-kanan' };
     wadah.querySelectorAll('[style], [align]').forEach(function (e) {
       var nilai = (e.style && e.style.textAlign) || e.getAttribute('align') || '';
