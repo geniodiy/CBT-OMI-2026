@@ -357,6 +357,20 @@ body[data-halaman="beranda"] .kontainer-nama { font-size: 1rem; line-height: 1.2
 body[data-halaman="beranda"] .kontainer-meta { margin-top: 0; padding-top: 0; border-top: 0; }
 body[data-halaman="beranda"] .kontainer-pilih { margin-left: auto; padding: 7px 14px; border-radius: var(--radius); background: var(--biru); color: #fff; }
 
+/* bagian Pilih ujian: pita putih penuh agar menjadi sorotan utama halaman */
+body[data-halaman="beranda"] #ujian { margin-top: 44px; padding: 46px 0 54px; background: var(--putih); border-top: 1px solid var(--garis); border-bottom: 1px solid var(--garis); }
+body[data-halaman="beranda"] .judul-utama { max-width: none; margin-bottom: 18px; }
+body[data-halaman="beranda"] .judul-utama::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--kuning); margin-bottom: 14px; }
+.judul-baris { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+body[data-halaman="beranda"] .judul-utama h2 { font-size: 1.9rem; letter-spacing: -.03em; margin: 0; }
+.jumlah-paket { padding: 3px 12px; border-radius: 99px; background: var(--biru-muda); color: var(--biru-tua); font-size: .82rem; font-weight: 700; }
+body[data-halaman="beranda"] #ujian .filter { background: var(--latar); }
+body[data-halaman="beranda"] #ujian .chip[aria-selected="true"] { box-shadow: 0 4px 10px -4px rgba(31, 138, 76, .6); }
+body[data-halaman="beranda"] #ujian .kontainer { background: #f8fbf8; border-color: #d3e0d6; }
+body[data-halaman="beranda"] #ujian button.kontainer:hover { background: var(--putih); border-color: var(--biru); box-shadow: var(--bayangan-angkat); }
+body[data-halaman="beranda"] #ujian .kontainer-ikon { background: var(--putih); border: 1px solid var(--garis); }
+body[data-halaman="beranda"] #ujian .chip-info { background: var(--putih); }
+body[data-halaman="beranda"] #ujian .kontainer-pilih { box-shadow: 0 6px 14px -8px rgba(20, 105, 58, .8); }
 body[data-halaman="beranda"] .tentang p { color: var(--teks-redup); }
 body[data-halaman="beranda"] .tentang > div:first-child { background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius-kartu); padding: 22px; }
 body[data-halaman="beranda"] .tentang > div:first-child .judul-bagian { margin-bottom: 8px; }

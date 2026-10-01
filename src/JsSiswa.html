@@ -118,6 +118,8 @@
   function gambarDaftar() {
     if (!halaman) return;
     var daftar = daftarBeranda || [];
+    halaman.jumlah.textContent = daftar.length ? daftar.length + ' paket tersedia' : '';
+    halaman.jumlah.hidden = !daftar.length;
     var slot = halaman.daftar, filter = halaman.filter;
     halaman.lanjut.textContent = '';
     var lanjut = kotakLanjut();
@@ -166,10 +168,10 @@
     })));
 
     // daftar ujian
-    halaman = { lanjut: el('div'), filter: el('div', { class: 'filter', role: 'tablist', 'aria-label': 'Jenjang' }),
+    halaman = { jumlah: el('span', { class: 'jumlah-paket' }), lanjut: el('div'), filter: el('div', { class: 'filter', role: 'tablist', 'aria-label': 'Jenjang' }),
       daftar: el('div', { class: 'grid-ujian', 'aria-live': 'polite' }) };
     var ujian = el('section', { class: 'pita', id: 'ujian' }, el('div', { class: 'isi' },
-      el('div', { class: 'judul-bagian' }, el('h2', null, 'Pilih ujian'), el('p', null, 'Pilih sesuai jenjang dan mata pelajaran Anda, lalu masukkan token dari pengawas.')),
+      el('div', { class: 'judul-bagian judul-utama' }, el('div', { class: 'judul-baris' }, el('h2', null, 'Pilih ujian'), halaman.jumlah), el('p', null, 'Pilih sesuai jenjang dan mata pelajaran Anda, lalu masukkan token dari pengawas.')),
       halaman.lanjut, halaman.filter, halaman.daftar));
 
     // tentang OMI
