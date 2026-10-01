@@ -201,9 +201,8 @@
     o.status = el('div', { class: 'redup' });
     o.file = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif', hidden: true });
     o.judul = el('strong');
-    o.pilih = el('select', { 'aria-label': 'Jenis bagian' },
-      el('option', { value: 'teks' }, 'Teks'), el('option', { value: 'gambar' }, 'Gambar'), el('option', { value: 'kosong' }, 'Kosong'));
-    o.pilih.value = o.mode;
+    o.pilih = window.dropdown({ aria: 'Jenis bagian', nilai: o.mode,
+      pilihan: [{ nilai: 'teks', label: 'Teks' }, { nilai: 'gambar', label: 'Gambar' }, { nilai: 'kosong', label: 'Kosong' }] });
 
     function aturPra() {
       var u = o.url.value.trim();
@@ -310,9 +309,8 @@
       bagian.push(buatBagian(null, ctx)); gambarUrutBagian();
     } }, 'Tambah bagian');
 
-    var pilihTipe = el('select', { 'aria-label': 'Tipe soal' },
-      Object.keys(TIPE_LABEL).map(function (k) { return el('option', { value: k }, TIPE_LABEL[k]); }));
-    pilihTipe.value = s ? s.tipe : 'pg';
+    var pilihTipe = window.dropdown({ aria: 'Tipe soal', nilai: s ? s.tipe : 'pg',
+      pilihan: Object.keys(TIPE_LABEL).map(function (k) { return { nilai: k, label: TIPE_LABEL[k] }; }) });
     var bobot = el('input', { type: 'number', min: '0', step: 'any', value: s ? s.bobot : 1, 'aria-label': 'Bobot' });
 
     // opsi

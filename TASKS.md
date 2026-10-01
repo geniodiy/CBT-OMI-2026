@@ -150,3 +150,4 @@ Pembahasan soal, analisis per soal, skor parsial pgk, ganti sandi admin dari web
 - [x] Popup Tambah/Ubah, Duplikat (nama salinan), dan Hapus (menyebut jumlah soal dan hasil).
 - [x] View `ujian_ringkas` menambah `n_gambar_kosong`, `n_selesai`, `n_berjalan` (jalankan ulang `supabase/schema.sql`; tanpa itu kolomnya tampil "-").
 - [ ] Tahap 2: tab Soal dan Hasil dengan bahasa visual yang sama.
+- [x] Tema A2 (hijau lembut) diterapkan ke seluruh panel admin; dropdown dan pemilih tanggal/jam buatan sendiri menggantikan select dan datetime-local.

@@ -206,14 +206,14 @@
         x[1], el('small', null, String(hitung[x[0]]))));
     });
     var jenjang = daftarUjian.map(function (u) { return u.jenjang; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
-    var selJenjang = el('select', { 'aria-label': 'Saring jenjang' }, el('option', { value: '' }, 'Semua jenjang'),
-      jenjang.map(function (j) { return el('option', { value: j }, j); }));
-    selJenjang.value = jenjang.indexOf(filterJenjang) >= 0 ? filterJenjang : '';
+    var selJenjang = window.dropdown({ aria: 'Saring jenjang', nilai: jenjang.indexOf(filterJenjang) >= 0 ? filterJenjang : '',
+      pilihan: [{ nilai: '', label: 'Semua jenjang', jml: daftarUjian.length }].concat(jenjang.map(function (j) {
+        return { nilai: j, label: j, jml: daftarUjian.filter(function (u) { return u.jenjang === j; }).length };
+      })) });
     filterJenjang = selJenjang.value;
     selJenjang.addEventListener('change', function () { filterJenjang = selJenjang.value; isiTabelUjian(); });
-    var selUrut = el('select', { 'aria-label': 'Urutkan' },
-      [['terbaru', 'Urut: terbaru'], ['nama', 'Urut: nama'], ['jenjang', 'Urut: jenjang'], ['peserta', 'Urut: peserta']].map(function (x) { return el('option', { value: x[0] }, x[1]); }));
-    selUrut.value = urutan;
+    var selUrut = window.dropdown({ aria: 'Urutkan', nilai: urutan, awalan: 'Urut: ',
+      pilihan: [{ nilai: 'terbaru', label: 'terbaru' }, { nilai: 'nama', label: 'nama' }, { nilai: 'jenjang', label: 'jenjang' }, { nilai: 'peserta', label: 'peserta' }] });
     selUrut.addEventListener('change', function () { urutan = selUrut.value; isiTabelUjian(); });
     var kolomCari = el('input', { type: 'search', placeholder: 'Cari nama, mapel, atau token', 'aria-label': 'Cari ujian', value: cari });
     kolomCari.addEventListener('input', function () { cari = kolomCari.value; isiTabelUjian(); });
@@ -336,16 +336,16 @@
       f[kunci] = el('input', { type: 'checkbox', checked: !!d[kunci] });
       return el('label', { class: 'cek' }, f[kunci], el('span', null, label));
     }
-    f.jenjang = el('input', { type: 'text', list: 'daftarJenjang', value: d.jenjang || '', maxLength: 30 });
-    var jenjangField = el('label', { class: 'field' }, el('span', null, 'Jenjang *'), f.jenjang,
-      el('datalist', { id: 'daftarJenjang' }, ['MI', 'MTs', 'MA'].map(function (j) { return el('option', { value: j }); })));
+    f.jenjang = window.dropdown({ aria: 'Jenjang', nilai: d.jenjang || '', placeholder: 'Pilih jenjang', bebas: 'Jenjang lain, tekan Enter',
+      pilihan: ['MI', 'MTs', 'MA'].map(function (j) { return { nilai: j, label: j }; }) });
+    var jenjangField = el('div', { class: 'field' }, el('span', null, 'Jenjang *'), f.jenjang);
     f.token = el('input', { type: 'text', value: d.token || '', maxLength: 30, autocapitalize: 'characters' });
     var tokenField = el('div', { class: 'field' }, el('span', null, 'Token *'),
       el('div', { class: 'baris-token' }, f.token,
         el('button', { class: 'btn', type: 'button', onclick: function () { f.token.value = tokenAcak(); } }, 'Acak')));
     f.catatan = el('textarea', { rows: 2, value: d.catatan || '' });
-    f.buka_at = el('input', { type: 'datetime-local', value: keInputWaktu(d.buka_at), 'aria-label': 'Buka otomatis' });
-    f.tutup_at = el('input', { type: 'datetime-local', value: keInputWaktu(d.tutup_at), 'aria-label': 'Tutup otomatis' });
+    f.buka_at = window.pilihWaktu({ nilai: keInputWaktu(d.buka_at), aria: 'Waktu dibuka', placeholder: 'Selalu terbuka' });
+    f.tutup_at = window.pilihWaktu({ nilai: keInputWaktu(d.tutup_at), aria: 'Waktu ditutup', placeholder: 'Tanpa batas' });
     var galat = el('div', { class: 'galat', role: 'alert' });
 
     var badan = el('div', { class: 'adm-form' },
@@ -355,8 +355,8 @@
       el('div', { class: 'grid2' }, isian('durasi_menit', 'Durasi (menit) *', 'number', { min: 1, step: 1 }), tokenField),
       el('div', { class: 'adm-bagian' }, 'JADWAL (KOSONGKAN BILA SELALU TERBUKA)'),
       el('div', { class: 'grid2' },
-        el('label', { class: 'field' }, el('span', null, 'Dibuka'), f.buka_at),
-        el('label', { class: 'field' }, el('span', null, 'Ditutup'), f.tutup_at)),
+        el('div', { class: 'field' }, el('span', null, 'Dibuka'), f.buka_at),
+        el('div', { class: 'field' }, el('span', null, 'Ditutup'), f.tutup_at)),
       el('p', { class: 'redup petunjuk' }, 'Ujian tampil di beranda hanya di antara waktu buka dan tutup (jam perangkat ini). Siswa yang sudah mulai tetap dapat menyelesaikan ujiannya.'),
       el('div', { class: 'adm-bagian' }, 'PENGATURAN'),
       el('div', { class: 'adm-cek' },
@@ -437,10 +437,10 @@
 
   function pilihanUjian(onGanti) {
     if (!ujianTerpilih || !daftarUjian.some(function (u) { return u.id === ujianTerpilih; })) ujianTerpilih = daftarUjian[0].id;
-    var pilih = el('select', { 'aria-label': 'Pilih ujian' }, daftarUjian.map(function (u) { return el('option', { value: u.id }, labelUjian(u)); }));
-    pilih.value = ujianTerpilih;
+    var pilih = window.dropdown({ aria: 'Pilih ujian', nilai: ujianTerpilih, lebar: 320,
+      pilihan: daftarUjian.map(function (u) { return { nilai: u.id, label: labelUjian(u) }; }) });
     pilih.addEventListener('change', function () { ujianTerpilih = pilih.value; onGanti(); });
-    return el('label', { class: 'field', style: 'margin:0;flex:1;min-width:220px' }, el('span', null, 'Ujian'), pilih);
+    return el('div', { class: 'field', style: 'margin:0;flex:1;min-width:220px' }, el('span', null, 'Ujian'), pilih);
   }
 
   function gambarSoalTab() {
