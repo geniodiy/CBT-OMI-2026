@@ -15,7 +15,8 @@ function adminLogin(password) {
 }
 
 function adminKeluar(tok) {
-  if (tok) CacheService.getScriptCache().remove('adm_' + tok);
+  guard_(tok);
+  CacheService.getScriptCache().remove('adm_' + tok);
   return true;
 }
 

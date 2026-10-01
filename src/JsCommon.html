@@ -15,6 +15,10 @@
         .withSuccessHandler(ok)
         .withFailureHandler(function (e) {
           var pesan = String((e && e.message) || e || 'Terjadi kesalahan. Coba lagi.').replace(/^Error:\s*/, '');
+          // Galat bawaan Google (kuota, waktu habis, jaringan) diganti kalimat yang bisa ditindaklanjuti.
+          if (/too many (simultaneous )?(times|invocations)|Exceeded maximum execution time|Service (Unavailable|invoked)|quota|NetworkError|Failed to fetch|Load failed/i.test(pesan)) {
+            pesan = 'Server sedang sibuk atau koneksi terputus. Tunggu sebentar, lalu coba lagi.';
+          }
           if (pesan.indexOf('SESI_ADMIN') === 0 && App.onSesiAdminHabis) App.onSesiAdminHabis(pesan);
           gagal(new Error(pesan));
         })[fn].apply(null, args);

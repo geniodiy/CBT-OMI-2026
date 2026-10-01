@@ -44,7 +44,7 @@ Login dengan kata sandi (Script Properties `ADMIN_PASSWORD`). Tiga tab:
 
 **Tipe**: `pg` (pilihan ganda), `pgk` (pilihan ganda kompleks), `isian` (isian singkat). Esai belum.
 
-**Isi soal**: 3 bagian bebas. Tiap bagian dipilih: teks, gambar, atau kosong. Posisi bisa ditukar (seret atau tombol panah) sehingga gambar bisa di atas, tengah, atau bawah. Disimpan sebagai `blok` (array berurutan).
+**Isi soal**: 3 bagian bebas. Tiap bagian dipilih: teks, gambar, atau kosong. Posisi bisa ditukar dengan tombol Naik dan Turun sehingga gambar bisa di atas, tengah, atau bawah. Disimpan sebagai `blok` (array berurutan).
 
 **Format teks**: tebal, miring, garis bawah, subskrip, superskrip, daftar, dan **LaTeX** (`$...$` sebaris, `$$...$$` baris sendiri, termasuk `\ce{...}` untuk kimia). Fitur yang sama ada di editor tiap opsi jawaban. Panel rumus punya pratinjau langsung dan tombol cepat.
 

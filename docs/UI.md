@@ -4,11 +4,11 @@ Acuan: `referensi/halaman-ujian-omi.png` (CBT OMI). Tema mengikuti identitas OMI
 
 ## Warna
 
-Ambil sampel warna asli dari `assets/logo-omi.png` dan `assets/logo-kemenag.png`, lalu sesuaikan nilai di bawah (ini perkiraan awal).
+Ambil sampel warna asli dari `assets/logo-omi.png` dan `assets/logo-kemenag.png`, lalu sesuaikan nilai di bawah (ini perkiraan awal; `--biru` sudah digelapkan sedikit dari logo agar teks putih di atasnya memenuhi kontras 4,5:1).
 
 | Token | Perkiraan | Dipakai untuk |
 |---|---|---|
-| `--biru` | `#1a7fc4` | warna utama: tombol utama, nomor aktif, tautan, jawaban terpilih |
+| `--biru` | `#1879bd` | warna utama: tombol utama, nomor aktif, tautan, jawaban terpilih |
 | `--biru-tua` | `#125d93` | hover/tekan tombol utama |
 | `--biru-muda` | `#e8f3fb` | latar jawaban terpilih, lencana |
 | `--merah` | `#d3202b` | hanya: tombol "Selesaikan ujian", timer saat sisa ≤ 5 menit, galat |

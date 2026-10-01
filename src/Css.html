@@ -1,6 +1,6 @@
 <style>
 :root {
-  --biru: #1a7fc4; --biru-tua: #125d93; --biru-muda: #e8f3fb;
+  --biru: #1879bd; --biru-tua: #125d93; --biru-muda: #e8f3fb;
   --merah: #d3202b; --hijau: #17803d; --emas: #e3b505;
   --teks: #1c2733; --teks-redup: #5b6773;
   --garis: #dde3ea; --latar: #f4f6f8; --putih: #ffffff;
@@ -226,6 +226,11 @@ button.kontainer:hover { border-color: var(--biru); }
 .blok-gambar { display: block; max-width: 100%; height: auto; object-fit: contain; margin: 0 0 .75em; }
 .ar { font-family: "Noto Naskh Arabic", "Traditional Arabic", "Geeza Pro", serif; font-size: 1.25em; line-height: 2; direction: rtl; unicode-bidi: isolate; }
 .ar-blok { text-align: right; direction: rtl; }
+
+@media (pointer: coarse) {
+  .btn-tb, .btn-kecil, .tabel .btn, .bagian-kepala select { min-height: 44px; }
+  .btn-tb { min-width: 44px; }
+}
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */

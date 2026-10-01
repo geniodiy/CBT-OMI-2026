@@ -106,9 +106,11 @@ Status uji: urutan hasil dan hapus lulus uji Node; tabel, peringkat seri, ekspor
 
 ## M9. Uji beban dan perapian
 
-- [ ] Uji dengan puluhan perangkat/tab serentak; catat jumlah panggilan UrlFetch; sesuaikan interval sinkron bila perlu.
-- [ ] Periksa semua teks galat, keadaan kosong, fokus keyboard, kontras, dan daftar "Dilarang" di `UI.md`.
-- [ ] Tulis petunjuk singkat untuk admin di `README.md`.
+- [x] Panduan uji beban dan hitungan UrlFetch di `docs/UJI-BEBAN.md` (uji dengan perangkat nyata dilakukan pemilik).
+- [x] Periksa semua teks galat, keadaan kosong, fokus keyboard, kontras, dan daftar "Dilarang" di `UI.md`.
+- [x] Tulis petunjuk singkat untuk admin di `README.md`.
+
+Hasil perapian: kontras `--biru` diperbaiki (4,31 menjadi 4,66 dengan teks putih); target sentuh 44 px di perangkat sentuh; pesan ramah untuk galat kuota dan koneksi; `adminKeluar` kini memakai `guard_`; uji Node dan pemeriksaan statis aturan CLAUDE.md ada di `tests/` (`node tests/jalankan.js`). Belum dicentang: uji beban di perangkat nyata.
 
 ## Opsional di akhir Tahap 1
 

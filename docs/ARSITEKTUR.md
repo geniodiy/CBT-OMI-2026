@@ -62,11 +62,12 @@ Penyajian: `Index.html` dievaluasi sebagai template (`createTemplateFromFile`) d
 
 Batas Apps Script (verifikasi angka terbaru di dokumentasi Google, bisa berubah): jumlah eksekusi bersamaan per pengguna terbatas (sekitar 30), kuota `UrlFetch` per hari berbeda untuk akun gratis dan Google Workspace, waktu eksekusi maksimum 6 menit per panggilan.
 
-Perkiraan panggilan `UrlFetch` per siswa untuk ujian 2 jam:
-- `apiCekToken`: 1. `apiMulai`: 3 (ujian, soal, sesi).
-- `apiSinkron`: ±40 (tiap 3 menit).
-- `apiSelesai`: 4.
-- Total sekitar 50 per siswa, jadi 200 siswa ≈ 10.000 panggilan. Periksa kuota akun Anda sebelum acara besar.
+Perkiraan panggilan `UrlFetch` per siswa untuk ujian 2 jam (sesuai kode saat ini):
+- `apiBeranda`: 0 bila ada di cache (60 detik), selain itu 1. `apiCekToken`: 1.
+- `apiMulai`: 4 (ujian, cari sesi, buat sesi, soal). Dilanjutkan dari sesi lama: 3.
+- `apiSinkron`: 1 tiap 3 menit, dan hanya bila jawaban berubah (maks. ±40; durasi ujian dibagi 3 menit). Durasi ujian di-cache 10 menit.
+- `apiSelesai`: 4 (sesi, ujian dan soal lewat `fetchAll`, simpan).
+- Total ±10 sampai 50 per siswa, jadi 200 siswa ≈ 2.000 sampai 10.000 panggilan. Periksa kuota akun Anda sebelum acara besar (lihat `docs/UJI-BEBAN.md`).
 
 Langkah hemat yang wajib:
 - Soal dikirim **sekali** saat mulai; klien tidak meminta soal per nomor.
