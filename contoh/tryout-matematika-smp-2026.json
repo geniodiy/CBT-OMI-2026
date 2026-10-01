@@ -1,0 +1,630 @@
+[
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Santri kelas IX meneliti kualitas air sumur di pesantren mereka. Hasil uji laboratorium menunjukkan bahwa setiap mililiter air sumur mengandung $2^{5} \\times 10^{3}$ bakteri. Setelah air dialirkan melalui saringan pasir dan arang yang mereka rakit sendiri, banyaknya bakteri tinggal $\\frac{1}{2^{3}}$ dari semula. Air dinyatakan layak untuk keperluan mencuci bila mengandung kurang dari 5.000 bakteri per mililiter."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Banyaknya bakteri per mililiter setelah penyaringan dan kesimpulan yang tepat adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$4 \\times 10^{2}$; air layak dipakai untuk mencuci",
+      "B": "$4 \\times 10^{3}$; air layak dipakai untuk mencuci",
+      "C": "$4 \\times 10^{3}$; air belum layak dipakai untuk mencuci",
+      "D": "$2^{2} \\times 10^{0}$; air layak dipakai untuk mencuci"
+    },
+    "kunci": [
+      "B"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Allah berfirman:"
+      },
+      {
+        "tipe": "teks",
+        "isi": "هُوَ الَّذِي جَعَلَ الشَّمْسَ ضِيَاءً وَالْقَمَرَ نُورًا"
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>“Huwal-lażī ja’alasy-syamsa ḍiyā’aw wal-qamara nūrā.”</i><br>Artinya: “Dialah yang menjadikan matahari bersinar dan bulan bercahaya.” (QS. Yunus: 5)<br>Dalam kajian tafsir ilmi, seorang ustaz menjelaskan bahwa cahaya matahari memerlukan waktu untuk sampai ke Bumi. Jarak rata-rata Bumi ke Matahari sekitar $1{,}5 \\times 10^{8}$ km, sedangkan cahaya merambat dengan kecepatan sekitar $3 \\times 10^{5}$ km per detik."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Waktu yang diperlukan cahaya matahari untuk sampai ke Bumi adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$5 \\times 10^{2}$ menit",
+      "B": "50 detik",
+      "C": "5 menit",
+      "D": "8 menit 20 detik"
+    },
+    "kunci": [
+      "D"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Seorang dermawan mewakafkan sebidang tanah berbentuk persegi seluas 72 m<sup>2</sup> untuk dijadikan taman baca. Pengurus masjid akan memagari seluruh tepi tanah tersebut, kecuali sebuah pintu masuk selebar 2 m yang dibiarkan terbuka."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Panjang pagar yang diperlukan adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$(24\\sqrt{2} - 2)$ m",
+      "B": "$(12\\sqrt{2} - 2)$ m",
+      "C": "$(6\\sqrt{2} - 2)$ m",
+      "D": "$(24\\sqrt{2} + 2)$ m"
+    },
+    "kunci": [
+      "A"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Menjelang Idulfitri, panitia zakat sebuah masjid menerima zakat fitrah dalam bentuk beras dari 312 jiwa, dengan besaran sesuai ketentuan yang berlaku. Seluruh beras dikemas dalam paket-paket berisi 5 kg. Paket-paket itu kemudian dibagikan kepada mustahik di Desa A dan Desa B, dengan banyak paket sesuai perbandingan banyak mustahik di kedua desa, yaitu 5 : 7."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Banyaknya paket beras yang diterima Desa B adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "65 paket",
+      "B": "109 paket",
+      "C": "91 paket",
+      "D": "156 paket"
+    },
+    "kunci": [
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Sebuah toko busana muslim memberikan diskon 20% untuk seluruh seragam menjelang tahun ajaran baru. Bagi pembeli yang memakai kartu anggota koperasi, harga setelah diskon pertama masih dipotong lagi 10%. Setelah semua potongan, harga dikenai Pajak Pertambahan Nilai (PPN) sebesar 11%. Ahmad, yang memiliki kartu anggota, membeli satu stel seragam dengan harga label Rp450.000."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Uang yang harus dibayar Ahmad adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Rp349.650",
+      "B": "Rp359.640",
+      "C": "Rp324.000",
+      "D": "Rp315.000"
+    },
+    "kunci": [
+      "B"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Fatimah menabung uang hasil lomba sebesar Rp2.400.000 di sebuah koperasi yang memberikan jasa simpanan tunggal 6% per tahun. Ia berencana mengambil seluruh tabungannya setelah 8 bulan untuk membeli laptop sekolah. Selama itu ia tidak menambah maupun mengambil tabungannya."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Besar tabungan Fatimah setelah 8 bulan adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Rp2.496.000",
+      "B": "Rp2.544.000",
+      "C": "Rp2.448.000",
+      "D": "Rp2.592.000"
+    },
+    "kunci": [
+      "A"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Bilal menerima uang saku bulanan. Sepertiga uang itu ia pakai untuk membeli buku. Seperempat dari sisanya ia infakkan ke kotak amal masjid pada hari Jumat. Sisa uangnya sekarang Rp90.000, yang akan ia tabung."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Jika uang saku Bilal dimisalkan $x$ rupiah, persamaan yang tepat dan nilai $x$ berturut-turut adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$x - \\frac{1}{3}x - \\frac{1}{4}x = 90.000$; $x = 216.000$",
+      "B": "$\\frac{2}{3}x - \\frac{1}{4}x = 90.000$; $x = 216.000$",
+      "C": "$x - \\frac{1}{3}x - \\frac{1}{4}x = 90.000$; $x = 180.000$",
+      "D": "$\\frac{2}{3}x - \\frac{1}{4}\\left(\\frac{2}{3}x\\right) = 90.000$; $x = 180.000$"
+    },
+    "kunci": [
+      "D"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Untuk masuk kelas tahfiz unggulan, rata-rata nilai lima ujian seorang santri harus sekurang-kurangnya 80. Hasil empat ujian pertama Hasan adalah 76, 82, 79, dan 77. Ujian kelima akan dilaksanakan pekan depan, dan nilai maksimum setiap ujian adalah 100."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Nilai terkecil yang harus diperoleh Hasan pada ujian kelima adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "80",
+      "B": "84",
+      "C": "86",
+      "D": "90"
+    },
+    "kunci": [
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Tagihan air bulanan di asrama pesantren terdiri atas biaya beban tetap ditambah biaya pemakaian per meter kubik. Pada bulan Januari, asrama memakai 10 m<sup>3</sup> air dengan tagihan Rp47.000. Pada bulan Februari, pemakaian naik menjadi 16 m<sup>3</sup> dengan tagihan Rp68.000. Biaya tagihan untuk pemakaian $x$ m<sup>3</sup> dinyatakan dengan fungsi $f(x) = ax + b$."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Besar tagihan bila pemakaian air bulan Maret mencapai 25 m<sup>3</sup> adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Rp117.500",
+      "B": "Rp99.500",
+      "C": "Rp87.500",
+      "D": "Rp106.250"
+    },
+    "kunci": [
+      "B"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Pada denah pesantren yang digambar pada bidang koordinat, gerbang utama terletak di titik $P(2, 3)$ dan masjid di titik $Q(6, 11)$. Pengurus akan membuat jalan lurus yang menghubungkan gerbang dan masjid, lalu memperpanjangnya hingga memotong sumbu $y$ yang menyatakan jalan raya."
+      },
+      {
+        "tipe": "gambar",
+        "isi": ""
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>Gambar 1. Rencana jalan pada denah pesantren.</i><br><b>Pertanyaan</b><br>Persamaan garis jalan tersebut dan titik potongnya dengan sumbu $y$ adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$y = 2x - 1$ dan $(0, -1)$",
+      "B": "$y = 2x + 1$ dan $(0, 1)$",
+      "C": "$y = \\frac{1}{2}x + 2$ dan $(0, 2)$",
+      "D": "$y = 2x - 1$ dan $\\left(\\frac{1}{2}, 0\\right)$"
+    },
+    "kunci": [
+      "A"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Sebuah museum sejarah Islam menerapkan harga tiket berbeda untuk pengunjung dewasa dan anak-anak. Rombongan keluarga pertama terdiri atas 3 orang dewasa dan 2 anak, membayar Rp80.000. Rombongan keluarga kedua terdiri atas 2 orang dewasa dan 5 anak, membayar Rp90.000. Rombongan ketiga, yaitu keluarga Pak Umar, terdiri atas 4 orang dewasa dan 6 anak."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Uang yang harus dibayar keluarga Pak Umar adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Rp170.000",
+      "B": "Rp160.000",
+      "C": "Rp120.000",
+      "D": "Rp140.000"
+    },
+    "kunci": [
+      "D"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Pak Yusuf membeli sepeda motor untuk berdakwah ke desa-desa dengan harga Rp20.000.000. Menurut perkiraan bengkel, nilai jual motor tersebut menyusut 10% setiap tahun dari nilai pada tahun sebelumnya."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Perkiraan nilai jual motor tersebut setelah 3 tahun adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Rp14.000.000",
+      "B": "Rp18.000.000",
+      "C": "Rp14.580.000",
+      "D": "Rp16.200.000"
+    },
+    "kunci": [
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Allah berfirman:"
+      },
+      {
+        "tipe": "teks",
+        "isi": "فَصَلِّ لِرَبِّكَ وَانْحَرْ"
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>“Faṣalli lirabbika wanḥar.”</i><br>Artinya: “Maka laksanakanlah salat karena Tuhanmu, dan berkurbanlah.” (QS. Al-Kautsar: 2)<br>Untuk persiapan kurban, Zahra menabung dengan cara menyisihkan Rp5.000 pada hari pertama, Rp5.500 pada hari kedua, Rp6.000 pada hari ketiga, dan seterusnya, selalu bertambah Rp500 setiap hari."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Jumlah tabungan Zahra setelah menabung selama 30 hari adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Rp19.500",
+      "B": "Rp292.500",
+      "C": "Rp585.000",
+      "D": "Rp367.500"
+    },
+    "kunci": [
+      "D"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Dalam festival layang-layang di alun-alun, Umar menerbangkan layang-layang dengan benang sepanjang 50 m yang terulur lurus. Benang membentuk sudut $30^{\\circ}$ terhadap garis mendatar, dan ujung benang yang dipegang Umar berada 1,5 m di atas tanah."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Ketinggian layang-layang dari permukaan tanah adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "26,5 m",
+      "B": "25 m",
+      "C": "$(25\\sqrt{3} + 1{,}5)$ m",
+      "D": "51,5 m"
+    },
+    "kunci": [
+      "A"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Di halaman masjid terdapat taman berbentuk juring lingkaran berjari-jari 14 m dengan sudut pusat $72^{\\circ}$. Seluruh permukaan taman akan ditanami rumput. Gunakan $\\pi = \\frac{22}{7}$."
+      },
+      {
+        "tipe": "gambar",
+        "isi": ""
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>Gambar 2. Taman berbentuk juring lingkaran.</i><br><b>Pertanyaan</b><br>Luas taman yang akan ditanami rumput adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "616 m<sup>2</sup>",
+      "B": "123,2 m<sup>2</sup>",
+      "C": "61,6 m<sup>2</sup>",
+      "D": "17,6 m<sup>2</sup>"
+    },
+    "kunci": [
+      "B"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Unit konveksi pesantren memiliki mesin jahit yang digerakkan oleh dua roda yang dihubungkan dengan sabuk. Jari-jari roda besar 8 cm, jari-jari roda kecil 3 cm, dan jarak kedua pusat roda 13 cm. Teknisi ingin mengetahui panjang bagian sabuk yang lurus di antara kedua roda, yaitu ruas $AB$ pada gambar."
+      },
+      {
+        "tipe": "gambar",
+        "isi": ""
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>Gambar 3. Ruas $AB$ menyinggung kedua roda.</i><br><b>Pertanyaan</b><br>Panjang ruas $AB$ adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "13 cm",
+      "B": "11 cm",
+      "C": "12 cm",
+      "D": "$4\\sqrt{3}$ cm"
+    },
+    "kunci": [
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Panitia zakat membuat wadah penampung beras dari pelat logam. Wadah itu berbentuk tabung dengan jari-jari alas 14 cm dan tinggi 20 cm, yang bagian atasnya ditutup kerucut dengan jari-jari sama dan tinggi 15 cm. Wadah diisi penuh hingga ke puncak kerucut. Gunakan $\\pi = \\frac{22}{7}$."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Volume beras yang dapat ditampung wadah tersebut adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "12.320 cm<sup>3</sup>",
+      "B": "21.560 cm<sup>3</sup>",
+      "C": "3.080 cm<sup>3</sup>",
+      "D": "15.400 cm<sup>3</sup>"
+    },
+    "kunci": [
+      "D"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Allah berfirman:"
+      },
+      {
+        "tipe": "teks",
+        "isi": "يَرْفَعِ اللَّهُ الَّذِينَ آمَنُوا مِنْكُمْ وَالَّذِينَ أُوتُوا الْعِلْمَ دَرَجَاتٍ"
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>“Yarfa’illāhul-lażīna āmanū minkum wal-lażīna ūtul-’ilma darajāt.”</i><br>Artinya: “Allah akan mengangkat orang-orang yang beriman di antaramu dan orang-orang yang diberi ilmu beberapa derajat.” (QS. Al-Mujadalah: 11)<br>Sebuah kelas terdiri atas 30 santri, yaitu 18 santri putra dan sisanya santri putri. Rata-rata nilai Try Out seluruh kelas adalah 75, sedangkan rata-rata nilai santri putra adalah 72."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Rata-rata nilai santri putri adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "78",
+      "B": "79,5",
+      "C": "73,5",
+      "D": "81"
+    },
+    "kunci": [
+      "B"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Pada lomba ketangkasan dalam peringatan Hari Santri, setiap peserta melempar dua dadu seimbang sekaligus. Peserta memperoleh hadiah bila jumlah mata kedua dadu yang muncul 8 atau lebih."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Peluang seorang peserta memperoleh hadiah adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$\\frac{5}{12}$",
+      "B": "$\\frac{5}{36}$",
+      "C": "$\\frac{1}{2}$",
+      "D": "$\\frac{7}{12}$"
+    },
+    "kunci": [
+      "A"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Santri kelas desain merancang motif kaligrafi digital pada bidang koordinat. Salah satu titik sudut motif terletak di $A(-2, 5)$. Untuk membuat motif yang berulang, titik itu diputar $90^{\\circ}$ berlawanan arah jarum jam dengan pusat $O(0, 0)$, lalu hasilnya diperbesar dengan dilatasi berpusat di $O$ dan faktor skala 2."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Koordinat bayangan akhir titik $A$ adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$(10, 4)$",
+      "B": "$(-4, 10)$",
+      "C": "$(-10, -4)$",
+      "D": "$(-5, -2)$"
+    },
+    "kunci": [
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Pada lomba cerdas cermat antarkelas, empat santri diminta menyederhanakan bentuk bilangan berpangkat dan bentuk akar. Juri mencatat jawaban mereka sebagai berikut."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Jawaban yang benar adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "$\\sqrt{8} + \\sqrt{18} = 5\\sqrt{2}$",
+      "B": "$2^{-3} = \\frac{1}{8}$",
+      "C": "$\\frac{2}{\\sqrt{3}} = \\frac{2}{3}\\sqrt{3}$",
+      "D": "$27^{\\frac{2}{3}} = 18$"
+    },
+    "kunci": [
+      "A",
+      "B",
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Nilai ujian tilawah 11 santri, setelah diurutkan, adalah sebagai berikut:"
+      },
+      {
+        "tipe": "teks",
+        "isi": "60, 65, 70, 70, 75, 80, 80, 80, 85, 90, 95."
+      },
+      {
+        "tipe": "teks",
+        "isi": "Ustazah ingin mengetahui gambaran pemusatan dan penyebaran nilai kelas tersebut."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Pernyataan yang benar adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Median data tersebut adalah 80.",
+      "B": "Kuartil bawah data tersebut adalah 70.",
+      "C": "Jangkauan antarkuartil data tersebut adalah 20.",
+      "D": "Rata-rata data tersebut adalah 80."
+    },
+    "kunci": [
+      "A",
+      "B"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Panitia pengajian akbar akan memesan nasi kotak. Katering A menawarkan harga Rp15.000 per kotak ditambah ongkos kirim tetap Rp50.000. Katering B menawarkan harga Rp16.000 per kotak tanpa ongkos kirim. Biaya pemesanan $n$ kotak dari katering A dan B berturut-turut dinyatakan oleh $A(n) = 15.000n + 50.000$ dan $B(n) = 16.000n$."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Pernyataan yang benar adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Untuk pesanan 50 kotak, biaya kedua katering sama besar, yaitu Rp800.000.",
+      "B": "Untuk pesanan 40 kotak, katering A lebih murah daripada katering B.",
+      "C": "Katering A lebih murah untuk setiap pesanan lebih dari 50 kotak.",
+      "D": "Gradien grafik biaya katering B lebih kecil daripada gradien grafik biaya katering A."
+    },
+    "kunci": [
+      "A",
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Dalam perkemahan pramuka, regu santri mendirikan tenda berbentuk limas persegi. Alas tenda berbentuk persegi dengan panjang sisi 4 m, dan tiang tengahnya setinggi 1,5 m tegak di titik pusat alas. Keempat sisi tegak tenda tertutup kain, sedangkan alasnya beralas tikar."
+      },
+      {
+        "tipe": "gambar",
+        "isi": ""
+      },
+      {
+        "tipe": "teks",
+        "isi": "<i>Gambar 4. Tenda berbentuk limas persegi.</i><br><b>Pertanyaan</b><br>Pernyataan yang benar adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Volume ruang di dalam tenda adalah 24 m<sup>3</sup>.",
+      "B": "Tinggi setiap segitiga sisi tegak tenda adalah 3,5 m.",
+      "C": "Volume ruang di dalam tenda adalah 8 m<sup>3</sup>.",
+      "D": "Luas kain yang menutupi keempat sisi tegak tenda adalah 40 m<sup>2</sup>."
+    },
+    "kunci": [
+      "C"
+    ],
+    "bobot": 1
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      {
+        "tipe": "teks",
+        "isi": "Di dalam sebuah kotak undian terdapat 5 bola merah dan 3 bola putih yang ukurannya sama. Seorang peserta mengambil dua bola satu per satu secara acak tanpa mengembalikan bola pertama ke dalam kotak."
+      },
+      {
+        "tipe": "teks",
+        "isi": "<b>Pertanyaan</b><br>Pernyataan yang benar adalah ..."
+      }
+    ],
+    "opsi": {
+      "A": "Peluang kedua bola yang terambil berwarna merah adalah $\\frac{5}{14}$.",
+      "B": "Peluang kedua bola yang terambil berwarna sama adalah $\\frac{1}{2}$.",
+      "C": "Peluang terambil sekurang-kurangnya satu bola putih adalah $\\frac{5}{14}$.",
+      "D": "Peluang bola pertama merah dan bola kedua putih adalah $\\frac{15}{56}$."
+    },
+    "kunci": [
+      "A",
+      "D"
+    ],
+    "bobot": 1
+  }
+]
