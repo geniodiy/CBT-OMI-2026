@@ -749,18 +749,10 @@
       root.style.setProperty('--vv-top', Math.round(top) + 'px');
       document.body && document.body.classList.toggle('kbd-aktif', tinggiPenuh - h > 120);
     }
-    var popupTetap = null;
     function pasangKb(aktif) {
       var k = aktif ? keyboard() : { px: 0, terukur: false };
-      // Ukuran popup dikunci sebelum ruang kosong ditambahkan: popup tidak membesar, mengecil, atau bergeser.
-      var m = aktif && document.activeElement && document.activeElement.closest ? document.activeElement.closest('.modal') : null;
-      if (m && popupTetap !== m) { if (popupTetap) popupTetap.style.height = ''; m.style.height = m.offsetHeight + 'px'; popupTetap = m; }
-      if (!aktif && popupTetap) {
-        popupTetap.style.height = '';
-        var bd = popupTetap.querySelector('.modal-badan'); if (bd) bd.style.removeProperty('--ekstra');
-        popupTetap = null;
-      }
       root.style.setProperty('--kb', k.px + 'px');
+      if (!aktif) document.body.style.removeProperty('--ekstra-halaman');
       document.body.classList.toggle('kbd-fokus', aktif);
     }
     /** Menggulir seperlunya agar elemen (atau kursor) berada di atas keyboard dan tetap terlihat. */
@@ -770,19 +762,19 @@
       var dasar = (vv && k.terukur ? vv.offsetTop + vv.height : window.innerHeight - k.px) - 14;
       var wadah = el.closest ? el.closest('.modal-badan') : null;
       if (wadah) {
-        // Ruang kosong di bawah isi popup hanya ditambah sebesar yang dibutuhkan agar baris ini bisa digulir ke atas keyboard.
-        wadah.style.setProperty('--ekstra', '0px');
-        r = caret || el.getBoundingClientRect();
+        // Popup tidak diubah: isinya hanya digulir sejauh yang tersedia.
         var wr = wadah.getBoundingClientRect(), bawah = Math.min(wr.bottom - 8, dasar), atas = Math.max(wr.top, 0) + 8;
-        if (r.bottom > bawah) {
-          var perlu = r.bottom - bawah, sisa = wadah.scrollHeight - wadah.clientHeight - wadah.scrollTop;
-          if (perlu > sisa) wadah.style.setProperty('--ekstra', Math.ceil(perlu - sisa) + 'px');
-          wadah.scrollTo({ top: wadah.scrollTop + perlu, behavior: 'smooth' });
-        } else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
+        if (r.bottom > bawah) wadah.scrollTo({ top: wadah.scrollTop + (r.bottom - bawah), behavior: 'smooth' });
+        else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
         return;
       }
-      if (r.bottom > dasar) window.scrollBy({ top: r.bottom - dasar, left: 0, behavior: 'smooth' });
-      else if (r.top < 56) window.scrollBy({ top: r.top - 56, left: 0, behavior: 'smooth' });
+      document.body.style.setProperty('--ekstra-halaman', '0px');
+      r = caret || el.getBoundingClientRect();
+      if (r.bottom > dasar) {
+        var perlu = r.bottom - dasar, sisa = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+        if (perlu > sisa) document.body.style.setProperty('--ekstra-halaman', Math.ceil(perlu - sisa) + 'px');
+        window.scrollBy({ top: perlu, left: 0, behavior: 'smooth' });
+      } else if (r.top < 56) window.scrollBy({ top: r.top - 56, left: 0, behavior: 'smooth' });
     }
     function posisiCaret() {
       var sel = window.getSelection && window.getSelection();

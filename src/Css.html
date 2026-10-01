@@ -703,11 +703,9 @@ html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem
 }
 input, select, textarea, [contenteditable="true"] { scroll-margin-block: 96px; }
 @media (max-width: 900px) { body.kbd-aktif .u-nav, body.kbd-fokus .u-nav { display: none; } body.kbd-aktif .ujian { padding-bottom: 24px; } }
-/* keyboard layar: tata letak tidak diubah. Halaman diberi ruang kosong seukuran keyboard di bawahnya, dan badan popup diberi ruang kosong yang sama
-   (ukuran dan posisi popup tetap), sehingga baris yang sedang diisi dapat digulir tepat di atas keyboard dan baris lain tetap ada. */
-body.kbd-fokus { padding-bottom: var(--kb, 0px); }
-/* ruang kosong berupa isi yang dapat digulir (bukan padding, karena padding tidak bisa menyusut dan mendorong footer keluar dari popup); tingginya hanya sebesar yang dibutuhkan agar baris yang diisi bisa digulir ke atas keyboard (--ekstra, diatur skrip) */
-body.kbd-fokus .modal-badan::after { content: ""; display: block; height: var(--ekstra, 0px); flex: none; }
+/* keyboard layar: tata letak popup tidak diubah sama sekali (tanpa ruang kosong, tanpa pelebaran); isi popup hanya digulir. Halaman biasa diberi ruang kosong
+   hanya sebesar yang dibutuhkan (--ekstra-halaman, diatur skrip) agar kolom di dasar halaman bisa digulir ke atas keyboard. */
+body.kbd-fokus { padding-bottom: var(--ekstra-halaman, 0px); }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */
