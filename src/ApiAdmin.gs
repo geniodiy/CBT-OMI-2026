@@ -1,6 +1,6 @@
 /** Fungsi publik admin. Setiap fungsi admin* memanggil guard_(tok) di baris pertama. */
 
-var CACHE_BERANDA_ = 'beranda_v1';
+var CACHE_BERANDA_ = 'beranda_v2';
 var DURASI_SESI_ADMIN_DETIK_ = 6 * 60 * 60;
 
 function adminLogin(password) {
@@ -11,7 +11,8 @@ function adminLogin(password) {
   }
   var tok = Utilities.getUuid();
   CacheService.getScriptCache().put('adm_' + tok, '1', DURASI_SESI_ADMIN_DETIK_);
-  return tok;
+  // Daftar ujian ikut dikirim agar panel admin langsung terisi tanpa panggilan kedua.
+  return { tok: tok, ujian: sb_('GET', 'ujian_ringkas?select=*&order=created_at.desc') || [] };
 }
 
 function adminKeluar(tok) {
@@ -44,6 +45,7 @@ function adminUjianHapus(tok, id) {
   if (!id) throw new Error('Ujian tidak dipilih.');
   sb_('DELETE', 'ujian?id=eq.' + enc_(id), null, { Prefer: 'return=minimal' });
   CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  bumpSoal_();
   return true;
 }
 
@@ -97,6 +99,7 @@ function adminSoalSimpan(tok, s) {
     hasil = sb_('POST', 'soal', baris);
   }
   CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  bumpSoal_();
   return Object.assign({}, hasil[0], { peringatan: n.peringatan });
 }
 
@@ -105,6 +108,7 @@ function adminSoalHapus(tok, id) {
   if (!id) throw new Error('Soal tidak dipilih.');
   sb_('DELETE', 'soal?id=eq.' + enc_(id), null, { Prefer: 'return=minimal' });
   CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  bumpSoal_();
   return true;
 }
 
@@ -115,6 +119,7 @@ function adminSoalUrut(tok, ujianId, idsBerurutan) {
   sbBatch_(ubah.map(function (u) {
     return { method: 'PATCH', path: 'soal?id=eq.' + enc_(u.id), body: { urutan: u.urutan } };
   }));
+  bumpSoal_();
   return true;
 }
 
@@ -175,6 +180,7 @@ function adminSoalImport(tok, ujianId, daftar, mode, dryRun) {
     sb_('DELETE', 'soal?ujian_id=eq.' + enc_(ujianId) + '&urutan=lte.' + maksLama, null, { Prefer: 'return=minimal' });
   }
   CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  bumpSoal_();
   return ringkas;
 }
 

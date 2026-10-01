@@ -24,15 +24,32 @@
     return bagian.join(', ');
   }
 
-  // ---------- beranda ----------
+  // ---------- halaman utama ----------
 
-  function kartuUjian(u) {
-    return el('button', { type: 'button', class: 'kontainer', onclick: function () { langkah1(u, {}); } },
-      el('span', { class: 'kontainer-atas' }, el('span', { class: 'lencana' }, u.jenjang), u.sesi ? el('span', { class: 'redup' }, u.sesi) : null),
+  var daftarBeranda = null;      // daftar terakhir yang diketahui; ditampilkan dulu, lalu disegarkan di belakang layar
+  var terakhirSegar = 0;
+  var filterAktif = 'semua';
+  var halaman = null;            // bagian halaman yang tetap (hero, tentang, aturan, footer)
+  var pengamat = null;
+
+  function ikonTeks(nama, teks) {
+    return el('span', null, window.ikon(nama, 15), teks);
+  }
+
+  function kartuUjian(u, n) {
+    return el('button', { type: 'button', class: 'kontainer', style: '--n:' + Math.min(n, 8), onclick: function () { langkah1(u, {}); } },
+      el('span', { class: 'kontainer-atas' }, el('span', { class: 'lencana' }, u.jenjang), u.sesi ? el('span', null, u.sesi) : null),
       el('strong', { class: 'kontainer-mapel' }, u.mapel),
       el('span', { class: 'kontainer-nama' }, u.nama),
-      el('span', { class: 'redup' }, u.jumlah_soal + ' soal · ' + u.durasi_menit + ' menit'),
-      el('span', { class: 'kontainer-pilih' }, 'Pilih', window.ikon('kanan', 16)));
+      el('span', { class: 'kontainer-meta' },
+        ikonTeks('dokumen', u.jumlah_soal + ' soal'), ikonTeks('jam', u.durasi_menit + ' menit'),
+        el('span', { class: 'kontainer-pilih' }, 'Mulai', window.ikon('kanan', 16))));
+  }
+
+  function kerangkaKartu() {
+    return el('div', { class: 'kontainer kerangka-kartu', 'aria-hidden': 'true' },
+      el('div', { class: 'kerangka pendek' }), el('div', { class: 'kerangka sedang tebal' }), el('div', { class: 'kerangka' }),
+      el('div', { class: 'kerangka sedang', style: 'margin-top:12px' }));
   }
 
   function sesiTersimpan() {
@@ -50,42 +67,179 @@
       el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { mulai(d.ujianId, d.token, d.peserta || {}); } }, 'Lanjutkan'));
   }
 
-  function gambarBeranda(daftar) {
-    var s = document.querySelector('[data-view="beranda"]');
-    s.textContent = '';
-    s.appendChild(el('h1', null, 'Pilih ujian'));
-    s.appendChild(el('p', { class: 'redup' }, 'Pilih kontainer sesuai jenjang dan mata pelajaran Anda.'));
-    var lanjut = kotakLanjut();
-    if (lanjut) s.appendChild(lanjut);
-    if (!daftar.length) {
-      s.appendChild(el('p', { class: 'kosong' }, 'Belum ada ujian yang dibuka. Hubungi pengawas atau admin.'));
-    } else {
-      var kelompok = [], terakhir = null;
-      daftar.forEach(function (u) {
-        if (!terakhir || terakhir.jenjang.toLowerCase() !== u.jenjang.toLowerCase()) { terakhir = { jenjang: u.jenjang, isi: [] }; kelompok.push(terakhir); }
-        terakhir.isi.push(u);
-      });
-      kelompok.forEach(function (k) {
-        s.appendChild(el('h2', { class: 'kelompok' }, k.jenjang));
-        s.appendChild(el('div', { class: 'grid-ujian' }, k.isi.map(kartuUjian)));
-      });
+  function gulirKe(id) {
+    var e = document.getElementById(id);
+    if (e) e.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function amatiMuncul(akar) {
+    var daftar = akar.querySelectorAll('.muncul:not(.terlihat)');
+    if (!('IntersectionObserver' in window)) { daftar.forEach(function (e) { e.classList.add('terlihat'); }); return; }
+    if (!pengamat) {
+      pengamat = new IntersectionObserver(function (masuk) {
+        masuk.forEach(function (m) { if (m.isIntersecting) { m.target.classList.add('terlihat'); pengamat.unobserve(m.target); } });
+      }, { rootMargin: '0px 0px -8% 0px' });
     }
-    s.appendChild(el('footer', { class: 'footer' }, 'Dibuat oleh Genio Institute Yogyakarta'));
+    daftar.forEach(function (e) { pengamat.observe(e); });
+  }
+
+  function daftarJenjang(daftar) {
+    var peta = {}, urut = [];
+    daftar.forEach(function (u) {
+      var k = u.jenjang.toLowerCase();
+      if (!peta[k]) { peta[k] = { nama: u.jenjang, jumlah: 0 }; urut.push(k); }
+      peta[k].jumlah++;
+    });
+    return urut.map(function (k) { return { kunci: k, nama: peta[k].nama, jumlah: peta[k].jumlah }; });
+  }
+
+  function gambarDaftar() {
+    if (!halaman) return;
+    var daftar = daftarBeranda || [];
+    var slot = halaman.daftar, filter = halaman.filter;
+    halaman.lanjut.textContent = '';
+    var lanjut = kotakLanjut();
+    if (lanjut) halaman.lanjut.appendChild(lanjut);
+
+    var jenjang = daftarJenjang(daftar);
+    if (filterAktif !== 'semua' && !jenjang.some(function (j) { return j.kunci === filterAktif; })) filterAktif = 'semua';
+    filter.textContent = '';
+    filter.hidden = jenjang.length < 2;
+    [{ kunci: 'semua', nama: 'Semua', jumlah: daftar.length }].concat(jenjang).forEach(function (j) {
+      filter.appendChild(el('button', { type: 'button', class: 'chip', role: 'tab', 'aria-selected': j.kunci === filterAktif ? 'true' : 'false', onclick: function () {
+        filterAktif = j.kunci; gambarDaftar();
+      } }, j.nama, el('small', null, String(j.jumlah))));
+    });
+
+    slot.textContent = '';
+    var tampil = daftar.filter(function (u) { return filterAktif === 'semua' || u.jenjang.toLowerCase() === filterAktif; });
+    if (!tampil.length) {
+      slot.appendChild(el('div', { class: 'kosong-daftar' },
+        el('strong', null, daftar.length ? 'Tidak ada ujian untuk jenjang ini' : 'Belum ada ujian yang dibuka'),
+        daftar.length ? 'Pilih jenjang lain di atas.' : 'Hubungi pengawas atau admin untuk menanyakan jadwal ujian.'));
+      return;
+    }
+    tampil.forEach(function (u, n) { slot.appendChild(kartuUjian(u, n)); });
+  }
+
+  function bangunHalaman() {
+    var s = document.querySelector('[data-view="beranda"]');
+    document.documentElement.classList.add('js');
+    s.textContent = '';
+
+    // hero
+    var aksi = el('div', { class: 'hero-aksi' },
+      el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { gulirKe('ujian'); } }, 'Pilih ujian'),
+      el('button', { type: 'button', class: 'btn', onclick: function () { gulirKe('tentang'); } }, 'Pelajari OMI'));
+    var ringkas = el('aside', { class: 'hero-ringkas', 'aria-label': 'Ringkasan simulasi' },
+      el('p', { class: 'angka-besar' }, el('strong', null, '120'), el('span', null, 'menit untuk semua jenjang')),
+      el('dl', { class: 'ringkas-daftar' },
+        [['Jenjang', 'MI, MTs, MA'], ['Bentuk soal', 'Pilihan ganda, pilihan ganda kompleks, isian singkat'], ['Penilaian', 'Benar, salah, dan kosong dihitung terpisah'], ['Peringkat', 'Nilai, benar, salah, lalu waktu']].map(function (r) {
+          return el('div', { class: 'ringkas-baris' }, el('dt', null, r[0]), el('dd', null, r[1]));
+        })));
+    var hero = el('section', { class: 'hero' }, el('div', { class: 'isi' },
+      el('div', null,
+        el('p', { class: 'eyebrow' }, 'Try Out OMI 2026'),
+        el('h1', null, 'Berlatih untuk Olimpiade Madrasah Indonesia'),
+        el('p', { class: 'hero-sub' }, 'OMI adalah ajang sains madrasah dari Kemenag. Kerjakan simulasinya dengan tampilan dan aturan seperti ujian sesungguhnya.'),
+        aksi),
+      ringkas));
+
+    // daftar ujian
+    halaman = { lanjut: el('div'), filter: el('div', { class: 'filter', role: 'tablist', 'aria-label': 'Jenjang' }),
+      daftar: el('div', { class: 'grid-ujian', 'aria-live': 'polite' }) };
+    var ujian = el('section', { class: 'pita', id: 'ujian' }, el('div', { class: 'isi' },
+      el('div', { class: 'judul-bagian' }, el('h2', null, 'Pilih ujian'), el('p', null, 'Pilih sesuai jenjang dan mata pelajaran Anda, lalu masukkan token dari pengawas.')),
+      halaman.lanjut, halaman.filter, halaman.daftar));
+
+    // tentang OMI
+    var tentang = el('section', { class: 'pita pita-putih muncul', id: 'tentang' }, el('div', { class: 'isi' },
+      el('div', { class: 'tentang' },
+        el('div', null,
+          el('div', { class: 'judul-bagian' }, el('h2', null, 'Apa itu OMI?')),
+          el('p', null, 'Olimpiade Madrasah Indonesia diselenggarakan Direktorat Jenderal Pendidikan Islam, Kementerian Agama, sebagai instrumen pembinaan talenta madrasah di bidang sains dan riset. OMI tidak hanya menjadi ajang kompetisi, tetapi juga wahana untuk mengidentifikasi, membina, dan mengakselerasi talenta melalui budaya riset, berpikir kritis, kreativitas, dan inovasi.'),
+          el('p', { class: 'tema' }, 'Islam, Sains, dan Ekoteologi: Menumbuhkan Talenta serta Menggerakkan Inovasi Madrasah untuk Indonesia Maju.')),
+        el('dl', { class: 'fakta' },
+          [['Penyelenggara', 'Ditjen Pendidikan Islam, Kementerian Agama'], ['Dasar', 'Keputusan Dirjen Pendidikan Islam Nomor 6843 Tahun 2026'], ['Bidang', 'Sains dan Riset'], ['Peserta sains', 'Siswa kelas V–VI, VII–IX, dan X–XII, satu bidang per peserta'], ['Tahap', 'Satuan pendidikan, kabupaten/kota, provinsi, nasional']].map(function (r) {
+            return el('div', null, el('dt', null, r[0]), el('dd', null, r[1]));
+          }))),
+      el('div', { class: 'cabang' },
+        [['MI/SD/sederajat', 'Kelas V–VI', ['Matematika Terintegrasi', 'IPAS Terintegrasi']],
+         ['MTs/SMP/sederajat', 'Kelas VII–IX', ['Matematika Terintegrasi', 'IPA Terintegrasi', 'IPS Terintegrasi']],
+         ['MA/SMA/sederajat', 'Kelas X–XII', ['Matematika Terintegrasi', 'Biologi Terintegrasi', 'Fisika Terintegrasi', 'Kimia Terintegrasi', 'Ekonomi Terintegrasi', 'Geografi Terintegrasi']]].map(function (c) {
+          return el('div', null, el('h3', null, c[0]), el('p', { class: 'redup' }, c[1]), el('ul', null, c[2].map(function (x) { return el('li', null, x); })));
+        }))));
+
+    // aturan dan penilaian
+    var tahap = [['Kabupaten/Kota', '25 soal pilihan ganda', '7–8 September 2026'],
+      ['Provinsi', '20 pilihan ganda dan 5 pilihan ganda kompleks', '5–6 Oktober 2026'],
+      ['Nasional', '10 isian singkat dan 5 esai', '10–11 November 2026']];
+    var siap = ['Hadir 30 menit sebelum pelaksanaan dimulai.', 'Membawa kartu peserta OMI.', 'Berpakaian seragam madrasah dengan rapi.', 'Menyiapkan alat tulis sendiri: ballpoint, pensil, kertas polos, penghapus.'];
+    var larang = ['Digantikan oleh orang lain.', 'Menerima bantuan dari orang lain.', 'Keluar ruangan tanpa izin pengawas.', 'Memakai alat bantu seperti alat komunikasi dan kalkulator.', 'Membawa buku, kamus, catatan, atau tabel.'];
+    function daftarIkon(items, ikonNama, kelas) {
+      return el('ul', { class: 'daftar-centang' + (kelas ? ' ' + kelas : '') }, items.map(function (t) {
+        return el('li', null, window.ikon(ikonNama, 16), el('span', null, t));
+      }));
+    }
+    var aturan = el('section', { class: 'pita muncul', id: 'aturan' }, el('div', { class: 'isi' },
+      el('div', { class: 'aturan' },
+        el('div', null,
+          el('div', { class: 'judul-bagian' }, el('h2', null, 'Bentuk tes dan jadwal'), el('p', null, 'Format resmi bidang sains menurut Petunjuk Teknis OMI 2026.')),
+          el('div', { class: 'tahap' }, tahap.map(function (t) {
+            return el('div', { class: 'tahap-baris' }, el('strong', null, t[0]), el('span', null, t[1]), el('span', { class: 'tgl' }, t[2]));
+          })),
+          el('p', { class: 'catatan-kecil' }, 'Simulasi ini memakai pilihan ganda, pilihan ganda kompleks, dan isian singkat. Durasi pengerjaan 120 menit untuk semua jenjang.')),
+        el('div', null,
+          el('div', { class: 'judul-bagian' }, el('h2', null, 'Penilaian')),
+          el('ol', { class: 'urutan' }, [
+            'Nilai ditentukan dari jawaban benar. Soal kosong tidak dihitung salah dan jawaban salah tidak mengurangi nilai.',
+            'Bila nilai sama, peringkat ditentukan oleh jumlah benar terbanyak.',
+            'Berikutnya jumlah salah tersedikit.',
+            'Terakhir waktu penyelesaian tercepat.'].map(function (t) { return el('li', null, el('span', null, t)); })))),
+      el('div', { class: 'tertib' },
+        el('div', null, el('h3', null, 'Yang perlu disiapkan peserta'), daftarIkon(siap, 'centang')),
+        el('div', null, el('h3', null, 'Larangan bagi peserta'), daftarIkon(larang, 'silang', 'larangan')))));
+
+    // footer
+    var logoFooter = el('div', { class: 'footer-logo' });
+    document.querySelectorAll('.header-logo img').forEach(function (g) { logoFooter.appendChild(el('img', { src: g.src, alt: g.alt })); });
+    var footer = el('footer', { class: 'footer-situs' }, el('div', { class: 'isi' }, logoFooter,
+      el('div', null,
+        el('p', null, el('strong', null, 'Dibuat oleh Genio Institute Yogyakarta.')),
+        el('p', null, 'Situs ini adalah simulasi (try out) untuk berlatih dan bukan sistem resmi panitia OMI. Rujukan: Keputusan Direktur Jenderal Pendidikan Islam Nomor 6843 Tahun 2026 tentang Petunjuk Teknis Pelaksanaan OMI Tahun 2026.'),
+        el('p', null, 'Informasi resmi: ', el('a', { href: 'https://omi.kemenag.go.id', target: '_blank', rel: 'noopener noreferrer' }, 'omi.kemenag.go.id')))));
+
+    [hero, ujian, tentang, aturan, footer].forEach(function (b) { s.appendChild(b); });
+    amatiMuncul(s);
+  }
+
+  function segarkanBeranda() {
+    if (Date.now() - terakhirSegar < 15000) return Promise.resolve();
+    return window.call('apiBeranda').then(function (d) {
+      terakhirSegar = Date.now();
+      if (JSON.stringify(d) !== JSON.stringify(daftarBeranda)) { daftarBeranda = d; gambarDaftar(); }
+    });
   }
 
   function muatBeranda() {
-    var s = document.querySelector('[data-view="beranda"]');
     window.showView('beranda');
-    s.textContent = '';
-    s.appendChild(el('h1', null, 'Pilih ujian'));
-    s.appendChild(el('div', { class: 'grid-ujian' }, [1, 2, 3].map(function () {
-      return el('div', { class: 'kontainer' }, el('div', { class: 'kerangka' }), el('div', { class: 'kerangka' }), el('div', { class: 'kerangka' }));
-    })));
-    window.call('apiBeranda').then(gambarBeranda).catch(function (e) {
-      s.textContent = '';
-      s.appendChild(el('h1', null, 'Pilih ujian'));
-      s.appendChild(el('p', { class: 'kosong' }, e.message));
-      s.appendChild(el('button', { type: 'button', class: 'btn', onclick: muatBeranda }, 'Coba lagi'));
+    if (!halaman) bangunHalaman();
+    if (daftarBeranda === null && window.AWAL && window.AWAL.beranda) {
+      // Daftar sudah ikut dalam halaman pertama: tampil seketika tanpa menunggu server.
+      daftarBeranda = window.AWAL.beranda; terakhirSegar = Date.now(); window.AWAL = null;
+    }
+    if (daftarBeranda === null) {
+      halaman.daftar.textContent = '';
+      for (var i = 0; i < 3; i++) halaman.daftar.appendChild(kerangkaKartu());
+      halaman.lanjut.textContent = '';
+    } else {
+      gambarDaftar();
+    }
+    segarkanBeranda().catch(function (e) {
+      if (daftarBeranda !== null) return;
+      halaman.daftar.textContent = '';
+      halaman.daftar.appendChild(el('div', { class: 'kosong-daftar' }, el('strong', null, 'Daftar ujian belum bisa dimuat'), e.message,
+        el('div', { style: 'margin-top:12px' }, el('button', { type: 'button', class: 'btn', onclick: function () { terakhirSegar = 0; muatBeranda(); } }, 'Coba lagi'))));
     });
   }
   window.App.muatBeranda = muatBeranda;
@@ -116,15 +270,13 @@
       galatNama.textContent = ''; galatToken.textContent = '';
       if (!d.nama) { galatNama.textContent = 'Isi nama lengkap Anda.'; f.nama.focus(); return false; }
       if (!d.token) { galatToken.textContent = 'Isi token dari pengawas.'; f.token.focus(); return false; }
-      tombol.disabled = true;
-      window.call('apiCekToken', u.id, d.token).then(function (h) {
+      window.sibuk(tombol, window.call('apiCekToken', u.id, d.token).then(function (h) {
         modal.close();
         langkah2(h.ujian, d);
       }).catch(function (e) {
         galatToken.textContent = e.message;
-        tombol.disabled = false;
         f.token.select();
-      });
+      }));
       return false;
     }
     var modal = window.openModal({
@@ -176,6 +328,14 @@
   var U = null;
   var pengatur = { timer: null, sinkron: null };
 
+  function layarMuat(judul, langkah) {
+    var s = document.querySelector('[data-view="ujian"]');
+    window.showView('ujian');
+    s.textContent = '';
+    s.appendChild(window.muatan(judul, langkah));
+    return s;
+  }
+
   function layarPesan(teks) {
     var s = document.querySelector('[data-view="ujian"]');
     window.showView('ujian');
@@ -185,7 +345,7 @@
   }
 
   window.App.mulaiUjian = function (ujianId, token, peserta) {
-    layarPesan('Menyiapkan ujian...');
+    layarMuat('Menyiapkan ujian', ['Memeriksa token', 'Mengambil soal', 'Menyiapkan layar ujian']);
     window.call('apiMulai', ujianId, token, peserta)
       .then(function (d) { mulaiSesi(d, ujianId, token); })
       .catch(function (e) { window.toast(e.message, true); muatBeranda(); });
@@ -496,11 +656,11 @@
     if (!U || U.mengirim || U.selesai) return;
     U.mengirim = true;
     clearInterval(pengatur.timer); clearInterval(pengatur.sinkron);
-    kirimJawaban(otomatis ? 'Waktu habis. Mengirim jawaban Anda...' : 'Mengirim jawaban Anda...');
+    kirimJawaban(otomatis ? 'Waktu habis' : 'Mengirim jawaban');
   }
 
   function kirimJawaban(pesan) {
-    layarPesan(pesan);
+    layarMuat(pesan, ['Mengirim jawaban', 'Menghitung nilai', 'Menyiapkan hasil']);
     window.call('apiSelesai', U.sesiId, U.jawaban).then(function (h) {
       U.selesai = true;
       var sesiAktif = U;
@@ -511,7 +671,7 @@
     }).catch(function (e) {
       var s = layarPesan('Jawaban belum terkirim: ' + e.message);
       s.appendChild(el('p', { class: 'redup' }, 'Jawaban Anda aman di perangkat ini. Periksa koneksi internet, lalu kirim ulang.'));
-      s.appendChild(el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { kirimJawaban('Mengirim jawaban Anda...'); } }, 'Kirim ulang'));
+      s.appendChild(el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { kirimJawaban('Mengirim jawaban'); } }, 'Kirim ulang'));
     });
   }
 
@@ -599,8 +759,14 @@
   }
 
   function unduhPdf(h, cetak, tombol) {
-    if (!window.html2pdf) { window.toast('Pustaka PDF tidak termuat. Gunakan tombol Cetak.', true); return; }
-    tombol.disabled = true;
+    tombol.disabled = true; tombol.classList.add('sibuk');
+    window.pastikanPdf().then(function () { buatPdf(h, cetak, tombol); }).catch(function () {
+      window.toast('Pustaka PDF tidak termuat. Gunakan tombol Cetak.', true);
+      tombol.disabled = false; tombol.classList.remove('sibuk');
+    });
+  }
+
+  function buatPdf(h, cetak, tombol) {
     var gudang = el('div', { class: 'pdf-gudang' });
     var salinan = cetak.cloneNode(true);
     salinan.querySelectorAll('.no-pdf').forEach(function (x) { x.remove(); });
@@ -614,7 +780,7 @@
     var siap = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
     siap.then(function () { return window.html2pdf().set(pilihan).from(salinan).save(); })
       .catch(function () { window.toast('PDF gagal dibuat. Coba tombol Cetak.', true); })
-      .then(function () { gudang.remove(); tombol.disabled = false; });
+      .then(function () { gudang.remove(); tombol.disabled = false; tombol.classList.remove('sibuk'); });
   }
 
   window.App.tampilHasil = function (h, sesi) {
@@ -623,6 +789,7 @@
     s.textContent = '';
     var cetak = bangunHasil(h, sesi);
     var tbPdf = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { unduhPdf(h, cetak, tbPdf); } }, 'Download PDF');
+    window.siapkanPdfNanti();
     s.appendChild(cetak);
     s.appendChild(el('div', { class: 'hasil-aksi no-print' }, tbPdf,
       el('button', { type: 'button', class: 'btn', onclick: function () { window.print(); } }, 'Cetak'),

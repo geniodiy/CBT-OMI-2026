@@ -102,3 +102,43 @@ function seedShuffle_(arr, seed) {
   }
   return a;
 }
+
+// ---- Cache server (CacheService) untuk data yang sering dibaca ----
+
+var POTONGAN_CACHE_ = 30000; // karakter per kunci; nilai maksimum CacheService 100 KB (UTF-8, Arab bisa 3 byte per huruf)
+
+/** Simpan string besar dengan memecahnya ke beberapa kunci. Gagal diam-diam bila cache menolak. */
+function cachePutBesar_(kunci, teks, detik) {
+  try {
+    var cache = CacheService.getScriptCache(), n = Math.ceil(teks.length / POTONGAN_CACHE_) || 1, isi = {};
+    for (var i = 0; i < n; i++) isi[kunci + '#' + i] = teks.substr(i * POTONGAN_CACHE_, POTONGAN_CACHE_);
+    isi[kunci] = String(n);
+    cache.putAll(isi, detik);
+  } catch (e) { Logger.log('Cache besar dilewati: ' + e); }
+}
+
+/** Kembalikan string utuh, atau null bila ada potongan yang hilang. */
+function cacheGetBesar_(kunci) {
+  var cache = CacheService.getScriptCache(), n = Number(cache.get(kunci));
+  if (!n) return null;
+  var kunciPotongan = [];
+  for (var i = 0; i < n; i++) kunciPotongan.push(kunci + '#' + i);
+  var isi = cache.getAll(kunciPotongan), teks = '';
+  for (var j = 0; j < n; j++) {
+    var p = isi[kunci + '#' + j];
+    if (p == null) return null;
+    teks += p;
+  }
+  return teks;
+}
+
+/** Penanda versi soal. Berubah setiap soal diubah, sehingga cache soal lama otomatis tidak dipakai. */
+function versiSoal_() {
+  var cache = CacheService.getScriptCache(), v = cache.get('ver_soal');
+  if (!v) { v = Utilities.getUuid(); cache.put('ver_soal', v, 21600); }
+  return v;
+}
+
+function bumpSoal_() {
+  CacheService.getScriptCache().put('ver_soal', Utilities.getUuid(), 21600);
+}

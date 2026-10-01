@@ -1,23 +1,30 @@
 /** Fungsi publik siswa (tanpa autentikasi). Jangan pernah mengirim kolom token atau kunci. */
 
 var KOLOM_KONTAINER_ = 'id,nama,jenjang,mapel,sesi,durasi_menit,jumlah_soal,n_pg,n_pgk,n_isian';
-var CACHE_BERANDA_DETIK_ = 60;
+var CACHE_BERANDA_DETIK_ = 300;
 
-function apiBeranda() {
+/**
+ * Baris ujian aktif beserta jadwalnya, disimpan di cache. Jadwal disaring saat disajikan (bukan saat disimpan),
+ * jadi ujian tetap muncul atau hilang tepat waktu walau cache masih berlaku. Admin menghapus cache saat ada perubahan.
+ */
+function berandaMentah_() {
   var cache = CacheService.getScriptCache();
   var ada = cache.get(CACHE_BERANDA_);
   if (ada) return JSON.parse(ada);
+  var baris = sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + ',buka_at,tutup_at&aktif=eq.true') || [];
+  try { cache.put(CACHE_BERANDA_, JSON.stringify(baris), CACHE_BERANDA_DETIK_); } catch (e) { /* terlalu besar: lewati cache */ }
+  return baris;
+}
+
+function apiBeranda() {
   var sekarang = Date.now();
-  var baris = (sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + ',buka_at,tutup_at&aktif=eq.true') || [])
-    .filter(function (u) { return statusJadwal_(u, sekarang) === 'buka'; })
-    .map(function (u) { delete u.buka_at; delete u.tutup_at; return u; });
-  var hasil = urutKontainer_(baris);
-  try { cache.put(CACHE_BERANDA_, JSON.stringify(hasil), CACHE_BERANDA_DETIK_); } catch (e) { /* terlalu besar: lewati cache */ }
-  return hasil;
+  var buka = berandaMentah_().filter(function (u) { return statusJadwal_(u, sekarang) === 'buka'; })
+    .map(function (u) { var c = Object.assign({}, u); delete c.buka_at; delete c.tutup_at; return c; });
+  return urutKontainer_(buka);
 }
 
 function apiCekToken(ujianId, token) {
-  var u = ujianDiBuka_(ujianId, token);
+  var u = cekUjian_(ambilUjianRingkas_(ujianId), token);
   if (u.ditutup) throw new Error(pesanTutup_(u));
   delete u.ditutup; delete u.tutup_at;
   return { ujian: u };
@@ -27,9 +34,17 @@ function pesanTutup_(u) {
   return 'Ujian ini sudah ditutup pada ' + formatWaktu_(Date.parse(u.tutup_at)) + '.';
 }
 
-/** Ujian aktif + token cocok + punya soal. Hasil tanpa token. Dipakai juga oleh apiMulai (M6). */
-function ujianDiBuka_(ujianId, token) {
-  var baris = sb_('GET', 'ujian_ringkas?select=' + KOLOM_KONTAINER_ + ',token,catatan,acak_soal,acak_opsi,buka_at,tutup_at&aktif=eq.true&id=eq.' + enc_(ujianId || ''));
+var KOLOM_UJIAN_SISWA_ = KOLOM_KONTAINER_ + ',token,catatan,acak_soal,acak_opsi,buka_at,tutup_at';
+
+function pathUjianRingkas_(ujianId) {
+  return 'ujian_ringkas?select=' + KOLOM_UJIAN_SISWA_ + '&aktif=eq.true&id=eq.' + enc_(ujianId || '');
+}
+function ambilUjianRingkas_(ujianId) {
+  return sb_('GET', pathUjianRingkas_(ujianId));
+}
+
+/** Ujian aktif + token cocok + punya soal. Hasil tanpa token. baris = hasil query ujian_ringkas. */
+function cekUjian_(baris, token) {
   if (!baris || !baris.length) throw new Error('Ujian tidak ditemukan atau belum dibuka.');
   var u = baris[0];
   if (!tokenCocok_(token, u.token)) {
@@ -45,9 +60,24 @@ function ujianDiBuka_(ujianId, token) {
   return u;
 }
 
+/** Data awal untuk halaman pertama (doGet) agar daftar ujian langsung tampil tanpa menunggu panggilan server. */
+function dataAwal_() {
+  try { return { beranda: apiBeranda() }; } catch (e) { Logger.log('Data awal dilewati: ' + e); return null; }
+}
+
 // ---- Mengerjakan ujian ----
 
-var SOAL_SISWA_ = 'id,tipe,blok,opsi';
+var KOLOM_SOAL_ = 'id,urutan,tipe,blok,opsi,kunci,bobot,created_at';
+
+/** Semua soal sebuah ujian (urut), termasuk kunci. Hanya untuk server; dibaca dari cache bila ada. */
+function soalUjian_(ujianId) {
+  var kunci = 'soal_' + versiSoal_() + '_' + ujianId;
+  var ada = cacheGetBesar_(kunci);
+  if (ada) return JSON.parse(ada);
+  var baris = sb_('GET', 'soal?select=' + KOLOM_SOAL_ + '&ujian_id=eq.' + enc_(ujianId) + '&order=urutan.asc,created_at.asc') || [];
+  cachePutBesar_(kunci, JSON.stringify(baris), 3600);
+  return baris;
+}
 
 function durasiUjian_(ujianId) {
   var cache = CacheService.getScriptCache();
@@ -59,16 +89,19 @@ function durasiUjian_(ujianId) {
   return r[0].durasi_menit;
 }
 
+function pathSesiBerjalan_(ujianId, nama) {
+  return 'sesi?select=id,nama,nomor_peserta,kelas,sekolah,mulai_at,jawaban&ujian_id=eq.' + enc_(ujianId) +
+    '&status=eq.berjalan&nama=ilike.' + enc_(nama) + '&order=mulai_at.desc&limit=20';
+}
+
 /** Sesi berjalan milik peserta yang sama (nama tanpa peka huruf + nomor sama) dan belum habis waktunya. */
-function cariSesiBerjalan_(u, p, sekarang) {
-  var baris = sb_('GET', 'sesi?select=id,nama,nomor_peserta,kelas,sekolah,mulai_at,jawaban&ujian_id=eq.' + enc_(u.id) +
-    '&status=eq.berjalan&nama=ilike.' + enc_(p.nama) + '&order=mulai_at.desc&limit=20') || [];
+function pilihSesiBerjalan_(baris, durasiMenit, p, sekarang) {
   var nama = p.nama.toLowerCase(), nomor = p.nomor.toLowerCase();
-  for (var i = 0; i < baris.length; i++) {
+  for (var i = 0; i < (baris || []).length; i++) {
     var r = baris[i];
     if (String(r.nama).trim().toLowerCase() !== nama) continue;
     if (String(r.nomor_peserta || '').trim().toLowerCase() !== nomor) continue;
-    if (Date.parse(r.mulai_at) + u.durasi_menit * 60000 <= sekarang) continue;
+    if (Date.parse(r.mulai_at) + durasiMenit * 60000 <= sekarang) continue;
     return r;
   }
   return null;
@@ -76,9 +109,14 @@ function cariSesiBerjalan_(u, p, sekarang) {
 
 function apiMulai(ujianId, token, peserta) {
   var p = normPeserta_(peserta);
-  var u = ujianDiBuka_(ujianId, token);
+  // Ujian dan sesi lama dibaca bersamaan dalam satu putaran jaringan.
+  var awal = sbBatch_([
+    { method: 'GET', path: pathUjianRingkas_(ujianId) },
+    { method: 'GET', path: pathSesiBerjalan_(ujianId, p.nama) }
+  ]);
+  var u = cekUjian_(awal[0], token);
   var sekarang = Date.now();
-  var sesi = cariSesiBerjalan_(u, p, sekarang);
+  var sesi = pilihSesiBerjalan_(awal[1], u.durasi_menit, p, sekarang);
   var lanjut = !!sesi;
   if (!sesi && u.ditutup) throw new Error(pesanTutup_(u));
   if (!sesi) {
@@ -87,9 +125,10 @@ function apiMulai(ujianId, token, peserta) {
       sekolah: p.sekolah || null, mulai_at: new Date(sekarang).toISOString()
     })[0];
   }
-  var baris = soalTampil_(sb_('GET', 'soal?select=' + SOAL_SISWA_ + '&ujian_id=eq.' + enc_(u.id) + '&order=urutan.asc,created_at.asc') || []);
+  var baris = soalTampil_(soalUjian_(u.id));
   if (!baris.length) throw new Error('Ujian ini belum memiliki soal yang siap dikerjakan.');
   if (u.acak_soal) baris = seedShuffle_(baris, sesi.id);
+  // Hanya id, tipe, blok, opsi yang dikirim ke siswa. Kunci tidak pernah ikut.
   var soal = baris.map(function (s) {
     var opsi = s.opsi || [];
     if (u.acak_opsi && s.tipe !== 'isian') opsi = seedShuffle_(opsi, sesi.id + s.id);
@@ -110,17 +149,20 @@ function apiSinkron(sesiId, jawaban) {
   return { ok: true, serverNow: Date.now(), akhirMs: Date.parse(r[0].mulai_at) + durasiUjian_(r[0].ujian_id) * 60000 };
 }
 
+var KOLOM_UJIAN_HASIL_ = 'nama,jenjang,mapel,sesi,durasi_menit,tampil_kunci';
+
 function apiSelesai(sesiId, jawaban) {
-  var sesiRows = sb_('GET', 'sesi?id=eq.' + enc_(sesiId));
+  // Sesi dan ujiannya dibaca sekaligus lewat relasi (satu panggilan).
+  var sesiRows = sb_('GET', 'sesi?select=*,ujian(' + KOLOM_UJIAN_HASIL_ + ')&id=eq.' + enc_(sesiId));
   if (!sesiRows || !sesiRows.length) throw new Error('Sesi tidak ditemukan.');
   var sesi = sesiRows[0];
-  var ke = sbBatch_([
-    { method: 'GET', path: 'ujian?select=nama,jenjang,mapel,sesi,durasi_menit,tampil_kunci&id=eq.' + enc_(sesi.ujian_id) },
-    { method: 'GET', path: 'soal?ujian_id=eq.' + enc_(sesi.ujian_id) + '&order=urutan.asc,created_at.asc' }
-  ]);
-  var u = ke[0] && ke[0][0];
+  var u = sesi.ujian;
+  if (!u) {
+    var cadangan = sb_('GET', 'ujian?select=' + KOLOM_UJIAN_HASIL_ + '&id=eq.' + enc_(sesi.ujian_id));
+    u = cadangan && cadangan[0];
+  }
   if (!u) throw new Error('Ujian tidak ditemukan.');
-  var soal = soalTampil_(ke[1] || []);
+  var soal = soalTampil_(soalUjian_(sesi.ujian_id));
   var selesai = sesi.status === 'selesai';
   var pakai = selesai ? (sesi.jawaban || {}) : (jawaban == null ? (sesi.jawaban || {}) : bersihJawaban_(jawaban));
   var h = hitung_(soal, pakai);

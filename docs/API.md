@@ -61,7 +61,7 @@ type Hasil = {
 
 ## Admin
 
-### `adminLogin(password): string`
+### `adminLogin(password): { tok, ujian }`
 Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda 800 ms.
 
 - `adminKeluar(tok): true` menghapus token sesi admin.

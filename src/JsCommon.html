@@ -7,13 +7,35 @@
 
   var App = window.App = { onSesiAdminHabis: null };
 
+  // ---- indikator muat: bilah tipis di atas layar, muncul bila panggilan server > 150 ms ----
+  var menunggu = 0, pewaktuBilah = null;
+  function bilahNaik() {
+    menunggu++;
+    if (menunggu === 1) {
+      pewaktuBilah = setTimeout(function () {
+        var b = document.getElementById('bilahMuat');
+        if (b) b.classList.add('aktif');
+      }, 150);
+    }
+  }
+  function bilahTurun() {
+    menunggu = Math.max(0, menunggu - 1);
+    if (menunggu === 0) {
+      clearTimeout(pewaktuBilah);
+      var b = document.getElementById('bilahMuat');
+      if (b) b.classList.remove('aktif');
+    }
+  }
+
   /** Panggil fungsi server. Menolak dengan Error berpesan Indonesia. */
   window.call = function (fn) {
     var args = Array.prototype.slice.call(arguments, 1);
+    bilahNaik();
     return new Promise(function (ok, gagal) {
       google.script.run
-        .withSuccessHandler(ok)
+        .withSuccessHandler(function (h) { bilahTurun(); ok(h); })
         .withFailureHandler(function (e) {
+          bilahTurun();
           var pesan = String((e && e.message) || e || 'Terjadi kesalahan. Coba lagi.').replace(/^Error:\s*/, '');
           // Galat bawaan Google (kuota, waktu habis, jaringan) diganti kalimat yang bisa ditindaklanjuti.
           if (/too many (simultaneous )?(times|invocations)|Exceeded maximum execution time|Service (Unavailable|invoked)|quota|NetworkError|Failed to fetch|Load failed/i.test(pesan)) {
@@ -23,6 +45,56 @@
           gagal(new Error(pesan));
         })[fn].apply(null, args);
     });
+  };
+
+  /** Tombol sibuk: menampilkan putaran kecil dan menolak klik ganda selama janji berjalan. */
+  window.sibuk = function (tombol, janji) {
+    tombol.classList.add('sibuk'); tombol.disabled = true;
+    function selesai() { tombol.classList.remove('sibuk'); tombol.disabled = false; }
+    janji.then(selesai, selesai);
+    return janji;
+  };
+
+  /**
+   * Layar muat bermerek: logo di tengah cincin berputar dan teks langkah yang berganti.
+   * langkah: daftar kalimat singkat, misalnya ['Memeriksa token', 'Menyiapkan soal'].
+   */
+  window.muatan = function (judul, langkah) {
+    var logo = document.querySelector('.header-logo img');
+    var cincin = window.el('div', { class: 'muat-cincin', 'aria-hidden': 'true' },
+      window.el('i'), window.el('i'),
+      logo ? window.el('img', { src: logo.src, alt: '' }) : null);
+    var teks = window.el('p', { class: 'muat-langkah', 'aria-live': 'polite' }, (langkah && langkah[0]) || '');
+    var kotak = window.el('div', { class: 'muat', role: 'status' }, cincin, window.el('h2', null, judul), teks);
+    if (langkah && langkah.length > 1) {
+      var n = 0;
+      var jam = setInterval(function () {
+        if (!kotak.isConnected) { clearInterval(jam); return; }
+        n = (n + 1) % langkah.length;
+        teks.classList.remove('ganti'); void teks.offsetWidth;
+        teks.textContent = langkah[n]; teks.classList.add('ganti');
+      }, 1300);
+    }
+    return kotak;
+  };
+
+  /** html2pdf.js (besar) baru dimuat saat dibutuhkan atau saat browser menganggur. */
+  var janjiPdf = null;
+  window.pastikanPdf = function () {
+    if (window.html2pdf) return Promise.resolve();
+    if (janjiPdf) return janjiPdf;
+    janjiPdf = new Promise(function (ok, gagal) {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      sc.onload = function () { ok(); };
+      sc.onerror = function () { janjiPdf = null; gagal(new Error('Pustaka PDF tidak dapat dimuat.')); };
+      document.head.appendChild(sc);
+    });
+    return janjiPdf;
+  };
+  window.siapkanPdfNanti = function () {
+    var mulai = function () { window.pastikanPdf().catch(function () { /* dicoba lagi saat tombol ditekan */ }); };
+    if (window.requestIdleCallback) window.requestIdleCallback(mulai, { timeout: 4000 }); else setTimeout(mulai, 2500);
   };
 
   window.toast = function (pesan, galat) {
@@ -210,7 +282,8 @@
     kiri: [['path', { d: 'M14.5 6l-6 6 6 6' }]],
     kanan: [['path', { d: 'M9.5 6l6 6-6 6' }]],
     daftar: [['path', { d: 'M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01' }]],
-    centang: [['path', { d: 'M5 12.5l4.5 4.5L19 7.5' }]]
+    centang: [['path', { d: 'M5 12.5l4.5 4.5L19 7.5' }]],
+    dokumen: [['path', { d: 'M7 3.5h7l4 4V20.5H7z' }], ['path', { d: 'M14 3.5v4h4' }], ['path', { d: 'M9.5 12h5M9.5 15.5h5' }]]
   };
 
   /** Ikon garis tipis (SVG) yang mengikuti warna teks. Semua aria-hidden karena selalu disertai teks. */
@@ -234,6 +307,7 @@
     var btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.hidden = nama === 'ujian';
     document.body.classList.toggle('mode-ujian', nama === 'ujian');
+    document.body.setAttribute('data-halaman', nama);
     window.scrollTo(0, 0);
   };
 

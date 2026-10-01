@@ -38,7 +38,7 @@ Penyajian: `Index.html` dievaluasi sebagai template (`createTemplateFromFile`) d
 
 - Script Properties: `SUPABASE_URL`, `SUPABASE_KEY` (service_role), `ADMIN_PASSWORD`.
 - RLS aktif di semua tabel tanpa policy: kunci anon tidak bisa mengakses apa pun. Tetap jangan taruh kunci apa pun di klien.
-- Login admin: `adminLogin(password)` membandingkan dengan `ADMIN_PASSWORD`; jika cocok membuat token acak (`Utilities.getUuid()`), menyimpannya di `CacheService` (6 jam) dan mengembalikannya. Setiap fungsi admin menerima token itu sebagai argumen pertama dan memanggil `guard_(tok)`. Jika salah sandi, `Utilities.sleep(800)` untuk memperlambat tebakan.
+- Login admin: `adminLogin(password)` membandingkan dengan `ADMIN_PASSWORD`; jika cocok membuat token acak (`Utilities.getUuid()`), menyimpannya di `CacheService` (6 jam) dan mengembalikannya bersama daftar ujian (`{ tok, ujian }`) agar panel admin langsung terisi. Setiap fungsi admin menerima token itu sebagai argumen pertama dan memanggil `guard_(tok)`. Jika salah sandi, `Utilities.sleep(800)` untuk memperlambat tebakan.
 - Soal ke siswa: hanya `id, tipe, blok, opsi`. Tidak ada `kunci`.
 - Rendering: semua HTML lewat DOMPurify whitelist, URL gambar hanya `https://`.
 - Token ujian dibandingkan tanpa peka huruf besar/kecil dan dengan `trim`.

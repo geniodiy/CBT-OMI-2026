@@ -23,7 +23,7 @@ Status uji: lulus (logika Node, helper browser, dan `sb_`/`hitung_` di Apps Scri
 ## M2. Admin: ujian
 
 Berkas: `src/ApiAdmin.gs` (login, ujian), `src/JsAdmin.html`.
-- [x] `adminLogin`, token di `CacheService`, tombol Login admin di header, modal login.
+- [x] `adminLogin`, token di `CacheService`, tombol Login admin di header, popover kecil berisi kolom kata sandi.
 - [x] `adminUjianList/Simpan/Hapus`; tab Ujian dengan tabel dan formulir (token acak, catatan, sesi, semua pengaturan).
 - [x] Hapus cache beranda saat simpan.
 
@@ -134,3 +134,12 @@ Status uji: alur lengkap (jawab pg/pgk/isian, pindah soal, kosongkan, bantuan, R
 ## Tahap 2 (belum)
 
 Pembahasan soal, analisis per soal, skor parsial pgk, ganti sandi admin dari web, soal esai, deteksi pindah tab, webcam/mikrofon, optimasi kuota (cache soal, tulis langsung ke Supabase).
+
+## Performa dan beranda baru
+
+- [x] Daftar ujian ikut tertanam di halaman (`window.AWAL`) sehingga tampil seketika, lalu disegarkan di belakang layar. Cache server: daftar beranda 300 detik, soal per versi (`ver_soal`), durasi 600 detik.
+- [x] Server menggabungkan panggilan Supabase (`fetchAll`, relasi `sesi` + `ujian`); `apiMulai` dan `apiSelesai` memakai cache soal.
+- [x] Animasi muat: bilah atas, layar muat bermerek (`muatan`), putaran pada tombol (`sibuk`), kerangka kartu.
+- [x] Panel admin menampilkan daftar terakhir lebih dulu lalu menyegarkannya; hapus ujian langsung hilang dari daftar. Durasi bawaan ujian baru 120 menit.
+- [x] Beranda profesional: hero, "Apa itu OMI?", format tes dan jadwal, penilaian, tata tertib (dari Petunjuk Teknis OMI 2026), durasi 120 menit untuk semua jenjang.
+- [x] html2pdf dimuat saat dibutuhkan (`pastikanPdf`).

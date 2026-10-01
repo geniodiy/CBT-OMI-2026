@@ -63,7 +63,8 @@ const index = baca('Index.html');
 for (const m of index.matchAll(/https:\/\/([^/"]+)\/[^"]*/g)) {
   cek('host library diizinkan: ' + m[1], ['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'].includes(m[1]));
 }
-for (const v of ['KaTeX/0.16.9', 'dompurify/3.0.6', 'html2pdf.js/0.10.1']) cek('versi dipin ' + v, index.includes(v));
+for (const v of ['KaTeX/0.16.9', 'dompurify/3.0.6']) cek('versi dipin ' + v, index.includes(v));
+cek('versi dipin html2pdf.js/0.10.1', baca('JsCommon.html').includes('html2pdf.js/0.10.1'));
 
 if (gagal) { console.log(gagal + ' pemeriksaan gagal.'); process.exit(1); }
 console.log('pemeriksaan statis lulus');
