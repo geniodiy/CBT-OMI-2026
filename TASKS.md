@@ -18,7 +18,7 @@ Berkas: `src/Code.gs`, `src/Util.gs`, `src/Nilai.gs`, `src/Index.html` (kerangka
 
 Uji: halaman terbuka dengan header; fungsi uji sementara memanggil `sb_('GET','ujian?select=id&limit=1')` tanpa galat; contoh pemanggilan `hitung_` dengan data tiruan menghasilkan benar/salah/kosong yang tepat (cek pg, pgk, isian koma-titik, kosong).
 
-Status uji: logika `Nilai.gs` lulus uji Node (pg, pgk, isian koma/titik, kosong, Arab, validasi) dan helper klien lulus uji browser (sanitasi, KaTeX, mhchem, pembungkus Arab). Belum dicentang: uji di Apps Script asli (header + logo, `ujiM1Sb`, `ujiM1Hitung`), menunggu M0 dari pemilik. Fungsi `uji*` di `Code.gs` dihapus setelah lulus.
+Status uji: lulus (logika Node, helper browser, dan `sb_`/`hitung_` di Apps Script asli). Fungsi `uji*` sudah dihapus.
 
 ## M2. Admin: ujian
 
