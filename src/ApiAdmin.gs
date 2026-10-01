@@ -194,6 +194,31 @@ function adminHasil(tok, ujianId) {
     '&ujian_id=eq.' + enc_(ujianId) + '&status=eq.selesai&order=skor.desc,benar.desc,salah.asc,durasi_detik.asc') || [];
 }
 
+/** Rincian satu hasil: status tiap soal (nomor mengikuti urutan soal di tab Soal), jawaban siswa, dan kunci. */
+function adminHasilDetail(tok, sesiId) {
+  guard_(tok);
+  if (!sesiId) throw new Error('Hasil tidak dipilih.');
+  var r = sb_('GET', 'sesi?select=id,ujian_id,nama,nomor_peserta,kelas,sekolah,benar,salah,kosong,skor,durasi_detik,selesai_at,jawaban&id=eq.' + enc_(sesiId));
+  if (!r || !r.length) throw new Error('Hasil tidak ditemukan. Mungkin sudah direset.');
+  var sesi = r[0];
+  var semua = soalUjian_(sesi.ujian_id);
+  var h = hitung_(soalTampil_(semua), sesi.jawaban || {});
+  var peta = {};
+  h.rincian.forEach(function (x) { peta[x.id] = x; });
+  var rincian = semua.map(function (x, i) {
+    var d = peta[x.id];
+    var status = d ? d.status : 'disembunyikan';
+    return {
+      no: i + 1, id: x.id, tipe: x.tipe, status: status,
+      jawaban: d ? d.jawaban : [], kunci: x.kunci || [],
+      // Teks soal hanya dikirim untuk yang salah atau kosong (untuk daftar "soal yang perlu dibahas").
+      blok: status === 'salah' || status === 'kosong' ? (x.blok || []).filter(function (b) { return b.tipe === 'teks'; }) : []
+    };
+  });
+  delete sesi.jawaban;
+  return { sesi: sesi, rincian: rincian };
+}
+
 function adminSesiHapus(tok, sesiId) {
   guard_(tok);
   if (!sesiId) throw new Error('Hasil tidak dipilih.');

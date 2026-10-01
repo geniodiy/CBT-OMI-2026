@@ -94,6 +94,8 @@
   var LABEL_UJIAN = ['UJIAN', 'JENJANG', 'SOAL (PG/PGK/ISIAN)', 'DURASI', 'TOKEN', 'JADWAL', 'SELESAI', 'STATUS', ''];
   var KOLOM_UJIAN = ['adm-nama', 'adm-jenjang', 'adm-soal', 'adm-durasi', 'adm-tk', 'adm-jadwal', 'adm-selesai', 'adm-st', 'adm-aksi'];
   var KOLOM_SOAL = ['adm-sno', '', 'adm-soal-isi', 'adm-sopsi', 'adm-kunci', 'adm-sbobot', 'adm-sgambar', 'adm-aksi'];
+  var LABEL_HASIL = ['#', 'NAMA', 'KELAS', 'SEKOLAH', 'BENAR', 'SALAH', 'KOSONG', 'NILAI', 'WAKTU', 'SELESAI', ''];
+  var KOLOM_HASIL = ['', 'adm-hnama', 'adm-hkelas', 'adm-hsekolah', '', '', '', '', 'adm-hwaktu', 'adm-hselesai', 'adm-aksi'];
   var LABEL_SOAL = ['NO', 'TIPE', 'ISI SOAL', 'OPSI', 'KUNCI', 'BOBOT', 'GAMBAR', ''];
 
   var NAV = [['ujian', 'Ujian', 'ujian'], ['soal', 'Soal', 'bantuan'], ['hasil', 'Hasil', 'hasil']];
@@ -922,18 +924,22 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     });
   }
 
+  var filterSekolah = '', filterKelas = '', cariHasil = '';
+
   function gambarHasilTab() {
     var p = document.getElementById('panelAdmin');
     p.textContent = '';
-    p.appendChild(el('div', { class: 'adm-atas' }, el('h1', null, 'Hasil')));
     if (!daftarUjian.length) {
-      p.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Buat ujian dulu di tab Ujian.')));
+      p.appendChild(el('div', { class: 'adm-atas' }, el('h1', null, 'Hasil')));
+      p.appendChild(el('div', { class: 'adm-tabel' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Buat ujian dulu di tab Ujian.')));
       return;
     }
-    p.appendChild(el('div', { class: 'bar' },
-      pilihanUjian(muatHasil),
-      el('button', { class: 'btn', type: 'button', onclick: muatHasil }, 'Muat ulang'),
-      el('button', { class: 'btn btn-utama', type: 'button', id: 'tbCsv', onclick: eksporCsv }, 'Ekspor CSV')));
+    p.appendChild(el('div', { class: 'adm-atas' },
+      el('h1', null, 'Hasil'),
+      el('span', { class: 'redup', id: 'ringkasHasil' }),
+      el('button', { class: 'btn', type: 'button', style: 'margin-left:auto', onclick: muatHasil }, window.ikon('segarkan', 15), 'Muat ulang'),
+      el('button', { class: 'btn btn-utama', type: 'button', style: 'margin-left:0', id: 'tbCsv', onclick: eksporCsv }, window.ikon('unduh', 15), 'Ekspor CSV')));
+    p.appendChild(el('div', { class: 'adm-alat', id: 'alatHasil' }, pilihanUjian(function () { filterSekolah = ''; filterKelas = ''; cariHasil = ''; muatHasil(); }, true)));
     p.appendChild(el('div', { id: 'daftarHasil' }));
     muatHasil();
   }
@@ -941,7 +947,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
   function muatHasil() {
     var d = document.getElementById('daftarHasil');
     d.textContent = '';
-    d.appendChild(kerangkaTabel('adm-hbaris', ['PERINGKAT', 'NAMA', 'KELAS', 'SEKOLAH', 'BENAR', 'SALAH', 'SKOR', 'WAKTU'], 8, [60, 85, 40, 75, 35]));
+    d.appendChild(kerangkaTabel('adm-hbaris', LABEL_HASIL, 9, [40, 80, 45, 75, 35], KOLOM_HASIL));
     var untuk = ujianTerpilih;
     window.call('adminHasil', tokenAdmin, untuk).then(function (h) {
       if (untuk !== ujianTerpilih) return;
@@ -976,39 +982,160 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     return hasil;
   }
 
+  function nilaiTeks(n) { return String(n).replace('.', ','); }
+  function selesaiTeks(iso) {
+    var t = new Date(iso);
+    if (isNaN(t.getTime())) return '';
+    return tglPendek(iso) + ', ' + (t.getHours() < 10 ? '0' : '') + t.getHours() + '.' + (t.getMinutes() < 10 ? '0' : '') + t.getMinutes();
+  }
+  function rataRata(daftar, kunci) {
+    return daftar.length ? daftar.reduce(function (t, x) { return t + (Number(x[kunci]) || 0); }, 0) / daftar.length : 0;
+  }
+
   function gambarHasil() {
     var d = document.getElementById('daftarHasil');
     d.textContent = '';
+    var alat = document.getElementById('alatHasil');
+    while (alat.children.length > 1) alat.removeChild(alat.lastChild);
     document.getElementById('tbCsv').disabled = !daftarHasil.length;
+    var ringkas = document.getElementById('ringkasHasil');
+    if (ringkas) ringkas.textContent = daftarHasil.length + ' peserta selesai';
     if (!daftarHasil.length) {
-      d.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada siswa yang menyelesaikan ujian ini.')));
+      d.appendChild(el('div', { class: 'adm-tabel' }, el('p', { class: 'kosong' }, 'Belum ada siswa yang menyelesaikan ujian ini.')));
       return;
     }
-    d.appendChild(el('p', { class: 'redup' }, daftarHasil.length + ' hasil. Urutan: nilai tertinggi, benar terbanyak, salah tersedikit, lalu waktu tercepat.'));
-    var rank = peringkat(daftarHasil);
-    var tbody = el('tbody');
+    var unik = function (kunci) { return daftarHasil.map(function (r) { return r[kunci] || ''; }).filter(function (v, i, a) { return v && a.indexOf(v) === i; }).sort(); };
+    var sekolah = unik('sekolah'), kelas = unik('kelas');
+    if (sekolah.indexOf(filterSekolah) < 0) filterSekolah = '';
+    if (kelas.indexOf(filterKelas) < 0) filterKelas = '';
+    var ddSekolah = window.dropdown({ aria: 'Saring sekolah', nilai: filterSekolah,
+      pilihan: [{ nilai: '', label: 'Semua sekolah', jml: daftarHasil.length }].concat(sekolah.map(function (v) { return { nilai: v, label: v, jml: daftarHasil.filter(function (r) { return r.sekolah === v; }).length }; })) });
+    var ddKelas = window.dropdown({ aria: 'Saring kelas', nilai: filterKelas,
+      pilihan: [{ nilai: '', label: 'Semua kelas', jml: daftarHasil.length }].concat(kelas.map(function (v) { return { nilai: v, label: v, jml: daftarHasil.filter(function (r) { return r.kelas === v; }).length }; })) });
+    ddSekolah.addEventListener('change', function () { filterSekolah = ddSekolah.value; isiHasil(); });
+    ddKelas.addEventListener('change', function () { filterKelas = ddKelas.value; isiHasil(); });
+    var kolom = el('input', { type: 'search', placeholder: 'Cari nama atau sekolah', 'aria-label': 'Cari hasil', value: cariHasil });
+    kolom.addEventListener('input', function () { cariHasil = kolom.value; isiHasil(); });
+    if (sekolah.length) alat.appendChild(ddSekolah);
+    if (kelas.length) alat.appendChild(ddKelas);
+    alat.appendChild(el('label', { class: 'adm-cari' }, window.ikon('cari', 15), kolom));
+
+    d.appendChild(el('div', { class: 'adm-ring', id: 'ringHasil' }));
+    d.appendChild(el('div', { class: 'adm-tabel adm-anim', id: 'tabelHasil' }));
+    d.appendChild(el('div', { class: 'adm-kaki-tabel', id: 'kakiHasil' }));
+    isiHasil();
+    setTimeout(function () { var t = document.getElementById('tabelHasil'); if (t) t.classList.remove('adm-anim'); }, 900);
+  }
+
+  function isiHasil() {
+    var tabel = document.getElementById('tabelHasil'), ring = document.getElementById('ringHasil'), kaki = document.getElementById('kakiHasil');
+    if (!tabel) return;
+    var rank = peringkat(daftarHasil);   // peringkat tetap dihitung dari seluruh peserta
+    var kata = cariHasil.trim().toLowerCase();
+    var tampil = [];
     daftarHasil.forEach(function (r, i) {
-      tbody.appendChild(el('tr', null,
-        el('td', null, String(rank[i])),
-        el('td', null, el('strong', null, r.nama)),
-        el('td', null, r.nomor_peserta || '-'),
-        el('td', null, r.kelas || '-'),
-        el('td', null, r.sekolah || '-'),
-        el('td', null, String(r.benar)), el('td', null, String(r.salah)), el('td', null, String(r.kosong)),
-        el('td', null, el('strong', null, String(r.skor))),
-        el('td', null, waktuRingkas(r.durasi_detik)),
-        el('td', null, tanggalRingkas(r.selesai_at)),
-        el('td', { class: 'aksi' }, el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { hapusHasil(r); } }, 'Reset'))));
+      if (filterSekolah && r.sekolah !== filterSekolah) return;
+      if (filterKelas && r.kelas !== filterKelas) return;
+      if (kata && [r.nama, r.sekolah, r.nomor_peserta].join(' ').toLowerCase().indexOf(kata) < 0) return;
+      tampil.push({ r: r, rk: rank[i] });
     });
-    var judul = ['Peringkat', 'Nama', 'Nomor', 'Kelas', 'Sekolah', 'Benar', 'Salah', 'Kosong', 'Nilai', 'Waktu', 'Selesai', ''];
-    d.appendChild(el('div', { class: 'tabel-bungkus' }, el('table', { class: 'tabel' },
-      el('thead', null, el('tr', null, judul.map(function (t) { return el('th', null, t); }))), tbody)));
+    var daftar = tampil.map(function (x) { return x.r; });
+
+    // ringkasan
+    ring.textContent = '';
+    var skor = daftar.map(function (r) { return Number(r.skor) || 0; });
+    var jmlSoal = daftar.length ? (daftar[0].benar + daftar[0].salah + daftar[0].kosong) : 0;
+    var sel = function (label, isi) { return el('div', null, el('span', null, label), el('b', null, isi)); };
+    var ratas = Math.round(rataRata(daftar, 'skor') * 10) / 10;
+    var bins = [0, 0, 0, 0, 0];
+    skor.forEach(function (v) { bins[Math.min(4, Math.floor(v / 20))]++; });
+    var maks = Math.max.apply(null, bins.concat([1]));
+    ring.appendChild(sel('Rata-rata nilai', daftar.length ? nilaiTeks(ratas) : '-'));
+    ring.appendChild(sel('Tertinggi', daftar.length ? nilaiTeks(Math.max.apply(null, skor)) : '-'));
+    ring.appendChild(sel('Terendah', daftar.length ? nilaiTeks(Math.min.apply(null, skor)) : '-'));
+    ring.appendChild(sel('Rata-rata waktu', daftar.length ? [String(Math.round(rataRata(daftar, 'durasi_detik') / 60)) + ' ', el('small', null, 'menit')] : '-'));
+    ring.appendChild(sel('Benar rata-rata', daftar.length ? [nilaiTeks(Math.round(rataRata(daftar, 'benar') * 10) / 10) + ' ', el('small', null, 'dari ' + jmlSoal)] : '-'));
+    ring.appendChild(el('div', null, el('span', null, 'Sebaran nilai'),
+      el('div', { class: 'adm-dist' }, bins.map(function (n, i) { return el('i', { title: (i * 20) + ' sampai ' + (i === 4 ? 100 : i * 20 + 19) + ': ' + n + ' peserta', style: 'height:' + Math.max(6, Math.round(n / maks * 100)) + '%' }); })),
+      el('div', { class: 'adm-dist-l' }, ['0', '20', '40', '60', '80'].map(function (t) { return el('span', null, t); }))));
+
+    // tabel
+    tabel.textContent = '';
+    tabel.appendChild(el('div', { class: 'adm-hbaris adm-kepala' }, LABEL_HASIL.map(function (h) { return el('span', null, h); })));
+    if (!tampil.length) tabel.appendChild(el('p', { class: 'kosong' }, 'Tidak ada hasil yang cocok dengan saringan ini.'));
+    tampil.forEach(function (x, n) {
+      var r = x.r, bar = el('div', { class: 'adm-hbaris' });
+      bar.style.setProperty('--n', Math.min(n, 12));
+      bar.appendChild(el('span', null, el('span', { class: 'adm-rk' + (x.rk <= 3 ? ' adm-rk' + x.rk : '') }, String(x.rk))));
+      bar.appendChild(el('div', { class: 'adm-hnama' }, el('strong', null, r.nama), el('span', null, r.nomor_peserta || '')));
+      bar.appendChild(el('span', { class: 'adm-hkelas' }, r.kelas || '-'));
+      bar.appendChild(el('span', { class: 'adm-hsekolah redup', title: r.sekolah || '' }, r.sekolah || '-'));
+      bar.appendChild(el('span', { class: 'adm-hb' }, String(r.benar)));
+      bar.appendChild(el('span', { class: 'adm-hs' }, String(r.salah)));
+      bar.appendChild(el('span', { class: 'adm-hk' }, String(r.kosong)));
+      bar.appendChild(el('span', { class: 'adm-nilai' }, el('b', null, nilaiTeks(r.skor)), el('i', { style: 'width:' + Math.round((Number(r.skor) || 0) * 0.55) + 'px' })));
+      bar.appendChild(el('span', { class: 'adm-hwaktu' }, waktuRingkas(r.durasi_detik)));
+      bar.appendChild(el('span', { class: 'adm-hselesai redup' }, selesaiTeks(r.selesai_at)));
+      bar.appendChild(el('span', { class: 'adm-aksi' },
+        el('button', { class: 'adm-ikon', type: 'button', title: 'Lihat rincian', 'aria-label': 'Lihat rincian ' + r.nama, onclick: function () { lihatHasil(r, x.rk); } }, window.ikon('mata', 16)),
+        el('button', { class: 'adm-ikon adm-ikon-hapus', type: 'button', title: 'Reset hasil', 'aria-label': 'Reset hasil ' + r.nama, onclick: function () { hapusHasil(r); } }, window.ikon('segarkan', 16))));
+      tabel.appendChild(bar);
+    });
+    kaki.textContent = '';
+    kaki.appendChild(el('span', null, 'Urutan: nilai tertinggi, benar terbanyak, salah tersedikit, lalu waktu tercepat.'));
+    kaki.appendChild(el('span', null, tampil.length + ' dari ' + daftarHasil.length + ' hasil'));
+  }
+
+  /** Rincian satu peserta: kotak per soal (hijau benar, merah salah, abu kosong) dan daftar soal yang perlu dibahas. */
+  function lihatHasil(r, rk) {
+    var badan = el('div', { class: 'adm-form' }, el('div', { class: 'adm-memuat' }, el('i', { class: 'adm-skel', style: 'width:100%;height:60px' })));
+    var modal = window.openModal({
+      judul: r.nama, lebar: true, isi: badan,
+      tombol: [
+        { teks: 'Reset hasil', bahaya: true, aksi: function () { setTimeout(function () { hapusHasil(r); }, 0); } },
+        { teks: 'Tutup', utama: true }
+      ]
+    });
+    window.call('adminHasilDetail', tokenAdmin, r.id).then(function (h) {
+      badan.textContent = '';
+      var s = h.sesi;
+      var tjwb = function (arr, tipe) { return (arr || []).length ? arr.join(tipe === 'isian' ? ' | ' : ', ') : '(kosong)'; };
+      badan.appendChild(el('p', { class: 'redup' }, [s.kelas ? 'Kelas ' + s.kelas : '', s.sekolah || '', s.nomor_peserta ? 'nomor ' + s.nomor_peserta : ''].filter(Boolean).join(', ')));
+      var kv = function (label, isi, kelas) { return el('div', null, el('span', null, label), el('b', { class: kelas || null }, isi)); };
+      badan.appendChild(el('div', { class: 'adm-kv' },
+        kv('Peringkat', String(rk)), kv('Nilai', nilaiTeks(s.skor)), kv('Benar', String(s.benar), 'adm-hb'),
+        kv('Salah', String(s.salah), 'adm-hs'), kv('Kosong', String(s.kosong)), kv('Waktu', waktuRingkas(s.durasi_detik))));
+      badan.appendChild(el('div', { class: 'adm-bagian' }, 'JAWABAN PER SOAL (HIJAU BENAR, MERAH SALAH, ABU KOSONG)'));
+      badan.appendChild(el('div', { class: 'adm-no' }, h.rincian.map(function (x) {
+        var teks = x.status === 'benar' ? 'Benar' : x.status === 'salah' ? 'Salah' : x.status === 'kosong' ? 'Kosong' : 'Soal disembunyikan (gambar belum diisi)';
+        return el('span', { class: 'adm-no-' + (x.status === 'benar' ? 'b' : x.status === 'salah' ? 's' : x.status === 'kosong' ? 'k' : 'h'), title: 'Soal ' + x.no + ': ' + teks }, String(x.no));
+      })));
+      var perlu = h.rincian.filter(function (x) { return x.status === 'salah' || x.status === 'kosong'; });
+      badan.appendChild(el('div', { class: 'adm-bagian' }, perlu.length ? 'SOAL YANG SALAH ATAU KOSONG' : 'TIDAK ADA SOAL YANG SALAH ATAU KOSONG'));
+      if (perlu.length) {
+        var tbl = el('div', { class: 'adm-sal' }, el('div', { class: 'adm-sal-kepala' }, ['NO', 'SOAL', 'JAWABAN', 'KUNCI'].map(function (t) { return el('span', null, t); })));
+        perlu.forEach(function (x) {
+          var isi = el('div', { class: 'adm-soal-isi' });
+          isi.innerHTML = window.blokHTML(x.blok);
+          window.mathify(isi);
+          tbl.appendChild(el('div', null, el('b', null, String(x.no)), isi,
+            el('span', { class: x.status === 'kosong' ? 'redup' : null }, 'Jawab ', el('em', null, tjwb(x.jawaban, x.tipe))),
+            el('span', null, 'Kunci ', el('em', null, tjwb(x.kunci, x.tipe)))));
+        });
+        badan.appendChild(tbl);
+      }
+    }).catch(function (e) {
+      if (e.message.indexOf('SESI_ADMIN') === 0) { modal.close(); return; }
+      badan.textContent = ''; badan.appendChild(el('p', { class: 'kosong' }, e.message));
+    });
   }
 
   function hapusHasil(r) {
     window.openModal({
       judul: 'Reset hasil ini?',
-      isi: 'Hasil ' + r.nama + ' (nilai ' + r.skor + ') akan dihapus agar ia dapat mengulang ujian dari awal. Tindakan ini tidak bisa dibatalkan.',
+      isi: el('div', { class: 'adm-form' },
+        el('p', null, el('strong', null, r.nama), (r.kelas ? ' (' + r.kelas + (r.sekolah ? ', ' + r.sekolah : '') + ')' : ''), ' dapat mengerjakan ujian ini dari awal.'),
+        el('div', { class: 'adm-bahaya' }, window.ikon('peringatan', 16), el('div', null, 'Nilai ', el('strong', null, nilaiTeks(r.skor)), ' dan seluruh jawabannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.'))),
       tombol: [
         { teks: 'Batal' },
         { teks: 'Reset hasil', bahaya: true, aksi: function () {

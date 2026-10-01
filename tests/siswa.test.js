@@ -83,6 +83,18 @@ const hs=ctx.adminHasil('T','U1');
 a.strictEqual(hs.map(x=>x.nama).join(),'Cici,Dedi,Budi,Fani,Ani','urut: nilai, benar, salah, waktu; tanpa sesi berjalan');
 a(hs.every(x=>!('jawaban' in x)),'tanpa kolom jawaban');
 ctx.adminSesiHapus('T','c');a.strictEqual(ctx.adminHasil('T','U1').length,4);
+// rincian hasil per soal
+DB.sesi.push({id:'z',ujian_id:'U1',nama:'Zed',nomor_peserta:null,kelas:'9A',sekolah:'MTs X',status:'selesai',skor:12.5,benar:1,salah:1,kosong:6,durasi_detik:300,selesai_at:'2026-01-01T00:00:00Z',jawaban:{S1:['B'],S2:['A']}});
+a.throws(()=>ctx.adminHasilDetail('salah','z'),/SESI_ADMIN/);
+const det=ctx.adminHasilDetail('T','z');
+a(!('jawaban' in det.sesi),'detail tanpa kolom jawaban mentah');
+a.strictEqual(det.rincian.length,9,'satu entri per soal');
+const st=id=>det.rincian.find(x=>x.id===id);
+a.strictEqual(st('S1').status,'benar');a.strictEqual(st('S2').status,'salah');a.strictEqual(st('S3').status,'kosong');a.strictEqual(st('S9').status,'disembunyikan','soal bergambar kosong disembunyikan');
+a(st('S2').blok.length===1&&st('S1').blok.length===0,'teks soal hanya untuk salah/kosong');
+a.deepStrictEqual(Array.from(st('S2').kunci),DB.soal.find(x=>x.id==='S2').kunci);
+a.throws(()=>ctx.adminHasilDetail('T','tidakada'),/tidak ditemukan/);
+DB.sesi.pop();
 
 // ---- jadwal buka/tutup ----
 DB.ujian[0].tampil_kunci=false;DB.ujian[0].acak_soal=false;

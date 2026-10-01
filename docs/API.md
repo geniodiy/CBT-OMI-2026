@@ -85,6 +85,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 
 ### Hasil
 - `adminHasil(tok, ujianId): HasilRow[]` hanya `status = 'selesai'`, **tanpa kolom `jawaban`**, urut: `skor desc, benar desc, salah asc, durasi_detik asc`. Kolom: id, nama, nomor_peserta, kelas, sekolah, benar, salah, kosong, skor, durasi_detik, selesai_at.
+- `adminHasilDetail(tok, sesiId): { sesi, rincian[] }` rincian satu hasil. `sesi` = kolom hasil tanpa `jawaban`. `rincian` = satu entri per soal ujian (urutan sama dengan tab Soal): `{ no, id, tipe, status: 'benar'|'salah'|'kosong'|'disembunyikan', jawaban[], kunci[], blok[] }`; `blok` (hanya blok teks) hanya terisi untuk soal salah atau kosong. Penilaian memakai `hitung_` pada soal yang tampil ke siswa, sama seperti `apiSelesai`. Dipakai admin saja (memuat kunci).
 - `adminSesiHapus(tok, sesiId): true`
 
 ## Fungsi privat (`Util.gs`, `Nilai.gs`)
