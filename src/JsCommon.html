@@ -179,10 +179,12 @@
       else if (k in e && k !== 'list') e[k] = v;
       else e.setAttribute(k, v === true ? '' : v);
     });
-    Array.prototype.slice.call(arguments, 2).forEach(function (a) {
+    function tambah(a) {
       if (a == null || a === false) return;
+      if (Array.isArray(a)) { a.forEach(tambah); return; }
       e.appendChild(a instanceof Node ? a : document.createTextNode(String(a)));
-    });
+    }
+    Array.prototype.slice.call(arguments, 2).forEach(tambah);
     return e;
   };
 
