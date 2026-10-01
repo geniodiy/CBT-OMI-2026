@@ -531,56 +531,68 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
   body.mode-ujian #toastRoot { bottom: 80px; }
 }
 
-/* ---- penyempurnaan layar ujian: tanpa glow, huruf lebih kecil, pil rata tengah dan proporsional ---- */
+/* ---- penyempurnaan layar ujian: tanpa glow, huruf kecil, pil rata tengah. Skala sudut: kartu 12, kotak dan tombol 8, huruf opsi 6; bulat penuh hanya untuk pil dan tombol navigasi. ---- */
 .ujian { --bayangan-lembut: 0 1px 2px rgba(38, 70, 110, .06); --bayangan-angkat: 0 1px 3px rgba(38, 70, 110, .10); }
 .ujian .lencana, .ujian .lencana-status, .ujian .instruksi { display: inline-flex; align-items: center; justify-content: center; line-height: 1; white-space: nowrap; }
-.ujian .lencana { min-height: 24px; padding: 0 10px; border-radius: 999px; font-size: .72rem; }
-.ujian .instruksi { min-height: 30px; padding: 0 14px; margin: 12px 0 10px; font-size: .78rem; background: #fff; border-color: rgba(24, 121, 189, .25); box-shadow: none; }
-.ujian .kartu-soal { padding: 16px 20px; border-radius: 16px; }
-.ujian .kartu-kepala { gap: 8px; }
-.ujian .u-nomor { width: 40px; height: 40px; border-radius: 11px; box-shadow: none; }
-.ujian .u-nomor small { font-size: .56rem; }
-.ujian .u-nomor b { font-size: 1.02rem; }
-.ujian .btn-alat { min-width: 30px; height: 30px; padding: 0 7px; border-radius: 9px; font-size: .72rem; line-height: 1; box-shadow: none; display: inline-flex; align-items: center; justify-content: center; }
-.ujian .kartu-badan { font-size: calc(.92rem * var(--skala-huruf, 1)); line-height: 1.6; }
-.ujian .opsi-teks, .ujian .isian-siswa { font-size: calc(.9rem * var(--skala-huruf, 1)); }
-.ujian .opsi { min-height: 40px; gap: 10px; padding: 6px 12px; margin-bottom: 8px; border-radius: 12px; background: #fff; box-shadow: none; }
+.ujian .lencana { min-height: 22px; padding: 0 9px; border-radius: 999px; font-size: .68rem; }
+.ujian .instruksi { min-height: 28px; padding: 0 13px; margin: 10px 0 9px; font-size: .74rem; background: #fff; border-color: rgba(24, 121, 189, .25); box-shadow: none; }
+.ujian .kartu-soal, .ujian .u-panel, .ujian .u-identitas, .ujian .u-logo { border-radius: 12px; box-shadow: none; }
+.ujian .kartu-soal { padding: 14px 18px; }
+.ujian .kartu-kepala { gap: 7px; }
+.ujian .u-nomor { width: 36px; height: 36px; border-radius: 8px; box-shadow: none; }
+.ujian .u-nomor small { font-size: .52rem; }
+.ujian .u-nomor b { font-size: .95rem; }
+.ujian .btn-alat { min-width: 28px; height: 28px; padding: 0 6px; border-radius: 8px; font-size: .68rem; line-height: 1; box-shadow: none; display: inline-flex; align-items: center; justify-content: center; }
+.ujian .kartu-badan { font-size: calc(.86rem * var(--skala-huruf, 1)); line-height: 1.6; }
+.ujian .opsi-teks, .ujian .isian-siswa { font-size: calc(.84rem * var(--skala-huruf, 1)); }
+.ujian .opsi { min-height: 36px; gap: 10px; padding: 5px 11px; margin-bottom: 7px; border-radius: 8px; background: #fff; box-shadow: none; }
 .ujian .opsi:hover { transform: none; box-shadow: none; border-color: rgba(24, 121, 189, .4); }
 .ujian .opsi:active { transform: none; }
 .ujian .opsi.terpilih { background: #eef6fc; }
-.ujian .opsi .opsi-huruf { width: 26px; height: 26px; font-size: .8rem; line-height: 1; border-radius: 8px; box-shadow: none; display: inline-flex; align-items: center; justify-content: center; }
+.ujian .opsi .opsi-huruf { width: 24px; height: 24px; font-size: .74rem; line-height: 1; border-radius: 6px; box-shadow: none; display: inline-flex; align-items: center; justify-content: center; }
+.ujian .opsi .opsi-huruf.bulat { border-radius: 6px; }
 .ujian .opsi.terpilih .opsi-huruf, .ujian .opsi.terpilih .opsi-tanda { transform: none; }
-.ujian .opsi-tanda { width: 20px; height: 20px; }
-.ujian .isian-siswa { min-height: 40px; border-radius: 12px; box-shadow: none; background: #fff; }
+.ujian .opsi-tanda { width: 18px; height: 18px; }
+.ujian .opsi-tanda.kotak { border-radius: 5px; }
+.ujian .isian-siswa { min-height: 36px; border-radius: 8px; box-shadow: none; background: #fff; }
 .ujian .isian-siswa:focus { border-color: var(--biru); box-shadow: 0 0 0 1px var(--biru); }
-.ujian .u-panel { padding: 14px; }
-.ujian .u-waktu-label { font-size: .82rem; }
-.ujian .u-timer { font-size: 1.7rem; }
-.ujian .u-aksi { gap: 6px; margin-bottom: 12px; }
-.ujian .u-aksi .btn { min-height: 36px; font-size: .84rem; border-radius: 10px; background: #fff; border-color: #d9e2ec; box-shadow: none; }
+.ujian .u-panel { padding: 12px; }
+.ujian .u-waktu-label { font-size: .76rem; }
+.ujian .u-timer { font-size: 1.5rem; }
+.ujian .u-aksi { gap: 6px; margin-bottom: 10px; }
+.ujian .u-aksi .btn { min-height: 32px; font-size: .78rem; border-radius: 8px; background: #fff; border-color: #d9e2ec; box-shadow: none; }
 .ujian .u-aksi .btn:hover { transform: none; box-shadow: none; border-color: rgba(24, 121, 189, .45); }
 .ujian .u-aksi .btn-bahaya, .ujian .u-aksi .btn-bahaya:hover { box-shadow: none; }
 .ujian .u-aksi .btn-bahaya { background: var(--merah); border-color: var(--merah); }
-.ujian .u-aksi .btn-bahaya:hover { background: #b91d27; }
-.ujian .u-daftar-kepala { font-size: .86rem; }
-.ujian .sel { min-height: 34px; font-size: .8rem; border-radius: 9px; background: #fff; box-shadow: none; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+.ujian .u-aksi .btn-bahaya:hover { background: #b91d27; border-color: #b91d27; }
+.ujian .u-daftar-kepala { font-size: .8rem; }
+.ujian .u-grid { gap: 6px; }
+.ujian .sel { aspect-ratio: 1 / 1; min-height: 0; width: 100%; padding: 0; font-size: .74rem; border-radius: 8px; background: #fff; box-shadow: none; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
 .ujian .sel:hover { transform: none; box-shadow: none; border-color: rgba(24, 121, 189, .4); }
+.ujian .sel.terjawab { background: var(--biru-muda); }
 .ujian .sel.aktif { border-width: 2px; box-shadow: none; }
-.ujian .u-nav .btn { min-height: 38px; padding: 0 16px; font-size: .86rem; box-shadow: none; }
+.ujian .u-nav .btn { min-height: 34px; padding: 0 15px; font-size: .8rem; box-shadow: none; }
 .ujian .u-nav .btn-utama { box-shadow: none; }
-.ujian .u-identitas { padding: 14px; box-shadow: none; background: #fff; border-color: var(--garis-lembut); }
-.ujian .u-avatar { width: 40px; height: 40px; border-radius: 12px; background: var(--biru); box-shadow: none; font-size: .95rem; margin-bottom: 4px; }
-.ujian .u-nama { font-size: .84rem; }
-.ujian .u-menu-item { min-height: 36px; font-size: .86rem; }
-.ujian .u-logo { box-shadow: none; }
+.ujian .u-identitas { padding: 12px; background: #fff; border-color: var(--garis-lembut); }
+.ujian .u-avatar { width: 36px; height: 36px; border-radius: 8px; background: var(--biru); box-shadow: none; font-size: .85rem; margin-bottom: 3px; }
+.ujian .u-nama { font-size: .78rem; }
+.ujian .u-menu { padding-top: 14px; }
+.ujian .u-menu-item { min-height: 34px; font-size: .8rem; border-radius: 8px; }
+.ujian .u-logo { padding: 8px 10px; margin-bottom: 10px; }
+.ujian .u-logo img { height: 24px; }
+.ujian .u-logo img:first-child { height: 30px; }
+.ujian .u-logo strong { font-size: .78rem; }
 @media (max-width: 900px) {
-  .ujian .kartu-soal { padding: 14px 14px 12px; }
+  .ujian .kartu-soal { padding: 12px 12px 10px; }
   .ujian .btn-alat.btn-panah { display: none; }
-  .ujian .u-timer { font-size: 1.3rem; }
-  .ujian .u-nav .btn { min-height: 42px; font-size: .86rem; }
-  .ujian .sel { min-height: 40px; }
-  .ujian .u-aksi .btn { min-height: 42px; }
-  .ujian .u-laci-tombol { font-size: .84rem; }
+  .ujian .u-timer { font-size: 1.2rem; }
+  .ujian .u-nav .btn { min-height: 40px; font-size: .8rem; }
+  .ujian .u-grid { grid-template-columns: repeat(6, 1fr); }
+  .ujian .sel { font-size: .8rem; }
+  .ujian .u-aksi .btn { min-height: 40px; font-size: .82rem; }
+  .ujian .u-laci-tombol { font-size: .8rem; min-height: 40px; border-radius: 8px; }
+  .ujian .opsi { min-height: 40px; }
+  .ujian .u-panel { padding: 8px 10px 8px 14px; border-radius: 12px; }
 }
 
 /* indikator muat */
