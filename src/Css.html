@@ -1154,4 +1154,20 @@ html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content
 .cb-kaki { display: flex; gap: 14px; padding: 7px 12px; font-size: .76rem; color: var(--teks-redup); background: #f9fbf9; border-top: 1px solid var(--garis); }
 .cb-kaki kbd { margin-right: 4px; padding: 0 5px; font: inherit; font-family: ui-monospace, Consolas, monospace; background: var(--putih); border: 1px solid var(--garis); border-radius: 5px; }
 @media (pointer: coarse) { .cb-kaki { display: none; } .cb-butir { padding: 9px 10px; } }
+
+/* === UKURAN HURUF KOLOM ISIAN (versi final, harus di paling bawah agar menang atas aturan lain): kecil dan seragam === */
+.field input, .field select, .field textarea { font-size: 11.5px; }
+.input-token { font-size: 11.5px; font-weight: 600; letter-spacing: .08em; }
+.popover-kolom input, .popover-baris input { font-size: 11.5px; }
+.popover-kolom input[type="password"] { font-size: 10px; letter-spacing: .18em; }
+.popover-kolom input[type="password"]:placeholder-shown { font-size: 11.5px; letter-spacing: 0; }
+.editor-area { font-size: 11.5px; line-height: 1.5; }
+html.adm-aktif .field input, html.adm-aktif .field select, html.adm-aktif .field textarea,
+html.adm-aktif .adm-cari input, html.adm-aktif .cb-input, html.adm-aktif .dd-tombol,
+html.adm-aktif .editor-area, html.adm-aktif .modal-editor .editor-area, html.adm-aktif textarea,
+html.adm-aktif .popover-kolom input { font-size: 11px; }
+html.adm-aktif .cb-input { font-weight: 500; }
+html.adm-aktif .popover-kolom input[type="password"] { font-size: 10px; }
+html.adm-aktif .popover-kolom input[type="password"]:placeholder-shown { font-size: 11px; }
+.ujian .isian-siswa { font-size: calc(.8rem * var(--skala-huruf, 1)); }
 </style>
