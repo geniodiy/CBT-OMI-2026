@@ -101,13 +101,19 @@ function galatSoal_(i, pesan) {
   return new Error(pesan_(i, pesan));
 }
 
+/** Ukuran tampil gambar. Tanpa ukuran = ukuran asli (maksimal selebar kartu). */
+var UKURAN_GAMBAR_ = ['kecil', 'sedang', 'besar', 'penuh'];
+
 function bagianBlok_(x, i) {
   var blok = [];
   if (Array.isArray(x.blok)) {
     x.blok.forEach(function (b) {
       var t = b && String(b.tipe || '').toLowerCase().trim();
       if (t !== 'teks' && t !== 'gambar') throw galatSoal_(i, 'tipe bagian harus "teks" atau "gambar".');
-      blok.push({ tipe: t, isi: t === 'teks' ? normArab_(b.isi) : String(b.isi == null ? '' : b.isi).trim() });
+      var item = { tipe: t, isi: t === 'teks' ? normArab_(b.isi) : String(b.isi == null ? '' : b.isi).trim() };
+      var uk = t === 'gambar' && b.ukuran != null ? String(b.ukuran).toLowerCase().trim() : '';
+      if (uk && UKURAN_GAMBAR_.indexOf(uk) >= 0) item.ukuran = uk;
+      blok.push(item);
     });
   } else {
     blok.push({ tipe: 'teks', isi: normArab_(x.teks) });
@@ -215,6 +221,12 @@ function normSoal_(x, i) {
     .map(function (b) { return b.isi.replace(/<[^>]*>/g, '').trim(); }).join('').length;
   if (panjang < 5) peringatan.push(pesan_(i, 'teks soal sangat pendek.'));
 
+  (Array.isArray(x.blok) ? x.blok : []).forEach(function (b) {
+    var uk = b && b.ukuran != null ? String(b.ukuran).toLowerCase().trim() : '';
+    if (uk && String(b.tipe).toLowerCase().trim() === 'gambar' && UKURAN_GAMBAR_.indexOf(uk) < 0) {
+      peringatan.push(pesan_(i, 'ukuran gambar "' + b.ukuran + '" tidak dikenal (gunakan kecil, sedang, besar, atau penuh); dipakai ukuran asli.'));
+    }
+  });
   blok.forEach(function (b) {
     if (b.tipe === 'gambar' && b.isi && !/^https:\/\//i.test(b.isi)) {
       peringatan.push(pesan_(i, 'URL gambar harus diawali https://.'));

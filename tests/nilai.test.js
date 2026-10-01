@@ -22,6 +22,8 @@ a.strictEqual(k.poin,2);a.strictEqual(k.maks,4.5);a.strictEqual(k.skor,44.44);}
 {const tb="<table><thead><tr><th>Zat</th><th colspan='2'>Data</th></tr></thead><tbody><tr><td>Air</td><td>$1{,}5$</td><td>10</td></tr></tbody></table>";
 const q=normSoal_({tipe:'pg',blok:[{tipe:'teks',isi:'Perhatikan tabel berikut.'},{tipe:'teks',isi:tb}],opsi:['a','b'],kunci:['A']},1);
 a.strictEqual(q.soal.blok[1].isi,tb,'tabel HTML dipertahankan saat import');a.strictEqual(q.peringatan.length,0);}
+{const q=normSoal_({tipe:'pg',blok:[{tipe:'teks',isi:'Perhatikan gambar berikut.'},{tipe:'gambar',isi:'',ukuran:'Sedang'},{tipe:'gambar',isi:'',ukuran:'raksasa'}],opsi:['a','b'],kunci:['A']},2);
+a.strictEqual(q.soal.blok[1].ukuran,'sedang');a.strictEqual(q.soal.blok[2].ukuran,undefined);a(q.peringatan.some(p=>p.includes('ukuran gambar')),'ukuran tak dikenal diberi peringatan');}
 console.log('semua uji lulus');
 {const n=ctx.normUjian_;const ok={nama:' A ',jenjang:'MA',mapel:'Mat',token:' ab12 ',durasi_menit:60,aktif:true,id:'x',hack:1};
 const r=n(ok);a.strictEqual(r.nama,'A');a.strictEqual(r.token,'ab12');a.strictEqual(r.sesi,null);a.strictEqual(r.aktif,true);a.strictEqual(r.tampil_kunci,false);a(!('id' in r)&&!('hack' in r));

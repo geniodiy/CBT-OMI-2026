@@ -326,14 +326,20 @@
     o.status = el('div', { class: 'redup' });
     o.file = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif', hidden: true });
     o.nomor = el('span', { class: 'bagian-no' });
+    o.ukuran = window.dropdown({
+      aria: 'Ukuran gambar', nilai: b && b.tipe === 'gambar' && b.ukuran ? b.ukuran : 'asli', awalan: 'Ukuran: ',
+      pilihan: [{ nilai: 'asli', label: 'Asli' }, { nilai: 'kecil', label: 'Kecil' }, { nilai: 'sedang', label: 'Sedang' }, { nilai: 'besar', label: 'Besar' }, { nilai: 'penuh', label: 'Penuh lebar' }]
+    });
 
     function aturPra() {
       var u = o.url.value.trim();
+      o.pra.className = 'pra-gambar' + (o.ukuran.value !== 'asli' ? ' blok-gambar ukuran-' + o.ukuran.value : '');
       if (/^https:\/\//i.test(u)) { o.pra.src = u; o.pra.hidden = false; } else { o.pra.hidden = true; o.pra.removeAttribute('src'); }
       o.status.textContent = u === '' ? 'Gambar belum diisi. Soal tidak tampil ke siswa sebelum gambar diisi.' : (/^https:\/\//i.test(u) ? '' : 'URL gambar harus diawali https://');
     }
     o.pra.addEventListener('error', function () { o.pra.hidden = true; o.status.textContent = 'Gambar tidak dapat dimuat dari URL ini.'; });
     o.url.addEventListener('input', aturPra);
+    o.ukuran.addEventListener('change', aturPra);
 
     var tbUnggah = el('button', { type: 'button', class: 'btn btn-kecil', onclick: function () { o.file.click(); } }, window.ikon('unggah', 14), 'Unggah');
     o.file.addEventListener('change', function () {
@@ -353,7 +359,7 @@
     });
 
     var sekGambar = el('div', { class: 'bagian-gambar' },
-      el('div', { class: 'baris-token' }, o.url, tbUnggah), o.file, o.pra, o.status);
+      el('div', { class: 'baris-token' }, o.url, tbUnggah), el('div', { class: 'baris-ukuran' }, o.ukuran, el('span', { class: 'redup' }, 'Pilih seberapa besar gambar ditampilkan kepada siswa.')), o.file, o.pra, o.status);
     var btnTeks = el('button', { type: 'button', onclick: function () { o.mode = 'teks'; aturMode(); } }, 'Teks');
     var btnGambar = el('button', { type: 'button', onclick: function () { o.mode = 'gambar'; aturMode(); aturPra(); } }, 'Gambar');
     function aturMode() {
@@ -374,7 +380,9 @@
     if (o.mode === 'gambar') aturPra();
     o.ambil = function () {
       if (o.mode === 'teks') return o.teks.kosong() ? null : { tipe: 'teks', isi: o.teks.ambil() };
-      return { tipe: 'gambar', isi: o.url.value.trim() };
+      var g = { tipe: 'gambar', isi: o.url.value.trim() };
+      if (o.ukuran.value !== 'asli') g.ukuran = o.ukuran.value;
+      return g;
     };
     return o;
   }

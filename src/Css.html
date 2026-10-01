@@ -704,6 +704,12 @@ html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem
 /* isi soal */
 .blok-teks { margin-bottom: .75em; overflow-wrap: anywhere; }
 .blok-gambar { display: block; max-width: 100%; height: auto; object-fit: contain; margin: 0 0 .75em; }
+/* ukuran gambar yang dipilih admin: lebar tetap selama muat, mengecil bila layar sempit */
+.blok-gambar.ukuran-kecil { width: min(100%, 200px); }
+.blok-gambar.ukuran-sedang { width: min(100%, 360px); }
+.blok-gambar.ukuran-besar { width: min(100%, 540px); }
+.blok-gambar.ukuran-penuh { width: 100%; }
+.baris-ukuran { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; font-size: .82rem; }
 .ar { font-family: "Noto Naskh Arabic", "Traditional Arabic", "Geeza Pro", serif; font-size: 1.25em; line-height: 2; direction: rtl; unicode-bidi: isolate; }
 .ar-blok { text-align: right; direction: rtl; }
 

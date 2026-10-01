@@ -217,7 +217,7 @@
         var url = String(b.isi || '').trim();
         if (!/^https:\/\//i.test(url)) return '';
         var img = document.createElement('img');
-        img.className = 'blok-gambar';
+        img.className = 'blok-gambar' + (['kecil', 'sedang', 'besar', 'penuh'].indexOf(b.ukuran) >= 0 ? ' ukuran-' + b.ukuran : '');
         img.alt = 'Gambar soal';
         img.referrerPolicy = 'no-referrer';
         img.src = url;

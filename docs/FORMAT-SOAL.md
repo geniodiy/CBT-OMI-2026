@@ -29,6 +29,8 @@ Format yang sama dipakai editor manual (disimpan ke database) dan import JSON.
 
 *Soal tanpa teks ditolak.
 
+**Ukuran gambar**: bagian gambar boleh punya `ukuran` opsional: `kecil` (lebar maks. 200 px), `sedang` (360 px), `besar` (540 px), atau `penuh` (selebar kartu soal). Tanpa `ukuran` gambar tampil dengan ukuran aslinya, maksimal selebar kartu. Di layar sempit semua ukuran mengecil mengikuti lebar kartu. Nilai lain diabaikan dengan peringatan. Di editor, pilih lewat dropdown "Ukuran" pada bagian gambar (pratinjau langsung ikut berubah). Contoh: `{ "tipe": "gambar", "isi": "", "ukuran": "sedang" }`.
+
 Bagian gambar dengan `isi: ""` berarti "gambar menyusul": soal tetap tersimpan, ditandai "gambar belum diisi" di daftar soal, dan tidak ditampilkan ke siswa sampai diisi.
 
 Import menerima array soal, atau objek `{ "soal": [ ... ] }`. Pembungkus pagar kode ```json ... ``` dibuang otomatis.
@@ -91,7 +93,7 @@ FORMAT SATU SOAL
   "tipe": "pg",
   "blok": [
     {"tipe": "teks", "isi": "Narasi atau stimulus soal."},
-    {"tipe": "gambar", "isi": ""},
+    {"tipe": "gambar", "isi": "", "ukuran": "sedang"},
     {"tipe": "teks", "isi": "<b>Pertanyaan</b><br>Kalimat pertanyaan ..."}
   ],
   "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."},
@@ -109,7 +111,7 @@ ATURAN TIPE DAN KUNCI
 
 ATURAN ISI SOAL (blok)
 7. Susun isi soal per bagian, satu bagian satu blok, dengan urutan seperti di dokumen: (a) kalimat pengantar, (b) ayat atau hadis, (c) cerita, data, atau stimulus, (d) gambar, (e) pertanyaan. Jangan menggabungkan bagian yang berbeda ke satu blok, dan jangan memecah satu bagian ke banyak blok. Blok pertanyaan diawali <b>Pertanyaan</b><br> lalu kalimat pertanyaannya. Di dalam satu blok, pisahkan paragraf dengan <br><br>.
-8. Bila soal memiliki gambar, grafik, diagram, tabel berupa gambar atau foto, atau peta, sisipkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu (di atas, tengah, atau bawah teks). Biarkan "isi" KOSONG. Gambar diunggah manual di website. Satu soal boleh punya beberapa blok gambar.
+8. Bila soal memiliki gambar, grafik, diagram, tabel berupa gambar atau foto, atau peta, sisipkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu (di atas, tengah, atau bawah teks). Biarkan "isi" KOSONG. Tambahkan "ukuran" sesuai lebar gambar itu terhadap lebar halaman di dokumen: "kecil" (kurang dari sekitar 30 persen lebar, misalnya ikon atau simbol), "sedang" (sekitar setengah lebar), "besar" (sekitar tiga perempat lebar), atau "penuh" (hampir selebar halaman). Bila ragu, tulis "sedang". Contoh: {"tipe":"gambar","isi":"","ukuran":"sedang"}. Gambar diunggah manual di website. Satu soal boleh punya beberapa blok gambar.
 9. Bila SEBUAH OPSI berupa gambar, tulis teks opsinya "(gambar)" dan sebutkan nomor soal itu di CATATAN AKHIR.
 10. TABEL: bila di dokumen ada tabel berisi teks atau angka, WAJIB dibuat sebagai tabel HTML, jangan diubah menjadi daftar atau teks biasa. Taruh satu tabel dalam satu blok teks tersendiri, pada posisi yang sama dengan di dokumen (kalimat pengantar dan pertanyaan di blok lain). Bentuk: <table><thead><tr><th>Kolom 1</th><th>Kolom 2</th></tr></thead><tbody><tr><td>isi</td><td>isi</td></tr></tbody></table>. Baris judul memakai <th> di dalam <thead>; bila tabel tidak punya baris judul, langsung <tbody> berisi <td>. Sel yang digabung memakai colspan='2' atau rowspan='2' (tanda kutip tunggal, angka 2 sampai 12). Isi sel boleh memakai <b>, <i>, <sup>, <sub>, <br>, dan rumus $...$. Jangan memakai atribut lain (style, border, width). Batas: sampai 8 kolom dan 12 baris. Tabel yang lebih besar, berupa foto atau hasil pindai, atau berisi gambar di dalam selnya, dijadikan blok gambar kosong dan dicatat di CATATAN AKHIR. Tabel tidak boleh berada di dalam opsi jawaban: bila sebuah opsi berupa tabel, tulis opsi itu sebagai teks ringkas dengan <br> dan catat nomor soalnya di CATATAN AKHIR.
 11. Pertahankan nomor, urutan, kata, dan angka apa adanya. Jangan memperbaiki, menyingkat, atau menerjemahkan. Buang nomor soal ("1.", "2.") dari awal teks, tetapi jangan ubah isinya.
@@ -147,6 +149,7 @@ Sebelum mengeluarkan hasil, periksa dalam hati:
 - Jumlah soal di JSON = jumlah soal di dokumen.
 - Setiap tabel teks di dokumen menjadi <table> di dalam blok teks (bukan daftar atau teks biasa), dengan jumlah baris dan kolom yang sama.
 - Semua "tipe" hanya pg, pgk, atau isian.
+- Setiap blok gambar memiliki "ukuran" (kecil, sedang, besar, atau penuh).
 - pg memiliki tepat 1 kunci; pgk memiliki 1 atau lebih; semua huruf kunci ada di opsi.
 - isian tidak punya "opsi".
 - Tidak ada garis miring tunggal pada rumus (semua \\ ganda).
