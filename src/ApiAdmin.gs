@@ -239,7 +239,8 @@ function adminHasilDetail(tok, sesiId) {
     };
   });
   delete sesi.jawaban;
-  return { sesi: sesi, rincian: rincian };
+  var u = sb_('GET', 'ujian?select=nama,jenjang,mapel,sesi&id=eq.' + enc_(sesi.ujian_id));
+  return { sesi: sesi, rincian: rincian, ujian: (u && u[0]) || { nama: '', jenjang: '', mapel: '', sesi: '' } };
 }
 
 function adminSesiHapus(tok, sesiId) {

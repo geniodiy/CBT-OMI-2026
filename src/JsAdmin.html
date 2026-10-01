@@ -1089,7 +1089,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       var r = x.r, bar = el('div', { class: 'adm-hbaris' });
       bar.style.setProperty('--n', Math.min(n, 12));
       bar.appendChild(el('span', null, el('span', { class: 'adm-rk' + (x.rk <= 3 ? ' adm-rk' + x.rk : '') }, String(x.rk))));
-      bar.appendChild(el('div', { class: 'adm-hnama' }, el('strong', null, r.nama), el('span', null, r.nomor_peserta || '')));
+      bar.appendChild(el('div', { class: 'adm-hnama' }, el('strong', null, r.nama), el('span', null, r.nomor_peserta || ''), el('em', { class: 'adm-hsub' }, r.sekolah || '')));
       bar.appendChild(el('span', { class: 'adm-hkelas' }, r.kelas || '-'));
       bar.appendChild(el('span', { class: 'adm-hsekolah redup', title: r.sekolah || '' }, r.sekolah || '-'));
       bar.appendChild(el('span', { class: 'adm-hb' }, String(r.benar)));
@@ -1100,6 +1100,9 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       bar.appendChild(el('span', { class: 'adm-hselesai redup' }, selesaiTeks(r.selesai_at)));
       bar.appendChild(el('span', { class: 'adm-aksi' },
         el('button', { class: 'adm-ikon', type: 'button', title: 'Lihat rincian', 'aria-label': 'Lihat rincian ' + r.nama, onclick: function () { lihatHasil(r, x.rk); } }, window.ikon('mata', 16)),
+        el('button', { class: 'adm-ikon', type: 'button', title: 'Laporan siswa', 'aria-label': 'Laporan ' + r.nama, onclick: function () {
+          window.call('adminHasilDetail', tokenAdmin, r.id).then(bukaLaporan).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
+        } }, window.ikon('dokumen', 16)),
         el('button', { class: 'adm-ikon adm-ikon-hapus', type: 'button', title: 'Hapus hasil', 'aria-label': 'Hapus hasil ' + r.nama, onclick: function () { hapusHasil(r); } }, window.ikon('hapus', 16))));
       tabel.appendChild(bar);
     });
@@ -1115,10 +1118,13 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       judul: r.nama, lebar: true, isi: badan,
       tombol: [
         { teks: 'Hapus hasil', bahaya: true, aksi: function () { setTimeout(function () { hapusHasil(r); }, 0); } },
+        { teks: 'Laporan siswa', aksi: function () { if (detail) bukaLaporan(detail); return false; } },
         { teks: 'Tutup', utama: true }
       ]
     });
+    var detail = null;
     window.call('adminHasilDetail', tokenAdmin, r.id).then(function (h) {
+      detail = h;
       badan.textContent = '';
       var s = h.sesi;
       var tjwb = function (arr, tipe) { return (arr || []).length ? arr.join(tipe === 'isian' ? ' | ' : ', ') : '(kosong)'; };
@@ -1149,6 +1155,42 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     }).catch(function (e) {
       if (e.message.indexOf('SESI_ADMIN') === 0) { modal.close(); return; }
       badan.textContent = ''; badan.appendChild(el('p', { class: 'kosong' }, e.message));
+    });
+  }
+
+  /** Mengubah rincian dari server menjadi bentuk yang dipakai laporan siswa (huruf opsi asli, kunci selalu terlihat oleh admin). */
+  function dataLaporan(h) {
+    var s = h.sesi, huruf = 'ABCDEFGH'.split('').map(function (k) { return { k: k }; });
+    return {
+      h: {
+        nama: s.nama, nomor: s.nomor_peserta || '', kelas: s.kelas || '', sekolah: s.sekolah || '', skor: s.skor,
+        benar: s.benar, salah: s.salah, kosong: s.kosong, durasi: s.durasi_detik, selesaiAt: s.selesai_at, tampilKunci: true,
+        rincian: h.rincian.map(function (x) { return { id: x.id, status: x.status === 'disembunyikan' ? 'kosong' : x.status, jawaban: x.jawaban, kunci: x.kunci }; }),
+        ujian: h.ujian || { nama: '', jenjang: '', mapel: '', sesi: '' }
+      },
+      sesi: { soal: h.rincian.map(function (x) { return { id: x.id, tipe: x.tipe, opsi: huruf }; }) }
+    };
+  }
+
+  function cetakLaporan(d) {
+    var wadah = el('div', { id: 'cetakAdmin' }, window.Laporan.bangunPdf(d.h, d.sesi));
+    document.body.appendChild(wadah);
+    document.body.classList.add('cetak-laporan');
+    function bersih() { document.body.classList.remove('cetak-laporan'); wadah.remove(); window.removeEventListener('afterprint', bersih); }
+    window.addEventListener('afterprint', bersih);
+    setTimeout(function () { window.print(); }, 60);
+  }
+
+  function bukaLaporan(detail) {
+    var d = dataLaporan(detail);
+    window.openModal({
+      judul: 'Laporan hasil ' + d.h.nama, sub: 'Sama dengan lembar akhir yang diterima siswa.', ikon: 'dokumen', lebar: true, kelas: 'modal-laporan',
+      isi: window.Laporan.bangunHasil(d.h, d.sesi, { tanpaBanner: true }),
+      tombol: [
+        { teks: 'Tutup' },
+        { teks: 'Cetak', aksi: function () { cetakLaporan(d); return false; } },
+        { teks: 'Unduh PDF', utama: true, aksi: function (m) { window.Laporan.unduhPdf(d.h, d.sesi, m.el.querySelector('.modal-kaki .btn-utama')); return false; } }
+      ]
     });
   }
 

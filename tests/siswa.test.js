@@ -91,6 +91,7 @@ ctx.adminSesiHapus('T','c');a.strictEqual(ctx.adminHasil('T','U1').length,4);
 DB.sesi.push({id:'z',ujian_id:'U1',nama:'Zed',nomor_peserta:null,kelas:'9A',sekolah:'MTs X',status:'selesai',skor:12.5,benar:1,salah:1,kosong:6,durasi_detik:300,selesai_at:'2026-01-01T00:00:00Z',jawaban:{S1:['B'],S2:['A']}});
 a.throws(()=>ctx.adminHasilDetail('salah','z'),/SESI_ADMIN/);
 const det=ctx.adminHasilDetail('T','z');
+a.ok(det.ujian && typeof det.ujian.nama==='string','detail memuat info ujian');
 a(!('jawaban' in det.sesi),'detail tanpa kolom jawaban mentah');
 a.strictEqual(det.rincian.length,9,'satu entri per soal');
 const st=id=>det.rincian.find(x=>x.id===id);

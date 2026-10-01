@@ -625,6 +625,18 @@ body[data-halaman="ujian"] .modal-kaki .btn-teks { color: var(--teks-redup); }
 .belum-nomor { display: flex; flex-wrap: wrap; gap: 4px; max-height: 96px; overflow-y: auto; }
 .belum-nomor span { width: 26px; height: 26px; border: 1px solid var(--garis-lembut); border-radius: 6px; background: #fff; font-size: .7rem; font-weight: 600; font-variant-numeric: tabular-nums; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
 
+/* ---- ukuran huruf kolom isian: kecil dan seragam dengan teks sekitarnya (iOS tetap 16 px lewat aturan di atas) ---- */
+.field input, .field select, .field textarea { font-size: .86rem; }
+.input-token { font-size: .86rem; letter-spacing: .1em; }
+.popover-kolom input, .popover-baris input { font-size: .86rem; }
+.popover-kolom input[type="password"] { letter-spacing: .1em; }
+.editor-area { font-size: .86rem; line-height: 1.55; }
+html.adm-aktif .field input, html.adm-aktif .field select, html.adm-aktif .field textarea { font-size: .9rem; }
+html.adm-aktif .editor-area, html.adm-aktif .modal-editor .editor-area { font-size: .9rem; }
+html.adm-aktif .popover-kolom input { font-size: .9rem; }
+html.adm-aktif .adm-cari input, html.adm-aktif .cb-input { font-size: .88rem; }
+html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem; }
+
 /* indikator muat */
 #bilahMuat { position: fixed; left: 0; right: 0; top: 0; height: 3px; z-index: 80; overflow: hidden; opacity: 0; pointer-events: none; transition: opacity .25s; }
 #bilahMuat.aktif { opacity: 1; }
@@ -757,6 +769,9 @@ body.kbd-fokus .popover { max-height: 52vh; overflow-y: auto; }
   .hasil { border: 0; padding: 0; max-width: none; }
   .hasil-selesai { display: none; }
 }
+
+#cetakAdmin { display: none; }
+@media print { body.cetak-laporan > *:not(#cetakAdmin) { display: none !important; } body.cetak-laporan #cetakAdmin { display: block !important; } #cetakAdmin .hasil { max-width: none; border: 0; padding: 0; } }
 
 /* ---- panel admin: sidebar kiri, tabel padat. Ukuran dasar 13 px agar banyak data muat di layar. ---- */
 html.adm-aktif { --tk: 30px; font-size: 13px; --biru: #1f8a4c; --biru-tua: #14693a; --biru-muda: #e4f3e9; --latar: #f3f7f3; --garis: #e0e9e2; --teks: #14231c; --teks-redup: #587064; --radius: 10px; --radius-kartu: 16px; }
@@ -1024,6 +1039,7 @@ html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content
 .adm-hnama strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-hnama span { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; color: var(--teks-redup); }
 .adm-hsekolah { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adm-hsub { display: none; font-style: normal; font-size: .78rem; color: var(--teks-redup); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-hb { font-weight: 700; color: #14693a; } .adm-hs { font-weight: 700; color: var(--merah); } .adm-hk { font-weight: 700; color: var(--teks-redup); }
 .adm-nilai { display: flex; align-items: center; gap: 8px; }
 .adm-nilai b { width: 38px; font-variant-numeric: tabular-nums; }
@@ -1048,9 +1064,21 @@ html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content
 @media (max-width: 860px) {
   .adm-ring { grid-template-columns: repeat(2, minmax(0, 1fr)); } .adm-ring > div { border-left: 0; border-top: 1px solid var(--garis); } .adm-ring > div:nth-child(-n+2) { border-top: 0; }
   .adm-hbaris.adm-kepala { display: none; }
-  .adm-hbaris { grid-template-columns: 34px minmax(0, 1fr) auto; grid-template-areas: "rk nama nilai" "rk det aks"; padding: 8px 12px; gap: 2px 8px; }
-  .adm-hbaris > :nth-child(1) { grid-area: rk; } .adm-hbaris > :nth-child(2) { grid-area: nama; } .adm-hbaris > .adm-nilai { grid-area: nilai; } .adm-hbaris > .adm-aksi { grid-area: aks; }
-  .adm-hkelas, .adm-hb, .adm-hs, .adm-hk { display: none; }
+  .adm-hbaris { grid-template-columns: 30px auto auto auto minmax(0, 1fr) auto; grid-template-areas: "rk nama nama nama nama nilai" "rk hb hs hk wk aks"; align-items: center; gap: 4px 12px; padding: 10px 12px; }
+  .adm-hbaris > :nth-child(1) { grid-area: rk; align-self: start; }
+  .adm-hbaris > .adm-hnama { grid-area: nama; padding: 0; }
+  .adm-hbaris > .adm-nilai { grid-area: nilai; justify-self: end; }
+  .adm-hbaris > .adm-nilai i { display: none; }
+  .adm-hbaris > .adm-nilai b { width: auto; font-size: 1rem; }
+  .adm-hbaris > .adm-hb { grid-area: hb; } .adm-hbaris > .adm-hs { grid-area: hs; } .adm-hbaris > .adm-hk { grid-area: hk; } .adm-hbaris > .adm-hwaktu { grid-area: wk; }
+  .adm-hbaris > .adm-aksi { grid-area: aks; justify-self: end; }
+  .adm-hb, .adm-hs, .adm-hk { display: block; font-size: .78rem; white-space: nowrap; }
+  .adm-hwaktu { display: none; }
+  .adm-hb::after { content: " benar"; } .adm-hs::after { content: " salah"; } .adm-hk::after { content: " kosong"; }
+  .adm-hb::after, .adm-hs::after, .adm-hk::after { font-weight: 500; color: var(--teks-redup); }
+  .adm-hwaktu { font-family: inherit; text-align: right; }
+  .adm-hkelas, .adm-hsekolah, .adm-hselesai, .adm-hnama span { display: none; }
+  .adm-hsub { display: block; }
   .adm-kv { grid-template-columns: repeat(3, minmax(0, 1fr)); } .adm-kv > div:nth-child(4) { border-left: 0; } .adm-kv > div:nth-child(n+4) { border-top: 1px solid var(--garis); }
   .adm-sal > div { grid-template-columns: 30px minmax(0, 1fr) auto; } .adm-sal > div > span:last-child { display: none; }
 }

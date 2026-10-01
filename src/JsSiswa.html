@@ -806,9 +806,9 @@
       el('div', null, el('div', { class: 'redup' }, 'Waktu pengerjaan'), el('strong', null, formatDurasi(h.durasi))));
   }
 
-  function bangunHasil(h, sesi) {
+  function bangunHasil(h, sesi, opsi) {
     var adaKunci = h.tampilKunci === true;
-    var kepalaTabel = el('tr', null, el('th', null, 'No'), el('th', null, 'Jawaban Anda'),
+    var kepalaTabel = el('tr', null, el('th', null, 'No'), el('th', null, opsi && opsi.tanpaBanner ? 'Jawaban' : 'Jawaban Anda'),
       adaKunci ? el('th', null, 'Kunci') : null, el('th', null, 'Hasil'));
     var badan = el('tbody');
     barisJawaban(sesi, h).forEach(function (x) {
@@ -817,7 +817,7 @@
         el('td', null, el('span', { class: 'status-' + x.status }, LABEL_STATUS[x.status]))));
     });
     return el('div', { id: 'hasilCetak', class: 'hasil' },
-      el('div', { class: 'hasil-selesai' }, window.ikon('centang'), 'Jawaban Anda sudah terkirim dan dinilai.'),
+      opsi && opsi.tanpaBanner ? null : el('div', { class: 'hasil-selesai' }, window.ikon('centang'), 'Jawaban Anda sudah terkirim dan dinilai.'),
       el('div', { class: 'hasil-atas' },
         el('div', null, el('div', { class: 'redup' }, 'Hasil ujian'), el('h1', null, h.ujian.nama),
           el('p', { class: 'hasil-ujian' }, infoUjian(h)), identitas(h)),
@@ -883,6 +883,9 @@
       .catch(function () { window.toast('PDF gagal dibuat. Coba tombol Cetak.', true); })
       .then(function () { gudang.remove(); tombol.disabled = false; tombol.classList.remove('sibuk'); });
   }
+
+  // Dipakai juga oleh panel admin untuk melihat, mencetak, dan mengunduh laporan siswa.
+  window.Laporan = { bangunHasil: bangunHasil, bangunPdf: bangunPdf, unduhPdf: unduhPdf };
 
   window.App.tampilHasil = function (h, sesi) {
     var s = document.querySelector('[data-view="hasil"]');
