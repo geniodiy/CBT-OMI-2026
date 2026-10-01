@@ -781,16 +781,22 @@
       var rc = rg.getClientRects()[0] || rg.getBoundingClientRect();
       return rc && (rc.top || rc.bottom) ? rc : null;
     }
-    if (vv) { vv.addEventListener('resize', function () { atur(); if (document.body.classList.contains('kbd-fokus')) { pasangKb(true); pastikanTerlihat(document.activeElement); } }); vv.addEventListener('scroll', atur); }
+    /** HP selalu dianggap memakai keyboard layar. Tablet hanya bila keyboard layar benar-benar terukur (keyboard fisik: tidak ada yang digeser). */
+    function perluGeser() { return Math.min(window.innerWidth, window.innerHeight) < 600 || keyboard().terukur; }
+    function terapkan(el) {
+      if (perluGeser()) { pasangKb(true); pastikanTerlihat(el); } else pasangKb(false);
+    }
+    if (vv) { vv.addEventListener('resize', function () { atur(); if (dapatDiketik(document.activeElement) && window.layarSentuh()) terapkan(document.activeElement); }); vv.addEventListener('scroll', atur); }
     window.addEventListener('resize', atur);
     window.addEventListener('orientationchange', function () { setTimeout(atur, 300); });
     document.addEventListener('focusin', function (e) {
       if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
       clearTimeout(lepas);
-      pasangKb(true);
       jadwal.forEach(clearTimeout);
-      // Dua kali: setelah ruang keyboard disiapkan, lalu setelah animasi keyboard selesai.
-      jadwal = [setTimeout(function () { pastikanTerlihat(e.target); }, 120), setTimeout(function () { pastikanTerlihat(e.target); }, 450)];
+      var hp = Math.min(window.innerWidth, window.innerHeight) < 600;
+      if (hp) pasangKb(true);
+      // Diperiksa dua kali: setelah ruang keyboard disiapkan, lalu setelah animasi keyboard selesai (tablet menunggu sampai keyboard terukur).
+      jadwal = [setTimeout(function () { terapkan(e.target); }, hp ? 120 : 380), setTimeout(function () { terapkan(e.target); }, hp ? 450 : 750)];
     });
     document.addEventListener('focusout', function () {
       clearTimeout(lepas);
@@ -798,7 +804,7 @@
     });
     // Saat mengetik di editor atau kolom panjang, kursor dijaga tetap di atas keyboard.
     document.addEventListener('input', function (e) {
-      if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
+      if (!window.layarSentuh() || !dapatDiketik(e.target) || !document.body.classList.contains('kbd-fokus')) return;
       var rc = e.target.isContentEditable ? posisiCaret() : null;
       pastikanTerlihat(e.target, rc);
     });
