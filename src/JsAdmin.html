@@ -480,13 +480,16 @@
     });
   }
 
-  function pilihanUjian(onGanti, polos) {
+  function pilihanUjian(onGanti) {
     if (!ujianTerpilih || !daftarUjian.some(function (u) { return u.id === ujianTerpilih; })) ujianTerpilih = daftarUjian[0].id;
-    var pilih = window.dropdown({ aria: 'Pilih ujian', nilai: ujianTerpilih, lebar: 320,
-      pilihan: daftarUjian.map(function (u) { return { nilai: u.id, label: labelUjian(u) }; }) });
+    var pilih = window.pilihCari({ aria: 'Cari dan pilih paket soal', placeholder: 'Cari nama, mapel, jenjang, atau sesi', nilai: ujianTerpilih,
+      pilihan: daftarUjian.map(function (u) {
+        return { nilai: u.id, label: labelUjian(u), status: statusDari(u),
+          meta: u.jenjang + ' \u00b7 ' + u.mapel + (u.sesi ? ' \u00b7 ' + u.sesi : '') + ' \u00b7 ' + u.jumlah_soal + ' soal' };
+      }) });
     pilih.addEventListener('change', function () { ujianTerpilih = pilih.value; onGanti(); });
-    if (polos) { pilih.classList.add('dd-ujian'); return pilih; }
-    return el('div', { class: 'field', style: 'margin:0;flex:1;min-width:220px' }, el('span', null, 'Ujian'), pilih);
+    pilih.classList.add('dd-ujian');
+    return pilih;
   }
 
   var filterTipeSoal = 'semua', cariSoal = '';
@@ -504,7 +507,7 @@
       el('span', { class: 'redup', id: 'ringkasSoal' }),
       el('button', { class: 'btn', type: 'button', style: 'margin-left:auto', onclick: bukaImport }, window.ikon('unggah', 15), 'Import JSON'),
       el('button', { class: 'btn btn-utama', type: 'button', style: 'margin-left:0', onclick: function () { bukaEditor(null); } }, window.ikon('tambah', 15), 'Tambah soal')));
-    p.appendChild(el('div', { class: 'adm-alat', id: 'alatSoal' }, pilihanUjian(function () { muatSoal(); }, true)));
+    p.appendChild(el('div', { class: 'adm-alat', id: 'alatSoal' }, pilihanUjian(function () { muatSoal(); })));
     p.appendChild(el('div', { id: 'daftarSoal' }));
     muatSoal();
   }
@@ -939,7 +942,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       el('span', { class: 'redup', id: 'ringkasHasil' }),
       el('button', { class: 'btn', type: 'button', style: 'margin-left:auto', onclick: muatHasil }, window.ikon('segarkan', 15), 'Muat ulang'),
       el('button', { class: 'btn btn-utama', type: 'button', style: 'margin-left:0', id: 'tbCsv', onclick: eksporCsv }, window.ikon('unduh', 15), 'Ekspor CSV')));
-    p.appendChild(el('div', { class: 'adm-alat', id: 'alatHasil' }, pilihanUjian(function () { filterSekolah = ''; filterKelas = ''; cariHasil = ''; muatHasil(); }, true)));
+    p.appendChild(el('div', { class: 'adm-alat', id: 'alatHasil' }, pilihanUjian(function () { filterSekolah = ''; filterKelas = ''; cariHasil = ''; muatHasil(); })));
     p.appendChild(el('div', { id: 'daftarHasil' }));
     muatHasil();
   }
