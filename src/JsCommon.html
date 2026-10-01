@@ -721,16 +721,25 @@
     try { localStorage.removeItem(kunci); } catch (e) { /* abaikan */ }
   };
 
-  // ---------- keyboard layar (HP) ----------
-  // Halaman Apps Script berjalan di dalam iframe sehingga tinggi keyboard tidak dapat dibaca andal. Karena itu, begitu kolom
-  // isian difokus di layar sentuh, keyboard dianggap terbuka: kolom dipindah ke bagian atas area terlihat (maksimal sekitar
-  // 30 persen dari atas layar), popup dipendekkan dan ditempel ke atas, dan halaman diberi ruang kosong di bawah agar bisa digulir.
+  // ---------- keyboard layar (HP dan tablet) ----------
+  // Halaman Apps Script berjalan di dalam iframe sehingga tinggi keyboard sering tidak terbaca. Tata letak TIDAK diubah
+  // (tidak ada yang diangkat ke atas): saat kolom isian difokus, halaman hanya digulir seperlunya sampai kolom itu berada tepat di atas
+  // keyboard (tinggi keyboard memakai visualViewport bila terbaca, bila tidak diperkirakan dari ukuran layar). Popup disusutkan agar
+  // seluruhnya berada di atas keyboard dan isinya menggulir; konten di bawah kolom dapat dilihat dengan menggulir atau menutup keyboard.
   (function () {
     var vv = window.visualViewport, root = document.documentElement;
-    var tinggiPenuh = window.innerHeight, lebarAwal = window.innerWidth, jadwal = null, lepas = null;
+    var lebarAwal = window.innerWidth, tinggiPenuh = window.innerHeight, lepas = null, jadwal = [];
     function dapatDiketik(e) {
       return !!e && e.nodeType === 1 && (/^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName) || e.isContentEditable) &&
         !(e.tagName === 'INPUT' && /^(checkbox|radio|button|submit|file|range|color)$/.test(e.type));
+    }
+    /** Tinggi keyboard dan apakah terukur. */
+    function keyboard() {
+      var h = window.innerHeight, w = window.innerWidth;
+      var terukur = vv ? Math.round(tinggiPenuh - vv.height - vv.offsetTop) : 0;
+      if (terukur > 80) return { px: terukur, terukur: true };
+      var mendatar = w > h, hp = Math.min(w, h) < 600;
+      return { px: Math.round(h * (hp ? (mendatar ? .55 : .42) : (mendatar ? .42 : .34))), terukur: false };
     }
     function atur() {
       if (window.innerWidth !== lebarAwal) { lebarAwal = window.innerWidth; tinggiPenuh = window.innerHeight; }
@@ -740,16 +749,27 @@
       root.style.setProperty('--vv-top', Math.round(top) + 'px');
       document.body && document.body.classList.toggle('kbd-aktif', tinggiPenuh - h > 120);
     }
-    /** Memindahkan elemen ke bagian atas area terlihat; di dalam popup yang menggulir, gulir isi popup. */
-    function naikkan(el, caret) {
+    function pasangKb(aktif) {
+      var k = aktif ? keyboard() : { px: 0, terukur: false };
+      root.style.setProperty('--kb', k.px + 'px');
+      // Latar popup sudah mengikuti visualViewport bila keyboard terukur, jadi tidak perlu ruang tambahan.
+      root.style.setProperty('--kb-popup', (k.terukur ? 0 : k.px) + 'px');
+      document.body.classList.toggle('kbd-fokus', aktif);
+    }
+    /** Menggulir seperlunya agar elemen (atau kursor) berada di atas keyboard dan tetap terlihat. */
+    function pastikanTerlihat(el, caret) {
       if (!el || !el.getBoundingClientRect) return;
-      var r = caret || el.getBoundingClientRect(), tinggi = (vv && vv.height) || window.innerHeight;
-      var batasAtas = tinggi * 0.12, batasBawah = tinggi * 0.34;
+      var k = keyboard(), r = caret || el.getBoundingClientRect();
+      var dasar = (vv && k.terukur ? vv.offsetTop + vv.height : window.innerHeight - k.px) - 14;
       var wadah = el.closest ? el.closest('.modal-badan') : null;
-      if (r.top >= batasAtas && r.bottom <= batasBawah) return;
-      var selisih = r.top - tinggi * 0.2;
-      if (wadah) wadah.scrollTo({ top: wadah.scrollTop + selisih, behavior: 'smooth' });
-      else window.scrollBy({ top: selisih, left: 0, behavior: 'smooth' });
+      if (wadah) {
+        var wr = wadah.getBoundingClientRect(), bawah = Math.min(wr.bottom - 8, dasar), atas = Math.max(wr.top, 0) + 8;
+        if (r.bottom > bawah) wadah.scrollTo({ top: wadah.scrollTop + (r.bottom - bawah), behavior: 'smooth' });
+        else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
+        return;
+      }
+      if (r.bottom > dasar) window.scrollBy({ top: r.bottom - dasar, left: 0, behavior: 'smooth' });
+      else if (r.top < 56) window.scrollBy({ top: r.top - 56, left: 0, behavior: 'smooth' });
     }
     function posisiCaret() {
       var sel = window.getSelection && window.getSelection();
@@ -758,27 +778,26 @@
       var rc = rg.getClientRects()[0] || rg.getBoundingClientRect();
       return rc && (rc.top || rc.bottom) ? rc : null;
     }
-    if (vv) { vv.addEventListener('resize', atur); vv.addEventListener('scroll', atur); }
+    if (vv) { vv.addEventListener('resize', function () { atur(); if (document.body.classList.contains('kbd-fokus')) { pasangKb(true); pastikanTerlihat(document.activeElement); } }); vv.addEventListener('scroll', atur); }
     window.addEventListener('resize', atur);
     window.addEventListener('orientationchange', function () { setTimeout(atur, 300); });
     document.addEventListener('focusin', function (e) {
       if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
       clearTimeout(lepas);
-      document.body.classList.add('kbd-fokus');
-      var el = e.target;
-      clearTimeout(jadwal);
-      jadwal = setTimeout(function () { naikkan(el); }, 380);   // menunggu popup selesai disusun ulang
+      pasangKb(true);
+      jadwal.forEach(clearTimeout);
+      // Dua kali: setelah ruang keyboard disiapkan, lalu setelah animasi keyboard selesai.
+      jadwal = [setTimeout(function () { pastikanTerlihat(e.target); }, 120), setTimeout(function () { pastikanTerlihat(e.target); }, 450)];
     });
     document.addEventListener('focusout', function () {
       clearTimeout(lepas);
-      lepas = setTimeout(function () { if (!dapatDiketik(document.activeElement)) document.body.classList.remove('kbd-fokus'); }, 300);
+      lepas = setTimeout(function () { if (!dapatDiketik(document.activeElement)) pasangKb(false); }, 250);
     });
-    // Saat mengetik di editor/kolom panjang, pastikan tulisan yang sedang diketik tetap di atas keyboard.
+    // Saat mengetik di editor atau kolom panjang, kursor dijaga tetap di atas keyboard.
     document.addEventListener('input', function (e) {
       if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
       var rc = e.target.isContentEditable ? posisiCaret() : null;
-      var tinggi = (vv && vv.height) || window.innerHeight;
-      if (rc && rc.bottom > tinggi * 0.45) naikkan(e.target, rc);
+      pastikanTerlihat(e.target, rc);
     });
     atur();
   })();
