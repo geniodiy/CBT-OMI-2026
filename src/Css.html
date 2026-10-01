@@ -1032,7 +1032,7 @@ html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content
 .adm-dist i { flex: 1; background: var(--biru); border-radius: 4px 4px 2px 2px; opacity: .85; min-height: 3px; }
 .adm-dist-l { display: flex; gap: 5px; margin-top: 2px; font-size: .66rem; color: var(--teks-redup); }
 .adm-dist-l span { flex: 1; text-align: center; font-size: inherit; font-weight: 400; }
-.adm-hbaris { display: grid; grid-template-columns: 44px minmax(0, 1.5fr) 56px minmax(0, 1.4fr) 44px 44px 60px 110px 62px 112px 66px; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border-bottom: 1px solid var(--garis); font-size: .92rem; transition: background-color .15s; }
+.adm-hbaris { display: grid; grid-template-columns: 44px minmax(0, 1.5fr) 56px minmax(0, 1.4fr) 44px 44px 60px 136px 62px 112px 66px; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border-bottom: 1px solid var(--garis); font-size: .92rem; transition: background-color .15s; }
 .adm-hbaris:last-child { border-bottom: 0; }
 .adm-hbaris:not(.adm-kepala):hover { background: #f1f7f2; }
 .adm-rk { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-weight: 700; font-size: .84rem; color: var(--teks-redup); font-variant-numeric: tabular-nums; }
@@ -1044,7 +1044,7 @@ html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content
 .adm-hsub { display: none; font-style: normal; font-size: .78rem; color: var(--teks-redup); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .adm-hb { font-weight: 700; color: #14693a; } .adm-hs { font-weight: 700; color: var(--merah); } .adm-hk { font-weight: 700; color: var(--teks-redup); }
 .adm-nilai { display: flex; align-items: center; gap: 8px; }
-.adm-nilai b { width: 38px; font-variant-numeric: tabular-nums; }
+.adm-nilai b { width: 62px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .adm-nilai i { display: block; height: 6px; border-radius: 4px; background: var(--biru); }
 .adm-hwaktu { font-family: ui-monospace, Consolas, monospace; font-size: .84rem; }
 .adm-hselesai { font-size: .84rem; white-space: nowrap; }
@@ -1062,7 +1062,7 @@ html.adm-aktif .btn { display: inline-flex; align-items: center; justify-content
 .adm-sal-kepala { background: #f9fbf9; color: var(--teks-redup); font-size: .72rem; font-weight: 700; letter-spacing: .04em; }
 .adm-sal em { font-style: normal; font-family: ui-monospace, Consolas, monospace; font-weight: 700; }
 .modal-kaki .btn-bahaya:first-child { margin-right: auto; }
-@media (max-width: 1180px) { .adm-hbaris { grid-template-columns: 44px minmax(0, 1.5fr) 56px 44px 44px 60px 110px 66px; } .adm-hsekolah, .adm-hwaktu, .adm-hselesai { display: none; } .adm-hbaris.adm-kepala span:nth-child(4), .adm-hbaris.adm-kepala span:nth-child(9), .adm-hbaris.adm-kepala span:nth-child(10) { display: none; } }
+@media (max-width: 1180px) { .adm-hbaris { grid-template-columns: 44px minmax(0, 1.5fr) 56px 44px 44px 60px 136px 66px; } .adm-hsekolah, .adm-hwaktu, .adm-hselesai { display: none; } .adm-hbaris.adm-kepala span:nth-child(4), .adm-hbaris.adm-kepala span:nth-child(9), .adm-hbaris.adm-kepala span:nth-child(10) { display: none; } }
 @media (max-width: 860px) {
   .adm-ring { grid-template-columns: repeat(2, minmax(0, 1fr)); } .adm-ring > div { border-left: 0; border-top: 1px solid var(--garis); } .adm-ring > div:nth-child(-n+2) { border-top: 0; }
   .adm-hbaris.adm-kepala { display: none; }

@@ -1005,6 +1005,9 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
   }
 
   function nilaiTeks(n) { return String(n).replace('.', ','); }
+  function poinTeks(n) { return String(Math.round(Number(n) * 100) / 100).replace('.', ','); }
+  /** Nilai sebagai poin/maksimum (mis. 22/30). Data lama tanpa maks dianggap per 100. */
+  function nilaiPoin(r) { return r.maks != null ? poinTeks(r.poin) + '/' + poinTeks(r.maks) : nilaiTeks(r.skor) + '/100'; }
   function selesaiTeks(iso) {
     var t = new Date(iso);
     if (isNaN(t.getTime())) return '';
@@ -1072,12 +1075,15 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     var bins = [0, 0, 0, 0, 0];
     skor.forEach(function (v) { bins[Math.min(4, Math.floor(v / 20))]++; });
     var maks = Math.max.apply(null, bins.concat([1]));
-    ring.appendChild(sel('Rata-rata nilai', daftar.length ? nilaiTeks(ratas) : '-'));
-    ring.appendChild(sel('Tertinggi', daftar.length ? nilaiTeks(Math.max.apply(null, skor)) : '-'));
-    ring.appendChild(sel('Terendah', daftar.length ? nilaiTeks(Math.min.apply(null, skor)) : '-'));
+    var poinMaks = daftar.length ? daftar[0].maks : null;
+    var dgnMaks = function (n) { return [poinTeks(n) + ' ', el('small', null, '/' + (poinMaks != null ? poinTeks(poinMaks) : '100'))]; };
+    var poin = daftar.map(function (r) { return Number(r.poin != null ? r.poin : r.skor) || 0; });
+    ring.appendChild(sel('Rata-rata nilai', daftar.length ? dgnMaks(Math.round(poin.reduce(function (t, v) { return t + v; }, 0) / poin.length * 10) / 10) : '-'));
+    ring.appendChild(sel('Tertinggi', daftar.length ? dgnMaks(Math.max.apply(null, poin)) : '-'));
+    ring.appendChild(sel('Terendah', daftar.length ? dgnMaks(Math.min.apply(null, poin)) : '-'));
     ring.appendChild(sel('Rata-rata waktu', daftar.length ? [String(Math.round(rataRata(daftar, 'durasi_detik') / 60)) + ' ', el('small', null, 'menit')] : '-'));
     ring.appendChild(sel('Benar rata-rata', daftar.length ? [nilaiTeks(Math.round(rataRata(daftar, 'benar') * 10) / 10) + ' ', el('small', null, 'dari ' + jmlSoal)] : '-'));
-    ring.appendChild(el('div', null, el('span', null, 'Sebaran nilai'),
+    ring.appendChild(el('div', null, el('span', null, 'Sebaran nilai (persen)'),
       el('div', { class: 'adm-dist' }, bins.map(function (n, i) { return el('i', { title: (i * 20) + ' sampai ' + (i === 4 ? 100 : i * 20 + 19) + ': ' + n + ' peserta', style: 'height:' + Math.max(6, Math.round(n / maks * 100)) + '%' }); })),
       el('div', { class: 'adm-dist-l' }, ['0', '20', '40', '60', '80'].map(function (t) { return el('span', null, t); }))));
 
@@ -1095,7 +1101,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       bar.appendChild(el('span', { class: 'adm-hb' }, String(r.benar)));
       bar.appendChild(el('span', { class: 'adm-hs' }, String(r.salah)));
       bar.appendChild(el('span', { class: 'adm-hk' }, String(r.kosong)));
-      bar.appendChild(el('span', { class: 'adm-nilai' }, el('b', null, nilaiTeks(r.skor)), el('i', { style: 'width:' + Math.round((Number(r.skor) || 0) * 0.55) + 'px' })));
+      bar.appendChild(el('span', { class: 'adm-nilai' }, el('b', null, nilaiPoin(r)), el('i', { style: 'width:' + Math.round((Number(r.skor) || 0) * 0.55) + 'px' })));
       bar.appendChild(el('span', { class: 'adm-hwaktu' }, waktuRingkas(r.durasi_detik)));
       bar.appendChild(el('span', { class: 'adm-hselesai redup' }, selesaiTeks(r.selesai_at)));
       bar.appendChild(el('span', { class: 'adm-aksi' },
@@ -1131,7 +1137,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       badan.appendChild(el('p', { class: 'redup' }, [s.kelas ? 'Kelas ' + s.kelas : '', s.sekolah || '', s.nomor_peserta ? 'nomor ' + s.nomor_peserta : ''].filter(Boolean).join(', ')));
       var kv = function (label, isi, kelas) { return el('div', null, el('span', null, label), el('b', { class: kelas || null }, isi)); };
       badan.appendChild(el('div', { class: 'adm-kv' },
-        kv('Peringkat', String(rk)), kv('Nilai', nilaiTeks(s.skor)), kv('Benar', String(s.benar), 'adm-hb'),
+        kv('Peringkat', String(rk)), kv('Nilai', nilaiPoin(s)), kv('Benar', String(s.benar), 'adm-hb'),
         kv('Salah', String(s.salah), 'adm-hs'), kv('Kosong', String(s.kosong)), kv('Waktu', waktuRingkas(s.durasi_detik))));
       badan.appendChild(el('div', { class: 'adm-bagian' }, 'JAWABAN PER SOAL (HIJAU BENAR, MERAH SALAH, ABU KOSONG)'));
       badan.appendChild(el('div', { class: 'adm-no' }, h.rincian.map(function (x) {
@@ -1163,7 +1169,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     var s = h.sesi, huruf = 'ABCDEFGH'.split('').map(function (k) { return { k: k }; });
     return {
       h: {
-        nama: s.nama, nomor: s.nomor_peserta || '', kelas: s.kelas || '', sekolah: s.sekolah || '', skor: s.skor,
+        nama: s.nama, nomor: s.nomor_peserta || '', kelas: s.kelas || '', sekolah: s.sekolah || '', skor: s.skor, poin: s.poin, maks: s.maks,
         benar: s.benar, salah: s.salah, kosong: s.kosong, durasi: s.durasi_detik, selesaiAt: s.selesai_at, tampilKunci: true,
         rincian: h.rincian.map(function (x) { return { id: x.id, status: x.status === 'disembunyikan' ? 'kosong' : x.status, jawaban: x.jawaban, kunci: x.kunci }; }),
         ujian: h.ujian || { nama: '', jenjang: '', mapel: '', sesi: '' }
@@ -1199,7 +1205,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       judul: 'Hapus hasil ini?',
       isi: el('div', { class: 'adm-form' },
         el('p', null, el('strong', null, r.nama), (r.kelas ? ' (' + r.kelas + (r.sekolah ? ', ' + r.sekolah : '') + ')' : ''), ' dapat mengerjakan ujian ini dari awal.'),
-        el('div', { class: 'adm-bahaya' }, window.ikon('peringatan', 16), el('div', null, 'Nilai ', el('strong', null, nilaiTeks(r.skor)), ' dan seluruh jawabannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.'))),
+        el('div', { class: 'adm-bahaya' }, window.ikon('peringatan', 16), el('div', null, 'Nilai ', el('strong', null, nilaiPoin(r)), ' dan seluruh jawabannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.'))),
       tombol: [
         { teks: 'Batal' },
         { teks: 'Hapus hasil', bahaya: true, aksi: function () {
@@ -1223,10 +1229,10 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     var u = daftarUjian.filter(function (x) { return x.id === ujianTerpilih; })[0];
     var rank = peringkat(daftarHasil);
     var koma = function (n) { return String(n).replace('.', ','); };
-    var baris = [['Peringkat', 'Nama', 'Nomor peserta', 'Kelas', 'Sekolah', 'Benar', 'Salah', 'Kosong', 'Nilai', 'Waktu pengerjaan', 'Waktu (detik)', 'Selesai']];
+    var baris = [['Peringkat', 'Nama', 'Nomor peserta', 'Kelas', 'Sekolah', 'Benar', 'Salah', 'Kosong', 'Nilai', 'Nilai maksimal', 'Waktu pengerjaan', 'Waktu (detik)', 'Selesai']];
     daftarHasil.forEach(function (r, i) {
       baris.push([rank[i], r.nama, r.nomor_peserta || '', r.kelas || '', r.sekolah || '', r.benar, r.salah, r.kosong,
-        koma(r.skor), waktuRingkas(r.durasi_detik), r.durasi_detik, r.selesai_at]);
+        koma(r.poin != null ? r.poin : r.skor), koma(r.maks != null ? r.maks : 100), waktuRingkas(r.durasi_detik), r.durasi_detik, r.selesai_at]);
     });
     // Titik koma dan koma desimal agar terbuka rapi di Excel berbahasa Indonesia; BOM agar huruf Arab/Latin utuh.
     var csv = '﻿' + baris.map(function (b) { return b.map(selCsv).join(';'); }).join('\r\n');

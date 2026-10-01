@@ -118,7 +118,7 @@ Satu kolom lebar maks. 860 px, putih dengan garis (rapor ringkas). Isi urut:
 0. Banner hijau "Jawaban Anda sudah terkirim dan dinilai." (tidak ikut cetak/PDF).
 1. Judul "Hasil ujian", nama ujian, jenjang, mapel, sesi, tanggal.
 2. Identitas: nama, nomor peserta, kelas, sekolah.
-3. Nilai besar ditulis per maksimum, mis. **84/100** ("/100" lebih kecil), di kanan atas blok; di bawahnya baris empat angka: **Benar**, **Salah**, **Kosong**, **Waktu pengerjaan** ("32 menit 15 detik").
+3. Nilai besar ditulis poin per nilai maksimum yang bisa diperoleh (jumlah bobot semua soal), mis. **22/30** (bagian "/30" lebih kecil), tidak selalu per 100; di kanan atas blok; di bawahnya baris empat angka: **Benar**, **Salah**, **Kosong**, **Waktu pengerjaan** ("32 menit 15 detik").
 4. Tabel: No, Jawaban Anda, (Kunci jika diaktifkan), Hasil. Status ditulis kata ("Benar", "Salah", "Kosong") dengan warna teks hijau/merah/abu, bukan hanya warna.
 5. Di luar area cetak: tombol "Download PDF" (utama), "Cetak", "Kembali ke beranda".
 

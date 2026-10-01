@@ -52,7 +52,7 @@ type Hasil = {
   ujian: { nama; jenjang; mapel; sesi };
   selesaiAt: string;                 // ISO
   durasi: number;                    // detik, maks. durasi_menit*60
-  benar: number; salah: number; kosong: number; total: number; skor: number;
+  benar: number; salah: number; kosong: number; total: number; skor: number; poin: number; maks: number;
   tampilKunci: boolean;
   rincian: { id: string; status: 'benar'|'salah'|'kosong'; jawaban: string[]; kunci: string[] | null }[];
 };
@@ -84,7 +84,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 - `adminUpload(tok, base64, mime, nama): string` (URL publik). `mime` ∈ image/png, image/jpeg, image/webp, image/gif. Maks. 3 MB. Galat: "Format gambar harus PNG, JPG, WEBP, atau GIF."
 
 ### Hasil
-- `adminHasil(tok, ujianId): HasilRow[]` hanya `status = 'selesai'`, **tanpa kolom `jawaban`**, urut: `skor desc, benar desc, salah asc, durasi_detik asc`. Kolom: id, nama, nomor_peserta, kelas, sekolah, benar, salah, kosong, skor, durasi_detik, selesai_at.
+- `adminHasil(tok, ujianId): HasilRow[]` hanya `status = 'selesai'`, **tanpa kolom `jawaban`**, urut: `skor desc, benar desc, salah asc, durasi_detik asc`. Tiap baris juga memuat `poin` dan `maks` (nilai ditampilkan poin/maks). Kolom: id, nama, nomor_peserta, kelas, sekolah, benar, salah, kosong, skor, durasi_detik, selesai_at.
 - `adminHasilDetail(tok, sesiId): { sesi, rincian[], ujian }` rincian satu hasil; `ujian = { nama, jenjang, mapel, sesi }` dipakai untuk laporan siswa di panel admin. `sesi` = kolom hasil tanpa `jawaban`. `rincian` = satu entri per soal ujian (urutan sama dengan tab Soal): `{ no, id, tipe, status: 'benar'|'salah'|'kosong'|'disembunyikan', jawaban[], kunci[], blok[] }`; `blok` (hanya blok teks) hanya terisi untuk soal salah atau kosong. Penilaian memakai `hitung_` pada soal yang tampil ke siswa, sama seperti `apiSelesai`. Dipakai admin saja (memuat kunci).
 - `adminSesiHapus(tok, sesiId): true`
 
@@ -93,7 +93,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 - `sb_(method, path, body, extraHeaders)` memanggil `SUPABASE_URL + '/rest/v1/' + path` dengan header `apikey` dan `Authorization: Bearer <service_role>`; melempar galat jika status ≥ 300.
 - `guard_(tok)`, `enc_(v)`, `shuffle_(arr)`, `seedShuffle_(arr, seed)`.
 - `normSoal_(x, i)` normalisasi dan validasi satu soal (dipakai import dan simpan manual).
-- `cek_(soal, jawabanArray): boolean`, `norm_(teks)`, `hitung_(daftarSoal, jawaban): {benar, salah, kosong, skor, rincian}`.
+- `cek_(soal, jawabanArray): boolean`, `norm_(teks)`, `hitung_(daftarSoal, jawaban): {benar, salah, kosong, skor, poin, maks, rincian}` (`poin` = jumlah bobot benar, `maks` = jumlah bobot semua soal, `skor` = persen).
 
 ## Aturan `cek_`
 

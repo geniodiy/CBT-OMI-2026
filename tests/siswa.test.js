@@ -49,7 +49,7 @@ const m3=ctx.apiMulai('U1','tok1',{nama:'Siti Aminah',sekolah:'MTs B'});a.strict
 const jw={};m1.soal.forEach(s=>{if(s.id==='S7')jw[s.id]=['C','A'];else if(s.id==='S8')jw[s.id]=['12.50'];else if(s.id==='S1')jw[s.id]=['B'];else if(s.id==='S2')jw[s.id]=['D'];});
 const h=ctx.apiSelesai(m1.sesiId,jw);
 a.strictEqual(h.total,8);a.strictEqual(h.benar+h.salah+h.kosong,8);a.strictEqual(h.benar,3);a.strictEqual(h.salah,1);a.strictEqual(h.kosong,4);
-a.strictEqual(h.skor,37.5);a(h.rincian.every(r=>r.kunci===null),'kunci tersembunyi');a(h.durasi<=3600);
+a.strictEqual(h.skor,37.5);a.strictEqual(h.poin,3);a.strictEqual(h.maks,8,'poin dan maks dikirim ke siswa');a(h.rincian.every(r=>r.kunci===null),'kunci tersembunyi');a(h.durasi<=3600);
 // 6 idempoten: jawaban kiriman kedua diabaikan
 const h2=ctx.apiSelesai(m1.sesiId,{S1:['A'],S2:['B'],S3:['B'],S4:['B'],S5:['B'],S6:['B']});
 a.strictEqual(JSON.stringify(h2),JSON.stringify(h),'idempoten');
@@ -80,6 +80,7 @@ const mk=(id,nama,skor,benar,salah,durasi,st)=>DB.sesi.push({id,ujian_id:'U1',na
 mk('a','Ani',80,8,2,600);mk('b','Budi',80,8,2,500);mk('c','Cici',90,9,1,900);mk('d','Dedi',80,8,1,700);mk('e','Eka',50,5,5,100,'berjalan');mk('f','Fani',80,8,2,500);
 vm.runInContext("CacheService.getScriptCache().put('adm_T','1',100)",ctx);
 const hs=ctx.adminHasil('T','U1');
+a(hs.every(r=>typeof r.maks==='number'&&r.maks>0&&typeof r.poin==='number'&&r.poin<=r.maks),'adminHasil memuat poin dan maks');
 a.strictEqual(hs.map(x=>x.nama).join(),'Cici,Dedi,Budi,Fani,Ani','urut: nilai, benar, salah, waktu; tanpa sesi berjalan');
 a(hs.every(x=>!('jawaban' in x)),'tanpa kolom jawaban');
 ctx.adminSesiHapus('T','c');a.strictEqual(ctx.adminHasil('T','U1').length,4);

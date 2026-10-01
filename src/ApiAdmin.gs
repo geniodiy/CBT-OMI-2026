@@ -213,8 +213,12 @@ function adminSoalImport(tok, ujianId, daftar, mode, dryRun) {
 function adminHasil(tok, ujianId) {
   guard_(tok);
   if (!ujianId) throw new Error('Ujian belum dipilih.');
-  return sb_('GET', 'sesi?select=id,nama,nomor_peserta,kelas,sekolah,benar,salah,kosong,skor,durasi_detik,selesai_at' +
+  var baris = sb_('GET', 'sesi?select=id,nama,nomor_peserta,kelas,sekolah,benar,salah,kosong,skor,durasi_detik,selesai_at' +
     '&ujian_id=eq.' + enc_(ujianId) + '&status=eq.selesai&order=skor.desc,benar.desc,salah.asc,durasi_detik.asc') || [];
+  // Nilai ditampilkan sebagai poin/maks (bukan per 100). skor tersimpan sebagai persen, jadi poin diturunkan dari skor dan maks.
+  var maks = bobotTotal_(soalTampil_(soalUjian_(ujianId)));
+  baris.forEach(function (r) { r.maks = maks; r.poin = maks ? bulat2_(Number(r.skor) * maks / 100) : 0; });
+  return baris;
 }
 
 /** Rincian satu hasil: status tiap soal (nomor mengikuti urutan soal di tab Soal), jawaban siswa, dan kunci. */
@@ -239,6 +243,7 @@ function adminHasilDetail(tok, sesiId) {
     };
   });
   delete sesi.jawaban;
+  sesi.poin = h.poin; sesi.maks = h.maks;
   var u = sb_('GET', 'ujian?select=nama,jenjang,mapel,sesi&id=eq.' + enc_(sesi.ujian_id));
   return { sesi: sesi, rincian: rincian, ujian: (u && u[0]) || { nama: '', jenjang: '', mapel: '', sesi: '' } };
 }

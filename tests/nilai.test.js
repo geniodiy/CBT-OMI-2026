@@ -17,6 +17,8 @@ a.throws(()=>normSoal_({tipe:'pg',teks:'abcdef',opsi:['1','2'],kunci:['A','B']},
 r=normSoal_({tipe:'isian',teks:'Hasil $\\frac{1}{2}$ adalah ...',kunci:'0,5 | 0.5',bobot:'x'},5);
 a.strictEqual(JSON.stringify(r.soal.kunci),JSON.stringify(['0,5','0.5']));a(r.peringatan.some(p=>p.includes('bobot')));a(!r.peringatan.some(p=>p.includes('frac')));
 r=normSoal_({tipe:'pg',teks:'Apa arti كِتَابٌ ? $x',opsi:{A:'a',B:'b'},kunci:['A']},6);a(r.peringatan.some(p=>p.includes('$')));
+{const k=hitung_([{id:'a',tipe:'pg',kunci:['A'],bobot:2},{id:'b',tipe:'pg',kunci:['A'],bobot:1.5},{id:'c',tipe:'pg',kunci:['A']}],{a:['A'],b:['B']});
+a.strictEqual(k.poin,2);a.strictEqual(k.maks,4.5);a.strictEqual(k.skor,44.44);}
 console.log('semua uji lulus');
 {const n=ctx.normUjian_;const ok={nama:' A ',jenjang:'MA',mapel:'Mat',token:' ab12 ',durasi_menit:60,aktif:true,id:'x',hack:1};
 const r=n(ok);a.strictEqual(r.nama,'A');a.strictEqual(r.token,'ab12');a.strictEqual(r.sesi,null);a.strictEqual(r.aktif,true);a.strictEqual(r.tampil_kunci,false);a(!('id' in r)&&!('hack' in r));

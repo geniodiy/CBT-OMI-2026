@@ -65,15 +65,21 @@ function kosong_(jawaban) {
   return jawaban.every(function (x) { return String(x == null ? '' : x).trim() === ''; });
 }
 
+function bulat2_(x) { return Math.round(x * 100) / 100; }
+function bobotSoal_(soal) { return Number(soal.bobot) > 0 ? Number(soal.bobot) : 1; }
+/** Nilai maksimum yang bisa diperoleh = jumlah bobot semua soal yang tampil. */
+function bobotTotal_(daftarSoal) { return bulat2_((daftarSoal || []).reduce(function (t, s) { return t + bobotSoal_(s); }, 0)); }
+
 /**
- * Menilai semua soal. Skor = bobot soal benar / bobot seluruh soal x 100 (dua desimal).
+ * Menilai semua soal. poin = jumlah bobot soal benar, maks = jumlah bobot seluruh soal (dua desimal).
+ * skor = poin / maks x 100 tetap dihitung sebagai persen internal (untuk urutan dan sebaran); yang ditampilkan ke pengguna adalah poin/maks.
  * rincian.kunci selalu terisi di sini; pemanggil membuangnya bila tampil_kunci = false.
  */
 function hitung_(daftarSoal, jawaban) {
   var semua = jawaban || {};
   var benar = 0, salah = 0, kosong = 0, bobotBenar = 0, bobotTotal = 0;
   var rincian = daftarSoal.map(function (soal) {
-    var bobot = Number(soal.bobot) > 0 ? Number(soal.bobot) : 1;
+    var bobot = bobotSoal_(soal);
     var j = semua[soal.id];
     var status;
     bobotTotal += bobot;
@@ -83,7 +89,7 @@ function hitung_(daftarSoal, jawaban) {
     return { id: soal.id, status: status, jawaban: Array.isArray(j) ? j : [], kunci: soal.kunci || [] };
   });
   var skor = bobotTotal ? Math.round(bobotBenar / bobotTotal * 10000) / 100 : 0;
-  return { benar: benar, salah: salah, kosong: kosong, skor: skor, rincian: rincian };
+  return { benar: benar, salah: salah, kosong: kosong, skor: skor, poin: bulat2_(bobotBenar), maks: bulat2_(bobotTotal), rincian: rincian };
 }
 
 /** Awali pesan dengan "Soal #N: " bila i diberikan (import); tanpa i (editor manual) kalimat dimulai huruf besar. */

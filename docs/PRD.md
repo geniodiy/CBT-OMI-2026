@@ -65,7 +65,7 @@ Aturan:
 - **isian**: benar jika cocok dengan salah satu jawaban di kunci setelah normalisasi: huruf kecil, spasi berlebih dirapikan, koma dan titik desimal dianggap sama, dan angka dibandingkan sebagai angka.
 - **Kosong**: tidak ada jawaban sama sekali. Kosong **dipisah dari salah**.
 - Tanpa nilai minus.
-- **Nilai** = (jumlah bobot soal benar ÷ jumlah bobot semua soal) × 100, dibulatkan 2 desimal.
+- **Nilai** ditulis sebagai **poin/maksimum**, bukan per 100: poin = jumlah bobot soal yang benar, maksimum = jumlah bobot semua soal yang tampil (mis. 22/30). Kolom `sesi.skor` tetap menyimpan persen (poin ÷ maksimum × 100, 2 desimal) untuk urutan peringkat dan sebaran; poin dan maksimum diturunkan saat ditampilkan. Maksimum dihitung dari soal yang ada saat ini, sehingga mengubah bobot atau jumlah soal setelah ada hasil ikut mengubah tampilan poin hasil lama.
 - `benar + salah + kosong = jumlah soal`.
 
 Halaman hasil dan PDF memuat: identitas (nama, nomor peserta, kelas, sekolah), nama ujian, jenjang, mapel, sesi, tanggal, **waktu pengerjaan** (contoh "32 menit 15 detik"), **benar**, **salah**, **kosong**, **nilai**, dan tabel per nomor (jawaban siswa dan status). Kolom kunci hanya di layar, hanya untuk pg dan pgk, dan hanya jika `tampil_kunci`; kunci ditulis sebagai huruf abjad sesuai urutan tampilan siswa. Kunci isian tidak pernah ditampilkan. **PDF dan cetak tidak memuat kolom kunci.** Tanpa pembahasan di Tahap 1.

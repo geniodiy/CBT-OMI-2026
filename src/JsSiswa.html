@@ -9,7 +9,7 @@
     'Pilihan ganda kompleks: benar hanya jika semua pilihan yang Anda centang sama persis dengan kunci.',
     'Isian singkat: benar jika cocok dengan salah satu jawaban yang diterima. Huruf besar dan kecil dianggap sama, koma dan titik desimal dianggap sama.',
     'Soal yang tidak dijawab tidak dihitung salah. Jawaban salah tidak mengurangi nilai.',
-    'Nilai = jumlah bobot soal benar dibagi jumlah bobot seluruh soal, dikali 100.'
+    'Nilai = jumlah bobot soal yang benar, ditulis terhadap nilai maksimum (jumlah bobot seluruh soal), misalnya 22/30.'
   ];
   var TATA_TERTIB = [
     'Peserta tidak boleh digantikan orang lain atau menerima bantuan.',
@@ -785,8 +785,12 @@
     }));
   }
 
-  function skorTampil(skor) {
-    return el('div', { class: 'hasil-skor' }, String(skor), el('span', { class: 'hasil-maks' }, '/100'));
+  function angkaNilai(n) { return String(Math.round(Number(n) * 100) / 100).replace('.', ','); }
+
+  /** Nilai ditulis poin/maksimum, mis. 22/30 (maksimum = jumlah bobot semua soal), bukan per 100. */
+  function skorTampil(h) {
+    var maks = h.maks != null ? h.maks : 100, poin = h.poin != null ? h.poin : h.skor;
+    return el('div', { class: 'hasil-skor' }, angkaNilai(poin), el('span', { class: 'hasil-maks' }, '/' + angkaNilai(maks)));
   }
 
   function infoUjian(h) {
@@ -821,7 +825,7 @@
       el('div', { class: 'hasil-atas' },
         el('div', null, el('div', { class: 'redup' }, 'Hasil ujian'), el('h1', null, h.ujian.nama),
           el('p', { class: 'hasil-ujian' }, infoUjian(h)), identitas(h)),
-        el('div', { class: 'hasil-nilai' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h.skor))),
+        el('div', { class: 'hasil-nilai' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h))),
       angkaRingkas(h),
       el('h2', { class: 'hasil-judul' }, 'Jawaban per soal'),
       el('div', { class: 'tabel-gulir' }, el('table', { class: 'tabel hasil-tabel' }, el('thead', null, kepalaTabel), badan)));
@@ -849,7 +853,7 @@
         el('div', null, el('strong', null, 'Laporan Hasil Try Out OMI 2026'), el('div', { class: 'redup' }, 'Dibuat oleh Genio Institute Yogyakarta'))),
       el('div', { class: 'hasil-atas' },
         el('div', null, el('h1', null, h.ujian.nama), el('p', { class: 'hasil-ujian' }, infoUjian(h)), identitas(h)),
-        el('div', { class: 'hasil-kotak' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h.skor))),
+        el('div', { class: 'hasil-kotak' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h))),
       angkaRingkas(h),
       el('table', { class: 'tabel hasil-tabel' }, el('thead', null, kepalaBaris), badan),
       el('div', { class: 'hasil-kaki' }, 'Dokumen ini dibuat otomatis oleh sistem Try Out OMI 2026.'));

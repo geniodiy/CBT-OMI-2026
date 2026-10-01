@@ -179,7 +179,7 @@ function apiSelesai(sesiId, jawaban) {
     nama: sesi.nama, nomor: sesi.nomor_peserta || '', kelas: sesi.kelas || '', sekolah: sesi.sekolah || '',
     ujian: { nama: u.nama, jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi },
     selesaiAt: selesaiAt, durasi: durasi,
-    benar: h.benar, salah: h.salah, kosong: h.kosong, total: soal.length, skor: h.skor,
+    benar: h.benar, salah: h.salah, kosong: h.kosong, total: soal.length, skor: h.skor, poin: h.poin, maks: h.maks,
     tampilKunci: u.tampil_kunci === true,
     rincian: h.rincian.map(function (r, n) {
       // Kunci isian tidak pernah dikirim; kunci pilihan ganda hanya bila tampil_kunci aktif.
