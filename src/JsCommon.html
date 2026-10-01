@@ -749,10 +749,17 @@
       root.style.setProperty('--vv-top', Math.round(top) + 'px');
       document.body && document.body.classList.toggle('kbd-aktif', tinggiPenuh - h > 120);
     }
+    var popupTetap = null;
     function pasangKb(aktif) {
       var k = aktif ? keyboard() : { px: 0, terukur: false };
+      // Tinggi popup dikunci agar tidak membesar atau bergeser ketika ruang kosong ditambahkan.
+      var m = aktif && document.activeElement && document.activeElement.closest ? document.activeElement.closest('.modal') : null;
+      if (m && popupTetap !== m) { if (popupTetap) popupTetap.style.height = ''; m.style.height = m.offsetHeight + 'px'; popupTetap = m; }
+      if (!aktif) {
+        document.body.style.removeProperty('--ekstra-halaman');
+        if (popupTetap) { popupTetap.style.height = ''; var bd = popupTetap.querySelector('.modal-badan'); if (bd) bd.style.removeProperty('--ekstra'); popupTetap = null; }
+      }
       root.style.setProperty('--kb', k.px + 'px');
-      if (!aktif) document.body.style.removeProperty('--ekstra-halaman');
       document.body.classList.toggle('kbd-fokus', aktif);
     }
     /** Menggulir seperlunya agar elemen (atau kursor) berada di atas keyboard dan tetap terlihat. */
@@ -762,10 +769,15 @@
       var dasar = (vv && k.terukur ? vv.offsetTop + vv.height : window.innerHeight - k.px) - 14;
       var wadah = el.closest ? el.closest('.modal-badan') : null;
       if (wadah) {
-        // Popup tidak diubah: isinya hanya digulir sejauh yang tersedia.
+        // Isi popup digulir; kekurangan ruang gulir (baris di dasar isi) ditambal ruang kosong seperlunya.
+        wadah.style.setProperty('--ekstra', '0px');
+        r = caret || el.getBoundingClientRect();
         var wr = wadah.getBoundingClientRect(), bawah = Math.min(wr.bottom - 8, dasar), atas = Math.max(wr.top, 0) + 8;
-        if (r.bottom > bawah) wadah.scrollTo({ top: wadah.scrollTop + (r.bottom - bawah), behavior: 'smooth' });
-        else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
+        if (r.bottom > bawah) {
+          var butuh = r.bottom - bawah, tersisa = wadah.scrollHeight - wadah.clientHeight - wadah.scrollTop;
+          if (butuh > tersisa) wadah.style.setProperty('--ekstra', Math.ceil(butuh - tersisa) + 'px');
+          wadah.scrollTo({ top: wadah.scrollTop + butuh, behavior: 'smooth' });
+        } else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
         return;
       }
       document.body.style.setProperty('--ekstra-halaman', '0px');
