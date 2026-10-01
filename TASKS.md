@@ -36,15 +36,16 @@ Berkas: `src/JsEditor.html`, bagian soal di `ApiAdmin.gs` dan `JsAdmin.html`.
 - [ ] `adminUpload` + kompres gambar di browser.
 - [ ] `adminSoalList/Simpan/Hapus/Urut`; daftar soal dengan pratinjau rumus dan tanda "gambar belum diisi".
 - [ ] Pratinjau persis tampilan siswa.
+- [ ] Dukungan Arab: `normArab_` (NFKC bentuk presentasi, buang kendali arah) dipakai saat tempel dan simpan; `blokHTML` membungkus rangkaian Arab dengan `span.ar[dir=rtl]`; font Noto Naskh Arabic.
 
-Uji: buat satu soal tiap tipe dengan rumus `\frac`, `\sqrt`, `\ce{}`, tebal/miring/garis bawah di soal **dan** opsi; gambar di atas, di tengah, di bawah; geser posisi; unggah gambar dan muncul; simpan, buka ulang, isi tetap sama; kunci tidak lengkap ditolak dengan pesan jelas.
+Uji: buat satu soal tiap tipe dengan rumus `\frac`, `\sqrt`, `\ce{}`, tebal/miring/garis bawah di soal **dan** opsi; gambar di atas, di tengah, di bawah; geser posisi; unggah gambar dan muncul; simpan, buka ulang, isi tetap sama; kunci tidak lengkap ditolak dengan pesan jelas; tempel kalimat Arab berharakat (mis. ayat dan kalimat campur Arab-Indonesia) di soal dan di opsi: harakat utuh, huruf menyambung, arah benar, tersimpan dan terbuka ulang sama persis.
 
 ## M4. Import JSON
 
 - [ ] `adminSoalImport` (dry run, tambah, ganti) dengan peringatan LaTeX tanpa garis miring.
 - [ ] Modal import: tempel/unggah, salin prompt AI (`String.raw`), periksa, pratinjau rumus, impor.
 
-Uji: impor `contoh/soal-contoh.json` (6 soal; satu gambar kosong terdeteksi); JSON yang rusak memberi pesan baris/posisi; "sqrt17" tanpa `\` memicu peringatan; mode ganti meminta konfirmasi.
+Uji: impor `contoh/soal-contoh.json` (6 soal; satu gambar kosong terdeteksi); JSON yang rusak memberi pesan baris/posisi; "sqrt17" tanpa `\` memicu peringatan; mode ganti meminta konfirmasi; JSON berisi teks Arab berharakat tampil benar di pratinjau.
 
 ## M5. Beranda, token, info sebelum mulai
 
@@ -63,7 +64,7 @@ Uji: ujian nonaktif tidak tampil; token salah menampilkan pesan di kolom token; 
 - [ ] Simpan lokal tiap perubahan; sinkron server tiap 3 menit; peringatan sebelum menutup halaman.
 - [ ] Responsif (< 900 px): sidebar disembunyikan, laci daftar soal.
 
-Uji: refresh browser di tengah ujian lalu lanjut tanpa kehilangan jawaban dan waktu tidak reset; ubah jam perangkat tidak mengubah timer; acak soal/opsi konsisten saat dilanjutkan; kunci tidak terlihat di Network/respon; uji di layar 360 px.
+Uji: refresh browser di tengah ujian lalu lanjut tanpa kehilangan jawaban dan waktu tidak reset; ubah jam perangkat tidak mengubah timer; acak soal/opsi konsisten saat dilanjutkan; kunci tidak terlihat di Network/respon; uji di layar 360 px; soal Arab tampil rata kanan dengan font Naskh dan jawaban isian Arab tersimpan utuh.
 
 ## M7. Hasil dan PDF
 
@@ -71,7 +72,7 @@ Uji: refresh browser di tengah ujian lalu lanjut tanpa kehilangan jawaban dan wa
 - [ ] Halaman hasil: identitas, nilai, benar, salah, kosong, waktu pengerjaan, tabel per nomor, kunci hanya jika `tampil_kunci`.
 - [ ] Unduh PDF (html2pdf.js, `useCORS`), Cetak (`@media print`), Kembali ke beranda.
 
-Uji: kombinasi jawaban pg/pgk/isian menghasilkan benar/salah/kosong yang tepat dan `benar+salah+kosong = total`; waktu habis mengirim otomatis; PDF terunduh di Chrome desktop, Chrome Android, Safari iOS, dan gambar serta rumus ikut tampil; kunci muncul hanya jika diaktifkan.
+Uji: kombinasi jawaban pg/pgk/isian menghasilkan benar/salah/kosong yang tepat dan `benar+salah+kosong = total`; waktu habis mengirim otomatis; PDF terunduh di Chrome desktop, Chrome Android, Safari iOS, dan gambar, rumus, dan teks Arab ikut tampil benar (tidak terbalik/terputus); kunci muncul hanya jika diaktifkan.
 
 ## M8. Admin: hasil
 

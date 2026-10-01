@@ -47,6 +47,19 @@ Import menerima array soal, atau objek `{ "soal": [ ... ] }`. Pembungkus pagar k
 
 Gejala paling umum dari konversi AI yang salah: tampil `10sqrt17` alih-alih akar. Sistem memberi peringatan jika menemukan kata seperti `sqrt`, `frac`, `alpha`, `times`, `leq` di luar rumus yang benar.
 
+## Teks Arab
+
+Soal bahasa Arab dan kutipan ayat/hadis harus bisa ditempel (copy-paste) apa adanya dan tampil benar.
+
+- **Penyimpanan**: semua teks UTF-8 apa adanya (Postgres, Apps Script, JSON). Harakat (fathah, kasrah, dhammah, sukun, syaddah, tanwin) dan huruf khusus tidak boleh hilang.
+- **Tempel**: editor selalu menempel sebagai teks polos (Unicode dipertahankan). Saat tempel dan saat impor, teks dinormalisasi: bentuk presentasi Arab (U+FB50-FDFF, U+FE70-FEFF, biasanya hasil salin dari PDF) diubah ke huruf dasar dengan NFKC; karakter kendali arah tersembunyi (U+200E, U+200F, U+202A-202E, U+2066-2069) dibuang; ZWNJ/ZWJ dipertahankan.
+- **Arah tulisan**: setiap rangkaian huruf Arab dibungkus saat render dengan `<span class="ar" dir="rtl" lang="ar">` setelah sanitasi DOMPurify, jadi admin tidak perlu atribut `dir`. Blok yang seluruhnya Arab diberi kelas `ar-blok` (rata kanan). Opsi pilihan ganda berisi Arab tetap sejajar dengan huruf opsinya.
+- **Font**: Noto Naskh Arabic (lihat `UI.md`), ukuran lebih besar dari teks Latin agar harakat terbaca.
+- **Isian**: pencocokan jawaban Arab mengabaikan harakat dan tatwil (U+0640), dan menyamakan variasi alif (أ إ آ ا), ya (ى ي), dan ta marbutah (ة).
+- **Dalam rumus**: teks Arab di dalam `$...$` ditulis dengan `\text{...}`.
+- **PDF**: html2pdf.js memotret DOM, sehingga font Arab harus sudah termuat sebelum PDF dibuat (`document.fonts.ready`).
+- Catatan: teks Arab yang disalin dari PDF terkadang urutan hurufnya terbalik atau terputus; ini tidak bisa diperbaiki otomatis. Admin diminta memeriksa pratinjau, dan prompt AI di bawah meminta AI menuliskan ulang teks Arab dalam urutan logis (bukan visual).
+
 ## Aturan validasi (`normSoal_`)
 
 Galat (menghentikan, berbentuk "Soal #N: ..."):
@@ -89,7 +102,8 @@ Aturan:
 5. Satu soal boleh memiliki beberapa blok teks dan beberapa blok gambar. Urutan blok mengikuti
    urutan tampil pada soal. Bagian "Pertanyaan" boleh menjadi blok teks tersendiri.
 6. Pertahankan nomor, urutan, dan isi soal apa adanya. Jangan mengubah angka atau kata.
-7. Jika kunci jawaban tidak tertera di dokumen, isi dengan jawaban yang paling tepat menurut Anda;
+7. Teks Arab (termasuk harakat) ditulis sebagai karakter Unicode Arab biasa dalam urutan logis (kanan ke kiri saat dibaca), bukan gambar, bukan transliterasi, dan bukan urutan visual hasil salinan PDF.
+8. Jika kunci jawaban tidak tertera di dokumen, isi dengan jawaban yang paling tepat menurut Anda;
    admin akan memeriksanya.
 ````
 

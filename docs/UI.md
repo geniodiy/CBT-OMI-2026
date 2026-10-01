@@ -26,6 +26,8 @@ Satu aksen kuat per layar. Merah dan hijau tidak dipakai sebagai hiasan.
 
 Satu keluarga sans-serif. Pilihan: **Plus Jakarta Sans** (Google Fonts, bobot 400/600/700) dengan cadangan `system-ui, "Segoe UI", Roboto, sans-serif`. Dasar 16 px, tinggi baris 1,55, panjang baris soal maksimal ±75 karakter. Angka timer memakai `font-variant-numeric: tabular-nums`. Judul tidak huruf kapital semua; gunakan huruf kalimat biasa.
 
+**Teks Arab**: keluarga kedua **Noto Naskh Arabic** (Google Fonts, bobot 400/700) untuk `.ar`, cadangan `"Traditional Arabic", "Geeza Pro", serif`. Ukuran 1,25 em, tinggi baris 2, `direction: rtl`, `unicode-bidi: isolate`. Ini satu-satunya pengecualian dari aturan satu keluarga font.
+
 ## Bentuk
 
 - Radius seragam **8 px**. Lencana dan grid nomor 6 px.
