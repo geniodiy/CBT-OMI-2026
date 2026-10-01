@@ -112,7 +112,7 @@
     var latar = document.createElement('div');
     latar.className = 'modal-latar';
     var kotak = document.createElement('div');
-    kotak.className = 'modal' + (opt.lebar ? ' modal-lebar' : '');
+    kotak.className = 'modal' + (opt.lebar ? ' modal-lebar' : '') + (opt.kelas ? ' ' + opt.kelas : '');
     kotak.setAttribute('role', 'dialog');
     kotak.setAttribute('aria-modal', 'true');
 
@@ -281,6 +281,17 @@
     kanan: [['path', { d: 'M9.5 6l6 6-6 6' }]],
     daftar: [['path', { d: 'M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01' }]],
     centang: [['path', { d: 'M5 12.5l4.5 4.5L19 7.5' }]],
+    tambah: [['path', { d: 'M12 5v14M5 12h14' }]],
+    ubah: [['path', { d: 'M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z' }], ['path', { d: 'M14.5 6.5l3 3' }]],
+    duplikat: [['rect', { x: 8, y: 8, width: 12, height: 12, rx: 2 }], ['path', { d: 'M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2' }]],
+    salin: [['rect', { x: 8, y: 8, width: 12, height: 12, rx: 2 }], ['path', { d: 'M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2' }]],
+    hapus: [['path', { d: 'M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5' }]],
+    cari: [['circle', { cx: 11, cy: 11, r: 6 }], ['path', { d: 'M20 20l-4.2-4.2' }]],
+    ujian: [['rect', { x: 4, y: 3.5, width: 16, height: 17, rx: 2.5 }], ['path', { d: 'M8 8.5h8M8 12h8M8 15.5h5' }]],
+    hasil: [['path', { d: 'M5 20v-9M12 20V5M19 20v-6' }]],
+    keluar: [['path', { d: 'M10 5H6a1.5 1.5 0 0 0-1.5 1.5v11A1.5 1.5 0 0 0 6 19h4M14 8l4 4-4 4M18 12H9' }]],
+    beranda: [['path', { d: 'M4 11l8-7 8 7M6 10v9h12v-9' }]],
+    peringatan: [['path', { d: 'M12 4l9 16H3z' }], ['path', { d: 'M12 10v4M12 17h.01' }]],
     dokumen: [['path', { d: 'M7 3.5h7l4 4V20.5H7z' }], ['path', { d: 'M14 3.5v4h4' }], ['path', { d: 'M9.5 12h5M9.5 15.5h5' }]]
   };
 
@@ -305,6 +316,7 @@
     var btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.hidden = nama === 'ujian';
     document.body.classList.toggle('mode-ujian', nama === 'ujian');
+    document.documentElement.classList.toggle('adm-aktif', nama === 'admin');
     document.body.setAttribute('data-halaman', nama);
     window.scrollTo(0, 0);
   };

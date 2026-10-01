@@ -143,3 +143,10 @@ Pembahasan soal, analisis per soal, skor parsial pgk, ganti sandi admin dari web
 - [x] Panel admin menampilkan daftar terakhir lebih dulu lalu menyegarkannya; hapus ujian langsung hilang dari daftar. Durasi bawaan ujian baru 120 menit.
 - [x] Beranda profesional: hero, "Apa itu OMI?", format tes dan jadwal, penilaian, tata tertib (dari Petunjuk Teknis OMI 2026), durasi 120 menit untuk semua jenjang.
 - [x] html2pdf dimuat saat dibutuhkan (`pastikanPdf`).
+
+## Redesign admin (tahap 1: kerangka dan tab Ujian)
+
+- [x] Sidebar kiri, font dasar 13 px, tabel ujian padat dengan saringan status/jenjang, urutan, pencarian, dan salin token.
+- [x] Popup Tambah/Ubah, Duplikat (nama salinan), dan Hapus (menyebut jumlah soal dan hasil).
+- [x] View `ujian_ringkas` menambah `n_gambar_kosong`, `n_selesai`, `n_berjalan` (jalankan ulang `supabase/schema.sql`; tanpa itu kolomnya tampil "-").
+- [ ] Tahap 2: tab Soal dan Hasil dengan bahasa visual yang sama.

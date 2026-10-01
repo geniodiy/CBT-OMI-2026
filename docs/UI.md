@@ -112,7 +112,10 @@ PDF = isi `#hasilCetak` saja, A4 potret, margin 10 mm, header kecil logo + "Try 
 
 ## 5. Admin
 
-Satu halaman dengan tab teks sederhana (Ujian, Soal, Hasil) dan tombol "Keluar" di kanan. Tabel rapat, aksi per baris sebagai tombol teks. Modal lebar untuk formulir ujian dan editor soal.
+Sidebar kiri (188 px) berisi logo, menu Ujian / Soal / Hasil dengan jumlahnya, lalu "Lihat beranda" dan "Keluar" di bawah. Header situs disembunyikan di panel admin. Ukuran dasar font panel 13 px (kelas `adm-aktif` pada `<html>`) agar banyak data muat di layar. Di bawah 860 px sidebar menjadi bilah atas dan baris tabel menjadi kartu ringkas.
+
+**Tab Ujian**: judul + ringkasan jumlah per status, tombol "Tambah ujian"; alat: saring status (Semua, Aktif, Terjadwal, Nonaktif, Ditutup), saring jenjang, urutan, dan pencarian nama/mapel/token. Tabel rapat (tinggi baris 42 px): ujian (nama, mapel, sesi, tanda merah "n gambar kosong"), jenjang, soal (jumlah dan PG/PGK/isian), durasi, token (klik untuk menyalin), jadwal, selesai (+n sedang mengerjakan), status, dan tiga ikon aksi (Ubah, Duplikat, Hapus). Data `n_gambar_kosong`, `n_selesai`, `n_berjalan` berasal dari view `ujian_ringkas`; bila view belum diperbarui kolomnya kosong dan tampil "-".
+Popup: Tambah/Ubah ujian (satu formulir, lebar 600 px, bagian Identitas, Pengerjaan, Jadwal, Pengaturan, Catatan), Duplikat (nama salinan dapat diubah), Hapus (peringatan merah menyebut jumlah soal dan hasil yang ikut terhapus).
 
 **Editor soal** (modal lebar, tidak tertutup jika klik di luar):
 - Baris atas: Tipe soal, Bobot.

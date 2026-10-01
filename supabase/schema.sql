@@ -82,7 +82,10 @@ select
   count(s.id)                                  as jumlah_soal,
   count(s.id) filter (where s.tipe = 'pg')     as n_pg,
   count(s.id) filter (where s.tipe = 'pgk')    as n_pgk,
-  count(s.id) filter (where s.tipe = 'isian')  as n_isian
+  count(s.id) filter (where s.tipe = 'isian')  as n_isian,
+  count(s.id) filter (where jsonb_path_exists(s.blok, '$[*] ? (@.tipe == "gambar" && @.isi == "")')) as n_gambar_kosong,
+  (select count(*) from sesi x where x.ujian_id = u.id and x.status = 'selesai')  as n_selesai,
+  (select count(*) from sesi x where x.ujian_id = u.id and x.status = 'berjalan') as n_berjalan
 from ujian u
 left join soal s on s.ujian_id = u.id
 group by u.id;

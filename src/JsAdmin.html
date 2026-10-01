@@ -81,26 +81,52 @@
   var ujianTerpilih = null;
   var daftarSoal = [];
 
+  var NAV = [['ujian', 'Ujian', 'ujian'], ['soal', 'Soal', 'bantuan'], ['hasil', 'Hasil', 'hasil']];
+
+  function jumlahNav(t) {
+    var n = 0;
+    if (t === 'ujian') return daftarUjian.length;
+    daftarUjian.forEach(function (u) { n += Number(t === 'soal' ? u.jumlah_soal : u.n_selesai) || 0; });
+    return n;
+  }
+
   function tampilAdmin() {
     var s = document.querySelector('[data-view="admin"]');
     s.textContent = '';
-    var tabs = el('div', { class: 'tabs', role: 'tablist' });
-    [['ujian', 'Ujian'], ['soal', 'Soal'], ['hasil', 'Hasil']].forEach(function (t) {
-      tabs.appendChild(el('button', { class: 'tab', role: 'tab', type: 'button', 'data-tab': t[0], onclick: function () { pilihTab(t[0]); } }, t[1]));
+    var navEl = el('nav', { class: 'adm-nav', 'aria-label': 'Menu admin' });
+    NAV.forEach(function (t) {
+      var jml = el('em', { 'data-jml': t[0] }, String(jumlahNav(t[0])));
+      navEl.appendChild(el('button', { class: 'adm-nav-btn', type: 'button', 'data-tab': t[0], onclick: function () { pilihTab(t[0]); } },
+        window.ikon(t[2], 17), el('span', null, t[1]), jml));
     });
-    tabs.appendChild(el('span', { class: 'spacer' }));
-    tabs.appendChild(el('button', { class: 'btn btn-teks', type: 'button', onclick: keluar }, 'Keluar'));
-    s.appendChild(tabs);
-    s.appendChild(el('div', { id: 'panelAdmin' }));
+    var logo = document.querySelectorAll('.header-logo img');
+    var side = el('aside', { class: 'adm-side' },
+      el('div', { class: 'adm-merek' },
+        el('div', { class: 'adm-logo' }, Array.prototype.map.call(logo, function (g) { return el('img', { src: g.src, alt: g.alt }); })),
+        el('div', { class: 'adm-judul' }, el('strong', null, 'Try Out OMI 2026'), el('span', null, 'Panel admin'))),
+      navEl,
+      el('div', { class: 'adm-kaki' },
+        el('button', { class: 'adm-nav-btn', type: 'button', onclick: keBerandaTetapMasuk }, window.ikon('beranda', 17), el('span', null, 'Lihat beranda')),
+        el('button', { class: 'adm-nav-btn adm-keluar', type: 'button', onclick: keluar }, window.ikon('keluar', 17), el('span', null, 'Keluar'))));
+    s.appendChild(el('div', { class: 'adm' }, side, el('div', { class: 'adm-isi' }, el('div', { id: 'panelAdmin' }))));
     window.showView('admin');
     document.getElementById('btnAdmin').textContent = 'Panel admin';
     pilihTab(tabAktif);
   }
 
+  function segarkanNav() {
+    document.querySelectorAll('.adm-nav-btn em').forEach(function (e) { e.textContent = String(jumlahNav(e.getAttribute('data-jml'))); });
+  }
+
+  function keBerandaTetapMasuk() {
+    if (window.App.muatBeranda) window.App.muatBeranda(); else window.showView('beranda');
+    document.getElementById('btnAdmin').textContent = 'Panel admin';
+  }
+
   function pilihTab(t) {
     tabAktif = t;
-    document.querySelectorAll('[data-view="admin"] .tab').forEach(function (b) {
-      b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false');
+    document.querySelectorAll('.adm-nav-btn[data-tab]').forEach(function (b) {
+      b.setAttribute('aria-current', b.getAttribute('data-tab') === t ? 'page' : 'false');
     });
     if (t === 'soal') tampilSoalTab();
     else if (t === 'hasil') tampilHasilTab();
@@ -114,6 +140,9 @@
     window.call('adminKeluar', t).catch(function () { /* token tetap kedaluwarsa sendiri */ });
   }
 
+  var filterStatus = 'semua', filterJenjang = '', urutan = 'terbaru', cari = '';
+  var BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
   /** Tampilkan daftar yang sudah ada lebih dulu, lalu segarkan dari server di belakang layar. */
   function muatUjian() {
     var p = document.getElementById('panelAdmin');
@@ -121,6 +150,7 @@
     else { p.textContent = ''; p.appendChild(el('div', { class: 'kerangka' })); p.appendChild(el('div', { class: 'kerangka' })); }
     window.call('adminUjianList', tokenAdmin).then(function (d) {
       daftarUjian = d;
+      segarkanNav();
       if (tabAktif === 'ujian' && !document.querySelector('.modal')) gambarUjian();
     }).catch(function (e) {
       if (e.message.indexOf('SESI_ADMIN') === 0) return;
@@ -128,45 +158,126 @@
     });
   }
 
+  /** Status gabungan aktif, jadwal, dan waktu sekarang. k: aktif, belum, ditutup, nonaktif. */
+  function statusDari(u) {
+    var sekarang = Date.now(), b = u.buka_at ? Date.parse(u.buka_at) : NaN, t = u.tutup_at ? Date.parse(u.tutup_at) : NaN;
+    if (!u.aktif) return { k: 'nonaktif', teks: 'Nonaktif' };
+    if (!isNaN(b) && sekarang < b) return { k: 'belum', teks: 'Belum dibuka' };
+    if (!isNaN(t) && sekarang >= t) return { k: 'ditutup', teks: 'Ditutup' };
+    return { k: 'aktif', teks: 'Aktif' };
+  }
+
+  function tglPendek(iso) {
+    var t = new Date(iso);
+    return isNaN(t.getTime()) ? '' : t.getDate() + ' ' + BULAN[t.getMonth()];
+  }
+  function jadwalTeks(u) {
+    var b = u.buka_at ? tglPendek(u.buka_at) : '', t = u.tutup_at ? tglPendek(u.tutup_at) : '';
+    if (b && t) return b === t ? b : b + ' - ' + t;
+    if (b) return 'Buka ' + b;
+    if (t) return 'Tutup ' + t;
+    return '-';
+  }
+  function rincianSoal(u) {
+    var r = [Number(u.n_pg) || 0, Number(u.n_pgk) || 0, Number(u.n_isian) || 0];
+    while (r.length > 1 && r[r.length - 1] === 0) r.pop();
+    return r.join('/');
+  }
+
   function gambarUjian() {
     var p = document.getElementById('panelAdmin');
     p.textContent = '';
-    p.appendChild(el('div', { class: 'bar' },
-      el('h2', null, 'Daftar ujian'),
-      el('button', { class: 'btn btn-utama', type: 'button', onclick: function () { bukaForm(null); } }, 'Tambah ujian')));
+    var hitung = { semua: daftarUjian.length, aktif: 0, belum: 0, nonaktif: 0, ditutup: 0 };
+    daftarUjian.forEach(function (u) { hitung[statusDari(u).k]++; });
+    var ringkas = daftarUjian.length + ' ujian, ' + hitung.aktif + ' aktif, ' + hitung.belum + ' terjadwal, ' + hitung.nonaktif + ' nonaktif, ' + hitung.ditutup + ' ditutup';
+
+    p.appendChild(el('div', { class: 'adm-atas' },
+      el('h1', null, 'Ujian'),
+      el('span', { class: 'redup' }, daftarUjian.length ? ringkas : ''),
+      el('button', { class: 'btn btn-utama', type: 'button', onclick: function () { bukaForm(null); } }, window.ikon('tambah', 15), 'Tambah ujian')));
     if (!daftarUjian.length) {
-      p.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Klik "Tambah ujian" untuk membuat yang pertama.')));
+      p.appendChild(el('div', { class: 'adm-tabel' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Klik "Tambah ujian" untuk membuat yang pertama.')));
       return;
     }
-    var tbody = el('tbody');
-    daftarUjian.forEach(function (u) {
-      tbody.appendChild(el('tr', null,
-        el('td', null, el('strong', null, u.nama)),
-        el('td', null, u.jenjang),
-        el('td', null, u.mapel),
-        el('td', null, u.sesi || '-'),
-        el('td', null, u.durasi_menit + ' menit'),
-        el('td', null, String(u.jumlah_soal)),
-        el('td', null, el('code', null, u.token)),
-        el('td', null, statusUjian(u)),
-        el('td', { class: 'aksi' },
-          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { bukaForm(u); } }, 'Ubah'),
-          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { duplikatUjian(u); } }, 'Duplikat'),
-          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { konfirmasiHapus(u); } }, 'Hapus'))));
+
+    var seg = el('div', { class: 'adm-seg', role: 'group', 'aria-label': 'Saring status' });
+    [['semua', 'Semua'], ['aktif', 'Aktif'], ['belum', 'Terjadwal'], ['nonaktif', 'Nonaktif'], ['ditutup', 'Ditutup']].forEach(function (x) {
+      seg.appendChild(el('button', { type: 'button', 'aria-pressed': filterStatus === x[0] ? 'true' : 'false', onclick: function () { filterStatus = x[0]; isiTabelUjian(); tandaiSeg(seg); } },
+        x[1], el('small', null, String(hitung[x[0]]))));
     });
-    var tabel = el('table', { class: 'tabel' },
-      el('thead', null, el('tr', null, ['Nama', 'Jenjang', 'Mapel', 'Sesi', 'Durasi', 'Soal', 'Token', 'Status', ''].map(function (t) { return el('th', null, t); }))),
-      tbody);
-    p.appendChild(el('div', { class: 'tabel-bungkus' }, tabel));
+    var jenjang = daftarUjian.map(function (u) { return u.jenjang; }).filter(function (v, i, a) { return a.indexOf(v) === i; }).sort();
+    var selJenjang = el('select', { 'aria-label': 'Saring jenjang' }, el('option', { value: '' }, 'Semua jenjang'),
+      jenjang.map(function (j) { return el('option', { value: j }, j); }));
+    selJenjang.value = jenjang.indexOf(filterJenjang) >= 0 ? filterJenjang : '';
+    filterJenjang = selJenjang.value;
+    selJenjang.addEventListener('change', function () { filterJenjang = selJenjang.value; isiTabelUjian(); });
+    var selUrut = el('select', { 'aria-label': 'Urutkan' },
+      [['terbaru', 'Urut: terbaru'], ['nama', 'Urut: nama'], ['jenjang', 'Urut: jenjang'], ['peserta', 'Urut: peserta']].map(function (x) { return el('option', { value: x[0] }, x[1]); }));
+    selUrut.value = urutan;
+    selUrut.addEventListener('change', function () { urutan = selUrut.value; isiTabelUjian(); });
+    var kolomCari = el('input', { type: 'search', placeholder: 'Cari nama, mapel, atau token', 'aria-label': 'Cari ujian', value: cari });
+    kolomCari.addEventListener('input', function () { cari = kolomCari.value; isiTabelUjian(); });
+
+    p.appendChild(el('div', { class: 'adm-alat' }, seg, selJenjang, selUrut,
+      el('label', { class: 'adm-cari' }, window.ikon('cari', 15), kolomCari)));
+    p.appendChild(el('div', { class: 'adm-tabel', id: 'admTabel' }));
+    p.appendChild(el('div', { class: 'adm-kaki-tabel', id: 'admKaki' }));
+    isiTabelUjian();
   }
 
+  function tandaiSeg(seg) {
+    seg.querySelectorAll('button').forEach(function (b, i) {
+      b.setAttribute('aria-pressed', ['semua', 'aktif', 'belum', 'nonaktif', 'ditutup'][i] === filterStatus ? 'true' : 'false');
+    });
+  }
 
-  function statusUjian(u) {
-    var sekarang = Date.now(), b = u.buka_at ? Date.parse(u.buka_at) : NaN, t = u.tutup_at ? Date.parse(u.tutup_at) : NaN;
-    if (!u.aktif) return el('span', { class: 'status-mati' }, 'Nonaktif');
-    if (!isNaN(b) && sekarang < b) return el('span', { class: 'status-mati' }, 'Belum dibuka', el('div', { class: 'redup' }, tanggalRingkas(u.buka_at)));
-    if (!isNaN(t) && sekarang >= t) return el('span', { class: 'status-mati' }, 'Ditutup', el('div', { class: 'redup' }, tanggalRingkas(u.tutup_at)));
-    return el('span', { class: 'status-aktif' }, 'Aktif', !isNaN(t) ? el('div', { class: 'redup' }, 'Tutup ' + tanggalRingkas(u.tutup_at)) : null);
+  function isiTabelUjian() {
+    var tabel = document.getElementById('admTabel'), kaki = document.getElementById('admKaki');
+    if (!tabel) return;
+    var kata = cari.trim().toLowerCase();
+    var tampil = daftarUjian.filter(function (u) {
+      if (filterStatus !== 'semua' && statusDari(u).k !== filterStatus) return false;
+      if (filterJenjang && u.jenjang !== filterJenjang) return false;
+      return !kata || [u.nama, u.mapel, u.token, u.sesi].join(' ').toLowerCase().indexOf(kata) >= 0;
+    });
+    if (urutan === 'nama') tampil.sort(function (a, b) { return String(a.nama).localeCompare(b.nama, 'id'); });
+    else if (urutan === 'jenjang') tampil.sort(function (a, b) { return String(a.jenjang).localeCompare(b.jenjang, 'id') || String(a.mapel).localeCompare(b.mapel, 'id'); });
+    else if (urutan === 'peserta') tampil.sort(function (a, b) { return (Number(b.n_selesai) || 0) - (Number(a.n_selesai) || 0); });
+    tabel.textContent = '';
+    tabel.appendChild(el('div', { class: 'adm-baris adm-kepala' },
+      ['UJIAN', 'JENJANG', 'SOAL (PG/PGK/ISIAN)', 'DURASI', 'TOKEN', 'JADWAL', 'SELESAI', 'STATUS', ''].map(function (t) { return el('span', null, t); })));
+    if (!tampil.length) tabel.appendChild(el('p', { class: 'kosong' }, 'Tidak ada ujian yang cocok dengan saringan ini.'));
+    tampil.forEach(function (u) { tabel.appendChild(barisUjian(u)); });
+    kaki.textContent = '';
+    kaki.appendChild(el('span', null, 'Menampilkan ' + tampil.length + ' dari ' + daftarUjian.length + ' ujian'));
+    kaki.appendChild(el('span', null, 'Selesai = peserta yang sudah mengirim jawaban. Angka +n = sedang mengerjakan.'));
+  }
+
+  function barisUjian(u) {
+    var st = statusDari(u);
+    var kosong = Number(u.n_gambar_kosong) || 0, jalan = Number(u.n_berjalan) || 0;
+    var ikonAksi = function (nama, label, fn, kelas) {
+      return el('button', { class: 'adm-ikon' + (kelas ? ' ' + kelas : ''), type: 'button', title: label, 'aria-label': label + ' ' + u.nama, onclick: fn }, window.ikon(nama, 16));
+    };
+    var token = el('button', { class: 'adm-token', type: 'button', title: 'Salin token', 'aria-label': 'Salin token ' + u.token,
+      onclick: function () { salinTeks(u.token, 'Token ' + u.token + ' disalin.'); } }, el('code', null, u.token), window.ikon('salin', 12));
+    return el('div', { class: 'adm-baris' },
+      el('div', { class: 'adm-nama' },
+        el('strong', { title: u.nama }, u.nama),
+        el('span', null, u.mapel + (u.sesi ? ', ' + u.sesi : ''),
+          kosong ? el('em', null, kosong + ' gambar kosong') : null),
+        el('span', { class: 'adm-ringkas' }, u.jenjang + ' | ' + u.jumlah_soal + ' soal | ' + u.durasi_menit + ' menit')),
+      el('span', { class: 'adm-jenjang' }, u.jenjang),
+      el('span', { class: 'adm-soal' }, el('strong', null, String(u.jumlah_soal)), el('small', null, rincianSoal(u))),
+      el('span', { class: 'adm-durasi' }, u.durasi_menit + ' mnt'),
+      el('span', { class: 'adm-tk' }, token),
+      el('span', { class: 'adm-jadwal' }, jadwalTeks(u)),
+      el('span', { class: 'adm-selesai' }, u.n_selesai == null ? '-' : String(u.n_selesai), jalan ? el('small', null, ' +' + jalan) : null),
+      el('span', { class: 'adm-st' }, el('span', { class: 'adm-pil adm-pil-' + st.k }, st.teks)),
+      el('span', { class: 'adm-aksi' },
+        ikonAksi('ubah', 'Ubah', function () { bukaForm(u); }),
+        ikonAksi('duplikat', 'Duplikat', function () { duplikatUjian(u); }),
+        ikonAksi('hapus', 'Hapus', function () { konfirmasiHapus(u); }, 'adm-ikon-hapus')));
   }
 
   /** Nilai untuk input datetime-local (jam perangkat) dari ISO. */
@@ -183,16 +294,23 @@
   }
 
   function duplikatUjian(u) {
+    var nama = el('input', { type: 'text', maxLength: 150, value: String(u.nama).slice(0, 138) + ' (salinan)', 'aria-label': 'Nama salinan' });
+    var badan = el('div', { class: 'adm-form' },
+      el('p', null, 'Ujian ', el('strong', null, u.nama), ' disalin beserta ', el('strong', null, u.jumlah_soal + ' soalnya'), '. Hasil siswa tidak disalin.'),
+      el('label', { class: 'field' }, el('span', null, 'Nama salinan'), nama),
+      el('div', { class: 'adm-info' }, 'Salinan berstatus nonaktif dan memakai token baru. Aktifkan setelah soalnya diperiksa.'));
     window.openModal({
-      judul: 'Duplikat ujian?',
-      isi: 'Ujian "' + u.nama + '" disalin beserta ' + u.jumlah_soal + ' soalnya. Hasil siswa tidak disalin. Salinan berstatus nonaktif dan memakai token baru.',
+      judul: 'Duplikat ujian?', isi: badan, tutupDiLuar: false,
       tombol: [
         { teks: 'Batal' },
-        { teks: 'Duplikat', utama: true, aksi: function () {
-          window.call('adminUjianDuplikat', tokenAdmin, u.id).then(function (b) {
+        { teks: 'Duplikat', utama: true, aksi: function (m) {
+          var tb = m.el.querySelector('.btn-utama');
+          window.sibuk(tb, window.call('adminUjianDuplikat', tokenAdmin, u.id, nama.value).then(function (b) {
+            m.close();
             window.toast('Ujian disalin dengan token ' + b.token + '. Aktifkan bila sudah siap.');
             muatUjian();
-          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
+          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); }));
+          return false;
         } }
       ]
     });
@@ -225,26 +343,25 @@
     var tokenField = el('div', { class: 'field' }, el('span', null, 'Token *'),
       el('div', { class: 'baris-token' }, f.token,
         el('button', { class: 'btn', type: 'button', onclick: function () { f.token.value = tokenAcak(); } }, 'Acak')));
-    f.catatan = el('textarea', { rows: 3, value: d.catatan || '' });
+    f.catatan = el('textarea', { rows: 2, value: d.catatan || '' });
     f.buka_at = el('input', { type: 'datetime-local', value: keInputWaktu(d.buka_at), 'aria-label': 'Buka otomatis' });
     f.tutup_at = el('input', { type: 'datetime-local', value: keInputWaktu(d.tutup_at), 'aria-label': 'Tutup otomatis' });
     var galat = el('div', { class: 'galat', role: 'alert' });
 
-    var badan = el('div', null,
+    var badan = el('div', { class: 'adm-form' },
       isian('nama', 'Nama ujian *', 'text', { maxLength: 150 }),
-      el('div', { class: 'grid2' }, jenjangField, isian('mapel', 'Mata pelajaran *')),
-      el('div', { class: 'grid2' }, isian('sesi', 'Sesi (opsional)', 'text', { placeholder: 'Contoh: Sesi 1' }),
-        isian('durasi_menit', 'Durasi (menit) *', 'number', { min: 1, step: 1 })),
-      tokenField,
+      el('div', { class: 'grid3' }, jenjangField, isian('mapel', 'Mata pelajaran *'),
+        isian('sesi', 'Sesi (opsional)', 'text', { placeholder: 'Contoh: Sesi 1' })),
+      el('div', { class: 'grid2' }, isian('durasi_menit', 'Durasi (menit) *', 'number', { min: 1, step: 1 }), tokenField),
+      el('div', { class: 'adm-bagian' }, 'JADWAL (KOSONGKAN BILA SELALU TERBUKA)'),
       el('div', { class: 'grid2' },
-        el('label', { class: 'field' }, el('span', null, 'Buka otomatis (opsional)'), f.buka_at),
-        el('label', { class: 'field' }, el('span', null, 'Tutup otomatis (opsional)'), f.tutup_at)),
-      el('p', { class: 'redup petunjuk' }, 'Kosongkan agar tidak dibatasi waktu. Ujian tampil di beranda hanya di antara waktu buka dan tutup. Waktu mengikuti jam perangkat ini. Siswa yang sudah mulai tetap dapat menyelesaikan ujiannya setelah waktu tutup.'),
-      el('label', { class: 'field' }, el('span', null, 'Catatan dari pengawas (opsional)'), f.catatan),
-      cek('aktif', 'Tampil di beranda (aktif)'),
-      cek('acak_soal', 'Acak urutan soal'),
-      cek('acak_opsi', 'Acak urutan opsi jawaban'),
-      cek('tampil_kunci', 'Tampilkan kunci jawaban di hasil siswa'),
+        el('label', { class: 'field' }, el('span', null, 'Dibuka'), f.buka_at),
+        el('label', { class: 'field' }, el('span', null, 'Ditutup'), f.tutup_at)),
+      el('p', { class: 'redup petunjuk' }, 'Ujian tampil di beranda hanya di antara waktu buka dan tutup (jam perangkat ini). Siswa yang sudah mulai tetap dapat menyelesaikan ujiannya.'),
+      el('div', { class: 'adm-bagian' }, 'PENGATURAN'),
+      el('div', { class: 'adm-cek' },
+        cek('aktif', 'Ujian aktif'), cek('acak_soal', 'Acak soal'), cek('acak_opsi', 'Acak opsi'), cek('tampil_kunci', 'Tampil kunci')),
+      el('label', { class: 'field' }, el('span', null, 'Catatan untuk siswa (opsional)'), f.catatan),
       galat);
 
     function simpan(modal) {
@@ -267,23 +384,33 @@
       return false;
     }
     var modal = window.openModal({
-      judul: baru ? 'Tambah ujian' : 'Ubah ujian', isi: badan, tutupDiLuar: false,
-      tombol: [{ teks: 'Batal' }, { teks: 'Simpan ujian', utama: true, aksi: simpan }]
+      judul: baru ? 'Tambah ujian' : 'Ubah ujian', isi: badan, tutupDiLuar: false, kelas: 'modal-form',
+      tombol: [{ teks: 'Batal' }, { teks: baru ? 'Simpan ujian' : 'Simpan perubahan', utama: true, aksi: simpan }]
     });
     var tombol = modal.el.querySelector('.btn-utama');
   }
 
   function konfirmasiHapus(u) {
+    var selesai = Number(u.n_selesai) || 0;
+    var badan = el('div', { class: 'adm-form' },
+      el('p', null, el('strong', null, u.nama), ' akan dihapus permanen.'),
+      el('div', { class: 'adm-bahaya' }, window.ikon('peringatan', 16),
+        el('div', null, 'Ikut terhapus: ', el('strong', null, u.jumlah_soal + ' soal'),
+          u.n_selesai == null ? ' dan seluruh hasil siswa' : [' dan ', el('strong', null, selesai + ' hasil siswa')],
+          '. Tindakan ini tidak bisa dibatalkan. Bila hanya ingin menutup ujian, nonaktifkan saja.')));
     window.openModal({
-      judul: 'Hapus ujian?',
-      isi: 'Ujian "' + u.nama + '" akan dihapus beserta seluruh soal dan hasil siswa (' + u.jumlah_soal + ' soal). Tindakan ini tidak bisa dibatalkan.',
+      judul: 'Hapus ujian?', isi: badan,
       tombol: [
         { teks: 'Batal' },
-        { teks: 'Hapus ujian', bahaya: true, aksi: function () {
-          window.call('adminUjianHapus', tokenAdmin, u.id).then(function () {
+        { teks: 'Hapus ujian', bahaya: true, aksi: function (m) {
+          var tb = m.el.querySelector('.btn-bahaya');
+          window.sibuk(tb, window.call('adminUjianHapus', tokenAdmin, u.id).then(function () {
+            m.close();
             daftarUjian = daftarUjian.filter(function (x) { return x.id !== u.id; });
-            window.toast('Ujian dihapus.'); muatUjian();
-          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
+            segarkanNav();
+            window.toast('Ujian dihapus.'); gambarUjian();
+          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); }));
+          return false;
         } }
       ]
     });
@@ -319,6 +446,7 @@
   function gambarSoalTab() {
     var p = document.getElementById('panelAdmin');
     p.textContent = '';
+    p.appendChild(el('div', { class: 'adm-atas' }, el('h1', null, 'Soal')));
     if (!daftarUjian.length) {
       p.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Buat ujian dulu di tab Ujian.')));
       return;
@@ -484,18 +612,18 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     }
   }
 
-  function salinTeks(teks) {
+  function salinTeks(teks, pesan) {
     function cadangan() {
       var ta = el('textarea', { value: teks, style: 'position:fixed;opacity:0' });
       document.body.appendChild(ta); ta.select();
       var ok = false;
       try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
       ta.remove();
-      window.toast(ok ? 'Prompt disalin.' : 'Tidak bisa menyalin otomatis. Salin dari kotak yang ditampilkan.', !ok);
+      window.toast(ok ? (pesan || 'Prompt disalin.') : 'Tidak bisa menyalin otomatis. Salin dari kotak yang ditampilkan.', !ok);
       return ok;
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(teks).then(function () { window.toast('Prompt disalin.'); }).catch(cadangan);
+      navigator.clipboard.writeText(teks).then(function () { window.toast(pesan || 'Prompt disalin.'); }).catch(cadangan);
     } else cadangan();
   }
 
@@ -661,6 +789,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
   function gambarHasilTab() {
     var p = document.getElementById('panelAdmin');
     p.textContent = '';
+    p.appendChild(el('div', { class: 'adm-atas' }, el('h1', null, 'Hasil')));
     if (!daftarUjian.length) {
       p.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Buat ujian dulu di tab Ujian.')));
       return;

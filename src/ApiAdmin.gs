@@ -50,13 +50,13 @@ function adminUjianHapus(tok, id) {
 }
 
 /** Salin ujian beserta soalnya. Hasil siswa tidak disalin. Salinan nonaktif, bertoken baru, tanpa jadwal. */
-function adminUjianDuplikat(tok, id) {
+function adminUjianDuplikat(tok, id, namaSalinan) {
   guard_(tok);
   var asal = sb_('GET', 'ujian?id=eq.' + enc_(id));
   if (!asal || !asal.length) throw new Error('Ujian tidak ditemukan. Mungkin sudah dihapus.');
   var u = asal[0];
   var baru = sb_('POST', 'ujian', {
-    nama: String(u.nama).slice(0, 138) + ' (salinan)', jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi,
+    nama: String(namaSalinan || '').trim().slice(0, 150) || (String(u.nama).slice(0, 138) + ' (salinan)'), jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi,
     token: tokenAcak_(6), durasi_menit: u.durasi_menit, aktif: false, acak_soal: u.acak_soal, acak_opsi: u.acak_opsi,
     tampil_kunci: u.tampil_kunci, catatan: u.catatan, buka_at: null, tutup_at: null
   })[0];
