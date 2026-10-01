@@ -1078,7 +1078,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       bar.appendChild(el('span', { class: 'adm-hselesai redup' }, selesaiTeks(r.selesai_at)));
       bar.appendChild(el('span', { class: 'adm-aksi' },
         el('button', { class: 'adm-ikon', type: 'button', title: 'Lihat rincian', 'aria-label': 'Lihat rincian ' + r.nama, onclick: function () { lihatHasil(r, x.rk); } }, window.ikon('mata', 16)),
-        el('button', { class: 'adm-ikon adm-ikon-hapus', type: 'button', title: 'Reset hasil', 'aria-label': 'Reset hasil ' + r.nama, onclick: function () { hapusHasil(r); } }, window.ikon('segarkan', 16))));
+        el('button', { class: 'adm-ikon adm-ikon-hapus', type: 'button', title: 'Hapus hasil', 'aria-label': 'Hapus hasil ' + r.nama, onclick: function () { hapusHasil(r); } }, window.ikon('hapus', 16))));
       tabel.appendChild(bar);
     });
     kaki.textContent = '';
@@ -1092,7 +1092,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     var modal = window.openModal({
       judul: r.nama, lebar: true, isi: badan,
       tombol: [
-        { teks: 'Reset hasil', bahaya: true, aksi: function () { setTimeout(function () { hapusHasil(r); }, 0); } },
+        { teks: 'Hapus hasil', bahaya: true, aksi: function () { setTimeout(function () { hapusHasil(r); }, 0); } },
         { teks: 'Tutup', utama: true }
       ]
     });
@@ -1132,15 +1132,15 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
 
   function hapusHasil(r) {
     window.openModal({
-      judul: 'Reset hasil ini?',
+      judul: 'Hapus hasil ini?',
       isi: el('div', { class: 'adm-form' },
         el('p', null, el('strong', null, r.nama), (r.kelas ? ' (' + r.kelas + (r.sekolah ? ', ' + r.sekolah : '') + ')' : ''), ' dapat mengerjakan ujian ini dari awal.'),
         el('div', { class: 'adm-bahaya' }, window.ikon('peringatan', 16), el('div', null, 'Nilai ', el('strong', null, nilaiTeks(r.skor)), ' dan seluruh jawabannya akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.'))),
       tombol: [
         { teks: 'Batal' },
-        { teks: 'Reset hasil', bahaya: true, aksi: function () {
+        { teks: 'Hapus hasil', bahaya: true, aksi: function () {
           window.call('adminSesiHapus', tokenAdmin, r.id).then(function () {
-            window.toast('Hasil direset. Siswa dapat mengulang ujian.'); muatHasil();
+            window.toast('Hasil dihapus. Siswa dapat mengulang ujian.'); muatHasil();
           }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
         } }
       ]

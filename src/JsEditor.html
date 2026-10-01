@@ -199,15 +199,13 @@
   // ---------- bagian soal (teks / gambar / kosong) ----------
 
   function buatBagian(b, ctx) {
-    var o = { mode: b ? b.tipe : 'kosong' };
+    var o = { mode: b && b.tipe === 'gambar' ? 'gambar' : 'teks' };
     o.teks = editorTeks(b && b.tipe === 'teks' ? b.isi : '', false);
     o.url = el('input', { type: 'text', placeholder: 'https://... (kosongkan jika gambar menyusul)', value: b && b.tipe === 'gambar' ? b.isi : '', 'aria-label': 'URL gambar' });
     o.pra = el('img', { class: 'pra-gambar', alt: 'Pratinjau gambar', hidden: true, referrerPolicy: 'no-referrer' });
     o.status = el('div', { class: 'redup' });
     o.file = el('input', { type: 'file', accept: 'image/png,image/jpeg,image/webp,image/gif', hidden: true });
-    o.judul = el('strong');
-    o.pilih = window.dropdown({ aria: 'Jenis bagian', nilai: o.mode,
-      pilihan: [{ nilai: 'teks', label: 'Teks' }, { nilai: 'gambar', label: 'Gambar' }, { nilai: 'kosong', label: 'Kosong' }] });
+    o.nomor = el('span', { class: 'bagian-no' });
 
     function aturPra() {
       var u = o.url.value.trim();
@@ -236,25 +234,27 @@
 
     var sekGambar = el('div', { class: 'bagian-gambar' },
       el('div', { class: 'baris-token' }, o.url, tbUnggah), o.file, o.pra, o.status);
+    var btnTeks = el('button', { type: 'button', onclick: function () { o.mode = 'teks'; aturMode(); } }, 'Teks');
+    var btnGambar = el('button', { type: 'button', onclick: function () { o.mode = 'gambar'; aturMode(); aturPra(); } }, 'Gambar');
     function aturMode() {
-      o.mode = o.pilih.value;
       o.teks.el.hidden = o.mode !== 'teks';
       sekGambar.hidden = o.mode !== 'gambar';
+      btnTeks.setAttribute('aria-pressed', o.mode === 'teks' ? 'true' : 'false');
+      btnGambar.setAttribute('aria-pressed', o.mode === 'gambar' ? 'true' : 'false');
     }
-    o.pilih.addEventListener('change', aturMode);
+    o.tombolNaik = el('button', { type: 'button', class: 'adm-ikon', title: 'Naikkan bagian', onclick: function () { ctx.geser(o, -1); } }, window.ikon('naik', 16));
+    o.tombolTurun = el('button', { type: 'button', class: 'adm-ikon', title: 'Turunkan bagian', onclick: function () { ctx.geser(o, 1); } }, window.ikon('turunSoal', 16));
+    o.tombolHapus = el('button', { type: 'button', class: 'adm-ikon adm-ikon-hapus', title: 'Hapus bagian', onclick: function () { ctx.hapus(o); } }, window.ikon('hapus', 16));
 
     o.root = el('div', { class: 'bagian' },
-      el('div', { class: 'bagian-kepala' }, o.judul, o.pilih,
-        el('span', { class: 'spacer' }),
-        el('button', { type: 'button', class: 'adm-ikon', title: 'Naikkan bagian', 'aria-label': 'Naikkan bagian', onclick: function () { ctx.geser(o, -1); } }, window.ikon('naik', 16)),
-        el('button', { type: 'button', class: 'adm-ikon', title: 'Turunkan bagian', 'aria-label': 'Turunkan bagian', onclick: function () { ctx.geser(o, 1); } }, window.ikon('turunSoal', 16))),
+      el('div', { class: 'bagian-kepala' }, o.nomor, el('div', { class: 'adm-seg adm-seg-kecil', role: 'group', 'aria-label': 'Jenis bagian' }, btnTeks, btnGambar),
+        el('span', { class: 'spacer' }), o.tombolNaik, o.tombolTurun, o.tombolHapus),
       o.teks.el, sekGambar);
     aturMode();
     if (o.mode === 'gambar') aturPra();
     o.ambil = function () {
       if (o.mode === 'teks') return o.teks.kosong() ? null : { tipe: 'teks', isi: o.teks.ambil() };
-      if (o.mode === 'gambar') return { tipe: 'gambar', isi: o.url.value.trim() };
-      return null;
+      return { tipe: 'gambar', isi: o.url.value.trim() };
     };
     return o;
   }
@@ -297,7 +297,14 @@
 
     var kontBagian = el('div', { class: 'bagian-daftar' });
     function gambarUrutBagian() {
-      bagian.forEach(function (b, i) { b.judul.textContent = 'Bagian ' + (i + 1); kontBagian.appendChild(b.root); });
+      kontBagian.textContent = '';
+      bagian.forEach(function (b, i) {
+        b.nomor.textContent = String(i + 1);
+        b.tombolNaik.disabled = i === 0; b.tombolTurun.disabled = i === bagian.length - 1;
+        [b.tombolNaik, b.tombolTurun, b.tombolHapus].forEach(function (t) { t.setAttribute('aria-label', t.title + ' ' + (i + 1)); });
+        kontBagian.appendChild(b.root);
+      });
+      if (tbTambahBagian) tbTambahBagian.disabled = bagian.length >= 8;
     }
     ctx.geser = function (b, arah) {
       var i = bagian.indexOf(b), j = i + arah;
@@ -305,14 +312,25 @@
       bagian.splice(i, 1); bagian.splice(j, 0, b);
       gambarUrutBagian();
     };
+    ctx.hapus = function (b) {
+      if (bagian.length <= 1) { window.toast('Soal minimal punya satu bagian.', true); return; }
+      var i = bagian.indexOf(b);
+      bagian.splice(i, 1); gambarUrutBagian(); jadwalkanPratinjau();
+      window.toast('Bagian ' + (i + 1) + ' dihapus.', false, { teks: 'Urungkan', fn: function () {
+        bagian.splice(Math.min(i, bagian.length), 0, b); gambarUrutBagian(); jadwalkanPratinjau();
+      } });
+    };
     var awalBlok = (s && s.blok) || [];
-    var jumlah = Math.max(3, awalBlok.length);
-    for (var i = 0; i < jumlah; i++) bagian.push(buatBagian(awalBlok[i] || (i === 0 && baru ? { tipe: 'teks', isi: '' } : null), ctx));
-    gambarUrutBagian();
-    var tbTambahBagian = el('button', { type: 'button', class: 'btn btn-teks btn-kecil', onclick: function () {
+    var tbTambahBagian = null;
+    var jumlah = Math.max(baru ? 2 : 1, awalBlok.length);
+    for (var i = 0; i < jumlah; i++) bagian.push(buatBagian(awalBlok[i] || { tipe: 'teks', isi: '' }, ctx));
+    tbTambahBagian = el('button', { type: 'button', class: 'btn btn-kecil', onclick: function () {
       if (bagian.length >= 8) { window.toast('Maksimal 8 bagian.', true); return; }
-      bagian.push(buatBagian(null, ctx)); gambarUrutBagian();
+      var nb = buatBagian({ tipe: 'teks', isi: '' }, ctx);
+      bagian.push(nb); gambarUrutBagian();
+      var ta = nb.root.querySelector('[contenteditable]'); if (ta) ta.focus();
     } }, window.ikon('tambah', 14), 'Tambah bagian');
+    gambarUrutBagian();
 
     var pilihTipe = window.dropdown({ aria: 'Tipe soal', nilai: s ? s.tipe : 'pg',
       pilihan: Object.keys(TIPE_LABEL).map(function (k) { return { nilai: k, label: TIPE_LABEL[k] }; }) });
@@ -348,7 +366,7 @@
         r.huruf.className = 'opsi-huruf ' + (tipe === 'pg' ? 'bulat' : 'kotak');
         r.kontrol.textContent = '';
         r.input = el('input', { type: tipe === 'pg' ? 'radio' : 'checkbox', name: 'kunciOpsi', checked: r.benar, 'aria-label': 'Kunci ' + HURUF.charAt(n) });
-        r.kontrol.appendChild(el('label', { class: 'cek' }, r.input, el('span', null, 'Kunci')));
+        r.kontrol.appendChild(el('label', { class: 'cek kunci-pilih', title: 'Jadikan jawaban benar' }, r.input));
         kontOpsi.appendChild(r.root);
       });
       tbTambahOpsi.disabled = opsiRows.length >= 8;
@@ -360,10 +378,10 @@
 
     var opsiAwal = (s && s.opsi && s.opsi.length) ? s.opsi : [{ k: 'A', h: '' }, { k: 'B', h: '' }, { k: 'C', h: '' }, { k: 'D', h: '' }];
     opsiAwal.forEach(function (op) { opsiRows.push(barisOpsi(op, s && s.tipe !== 'isian' && kunciAwal.indexOf(op.k) >= 0)); });
-    var seksiOpsi = el('div', null, el('h3', null, 'Pilihan jawaban'), kontOpsi, tbTambahOpsi);
+    var seksiOpsi = el('div', null, el('div', { class: 'adm-bagian' }, 'PILIHAN JAWABAN (PILIH KUNCI DI SEBELAH KANAN)'), kontOpsi, tbTambahOpsi);
 
     var isianKunci = el('input', { type: 'text', value: s && s.tipe === 'isian' ? kunciAwal.join(' | ') : '', placeholder: 'Contoh: 12,5 | 12.5', 'aria-label': 'Jawaban benar' });
-    var seksiIsian = el('div', null, el('h3', null, 'Jawaban benar'),
+    var seksiIsian = el('div', null, el('div', { class: 'adm-bagian' }, 'JAWABAN BENAR'),
       el('label', { class: 'field' }, el('span', { class: 'redup' }, 'Pisahkan beberapa jawaban yang diterima dengan tanda |. Harakat Arab diabaikan saat mencocokkan.'), isianKunci));
 
     function aturTipe() {
@@ -427,14 +445,42 @@
       return false;
     }
 
-    var badan = el('div', null,
-      el('div', { class: 'grid2' },
-        el('label', { class: 'field' }, el('span', null, 'Tipe soal'), pilihTipe),
-        el('label', { class: 'field' }, el('span', null, 'Bobot'), bobot)),
-      el('h3', null, 'Isi soal'), kontBagian, tbTambahBagian,
+    var kunciInfo = el('div', { class: 'kunci-info' });
+    var pvWadah = el('div', { class: 'pv-wadah' });
+    var pvStatus = el('div', { class: 'pv-status' });
+    var jam = null;
+    function segarPratinjau() {
+      var d = kumpul();
+      var soal = { tipe: d.tipe, blok: d.blok, opsi: [] };
+      if (d.tipe !== 'isian') soal.opsi = Object.keys(d.opsi).map(function (k) { return { k: k, h: d.opsi[k] }; });
+      var kartu = soalSiswaEl(soal, opt.nomor, opt.total);
+      kartu.querySelectorAll('.opsi').forEach(function (o, n) { if (d.kunci.indexOf(HURUF.charAt(n)) >= 0) o.classList.add('opsi-kunci'); });
+      pvWadah.textContent = ''; pvWadah.appendChild(kartu);
+      var kunciTeks = d.kunci.length ? d.kunci.join(d.tipe === 'isian' ? ' | ' : ', ') : '';
+      kunciInfo.textContent = kunciTeks || 'belum dipilih';
+      kunciInfo.classList.toggle('kosong-kunci', !kunciTeks);
+      pvStatus.textContent = '';
+      pvStatus.appendChild(el('span', { class: kunciTeks ? 'ok' : 'peringatan' }, window.ikon(kunciTeks ? 'centang' : 'peringatan', 14), kunciTeks ? 'Kunci: ' + kunciTeks : 'Kunci belum dipilih'));
+      pvStatus.appendChild(el('span', { class: 'ok' }, window.ikon('centang', 14), d.blok.length + ' bagian' + (d.tipe === 'isian' ? '' : ', ' + Object.keys(d.opsi).length + ' opsi')));
+    }
+    function jadwalkanPratinjau() {
+      clearTimeout(jam);
+      jam = setTimeout(function () { if (kunciInfo.isConnected) segarPratinjau(); }, 250);
+    }
+
+    var kiri = el('div', { class: 'ed2-kiri' },
+      el('div', { class: 'ed2-meta' },
+        el('div', { class: 'field' }, el('span', null, 'Tipe soal'), pilihTipe),
+        el('label', { class: 'field' }, el('span', null, 'Bobot'), bobot),
+        el('div', { class: 'field' }, el('span', null, 'Kunci'), kunciInfo)),
+      el('div', { class: 'adm-bagian' }, 'ISI SOAL'), kontBagian, tbTambahBagian,
       seksiOpsi, seksiIsian, galat);
+    var kanan = el('div', { class: 'ed2-kanan' }, el('div', { class: 'ed2-lengket' },
+      el('div', { class: 'adm-bagian' }, 'PRATINJAU SISWA (LANGSUNG)'), pvWadah, pvStatus));
+    var badan = el('div', { class: 'ed2' }, kiri, kanan);
+    ['input', 'change', 'click'].forEach(function (n) { kiri.addEventListener(n, jadwalkanPratinjau); });
     var modal = window.openModal({
-      judul: baru ? 'Tambah soal' : 'Ubah soal', isi: badan, lebar: true, tutupDiLuar: false,
+      judul: baru ? 'Tambah soal' : 'Ubah soal ' + opt.nomor, isi: badan, kelas: 'modal-editor', tutupDiLuar: false,
       tombol: [
         { teks: 'Batal' },
         { teks: 'Pratinjau', aksi: function () { pratinjau(); return false; } },
@@ -443,6 +489,7 @@
     });
     var tombol = modal.el.querySelector('.btn-utama');
     aturTipe();
+    segarPratinjau();
   }
 
   window.Editor = { buka: bukaEditorSoal };

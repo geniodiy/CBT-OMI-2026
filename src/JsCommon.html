@@ -95,12 +95,19 @@
     if (window.requestIdleCallback) window.requestIdleCallback(mulai, { timeout: 4000 }); else setTimeout(mulai, 2500);
   };
 
-  window.toast = function (pesan, galat) {
+  /** aksi (opsional): { teks, fn }, misalnya tombol "Urungkan" di dalam toast. */
+  window.toast = function (pesan, galat, aksi) {
     var el = document.createElement('div');
     el.className = 'toast' + (galat ? ' toast-galat' : '');
-    el.textContent = pesan;
+    el.appendChild(document.createTextNode(pesan));
+    if (aksi) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'toast-aksi'; b.textContent = aksi.teks;
+      b.addEventListener('click', function () { el.remove(); aksi.fn(); });
+      el.appendChild(b);
+    }
     document.getElementById('toastRoot').appendChild(el);
-    setTimeout(function () { el.remove(); }, galat ? 6000 : 3500);
+    setTimeout(function () { el.remove(); }, aksi ? 7000 : (galat ? 6000 : 3500));
   };
 
   /**
