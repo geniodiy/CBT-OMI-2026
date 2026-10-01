@@ -149,3 +149,20 @@ function adminSoalImport(tok, ujianId, daftar, mode, dryRun) {
   CacheService.getScriptCache().remove(CACHE_BERANDA_);
   return ringkas;
 }
+
+// ---- Hasil ----
+
+/** Hanya sesi selesai, tanpa kolom jawaban. Urut: nilai, benar terbanyak, salah tersedikit, waktu tercepat. */
+function adminHasil(tok, ujianId) {
+  guard_(tok);
+  if (!ujianId) throw new Error('Ujian belum dipilih.');
+  return sb_('GET', 'sesi?select=id,nama,nomor_peserta,kelas,sekolah,benar,salah,kosong,skor,durasi_detik,selesai_at' +
+    '&ujian_id=eq.' + enc_(ujianId) + '&status=eq.selesai&order=skor.desc,benar.desc,salah.asc,durasi_detik.asc') || [];
+}
+
+function adminSesiHapus(tok, sesiId) {
+  guard_(tok);
+  if (!sesiId) throw new Error('Hasil tidak dipilih.');
+  sb_('DELETE', 'sesi?id=eq.' + enc_(sesiId), null, { Prefer: 'return=minimal' });
+  return true;
+}

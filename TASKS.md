@@ -96,9 +96,13 @@ Status uji: server lulus uji Node (kunci isian null, pg/pgk hanya bila tampil_ku
 
 ## M8. Admin: hasil
 
-- [ ] `adminHasil` dengan urutan skor, benar, salah (sedikit), waktu (cepat); tab Hasil; ekspor CSV; `adminSesiHapus`.
+- [x] `adminHasil` dengan urutan skor, benar, salah (sedikit), waktu (cepat); tab Hasil; ekspor CSV; `adminSesiHapus`.
 
 Uji: dua siswa berskor sama terurut sesuai aturan seri.
+
+Catatan: siswa yang seri pada nilai, benar, salah, dan waktu berbagi nomor peringkat. CSV memakai pemisah titik koma, koma desimal, dan BOM supaya terbuka rapi di Excel berbahasa Indonesia; sel yang diawali `=`, `+`, `-`, `@` diberi apostrof agar tidak dijalankan sebagai rumus.
+
+Status uji: urutan hasil dan hapus lulus uji Node; tabel, peringkat seri, ekspor CSV, hapus, keadaan kosong, 360 px lulus uji browser. Belum dicentang: uji di Apps Script asli.
 
 ## M9. Uji beban dan perapian
 
