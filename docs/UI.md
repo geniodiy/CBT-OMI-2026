@@ -110,6 +110,8 @@ Modal lebar maks. 520 px, judul di atas, tombol di kanan bawah. Aksi utama biru 
 - Layar sempit (< 900 px): sidebar disembunyikan; panel kanan pindah ke atas kartu (timer dan tombol ringkas) dan grid nomor menjadi laci yang dibuka tombol "Daftar soal".
 - Konfirmasi selesai: modal "Kirim jawaban sekarang?" menyebut jumlah soal belum dijawab. Tombol "Kembali mengerjakan" dan "Kirim jawaban".
 
+**Pembaruan layar ujian (mengikuti foto CBT OMI asli)**: kepala kartu soal tetap (tidak ikut animasi pindah soal) berisi lencana nomor biru "Soal n", chip "Status: x dari N Soal" (jumlah terjawab) dan chip tipe, lalu di kanan tombol **A-** dan **A+** (5 tingkat ukuran huruf soal dan opsi: 0,88 / 1 / 1,14 / 1,3 / 1,5 kali; disimpan di `localStorage` kunci `cbt_huruf_v1` dengan `try/catch`) dan panah kecil soal sebelumnya/selanjutnya (disembunyikan di HP karena bilah bawah sudah ada). Tombol bawah bertuliskan "Sebelumnya" dan "Selanjutnya". Di layar > 900 px header situs disembunyikan; logo OMI dan Genio pindah ke atas sidebar kiri. Kode soal tidak dibuat.
+
 ## 4. Hasil
 
 Satu kolom lebar maks. 860 px, putih dengan garis (rapor ringkas). Isi urut:

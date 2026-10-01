@@ -1,6 +1,9 @@
 <script>
 (function () {
   var KUNCI_SESI = 'cbt_sesi_v1';
+  var KUNCI_HURUF = 'cbt_huruf_v1';
+  var SKALA_HURUF = [0.88, 1, 1.14, 1.3, 1.5];   // A- dan A+ memilih salah satu tingkat ini
+
   var ATURAN_NILAI = [
     'Pilihan ganda: benar jika pilihan sama dengan kunci.',
     'Pilihan ganda kompleks: benar hanya jika semua pilihan yang Anda centang sama persis dengan kunci.',
@@ -421,7 +424,11 @@
     s.textContent = '';
     var inisial = (p.nama || '?').trim().split(/\s+/).slice(0, 2).map(function (x) { return x.charAt(0); }).join('').toUpperCase();
 
+    var logoSide = el('div', { class: 'u-logo' }, Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
+      return el('img', { src: g.src, alt: g.alt });
+    }), el('div', null, el('strong', null, 'Try Out OMI 2026'), el('span', null, 'CBT')));
     var side = el('aside', { class: 'u-side', 'aria-label': 'Data peserta' },
+      logoSide,
       el('div', { class: 'u-identitas' },
         el('div', { class: 'u-avatar', 'aria-hidden': 'true' }, inisial),
         el('strong', { class: 'u-nama' }, p.nama),
@@ -434,9 +441,20 @@
 
     e.progres = el('i');
     e.isi = el('div', { class: 'kartu-isi' });
-    e.kartu = el('div', { class: 'kartu-soal' }, el('div', { class: 'u-progres', 'aria-hidden': 'true' }, e.progres), e.isi);
+    e.nomor = el('b');
+    e.status = el('span', { class: 'lencana lencana-status' });
+    e.tipe = el('span', { class: 'lencana' });
+    e.hKecil = el('button', { type: 'button', class: 'btn-alat', 'aria-label': 'Perkecil huruf', title: 'Perkecil huruf', onclick: function () { ubahHuruf(-1); } }, 'A-');
+    e.hBesar = el('button', { type: 'button', class: 'btn-alat', 'aria-label': 'Perbesar huruf', title: 'Perbesar huruf', onclick: function () { ubahHuruf(1); } }, 'A+');
+    e.panahKiri = el('button', { type: 'button', class: 'btn-alat btn-panah', 'aria-label': 'Soal sebelumnya', title: 'Soal sebelumnya', onclick: function () { pindah(U.idx - 1); } }, window.ikon('kiri', 16));
+    e.panahKanan = el('button', { type: 'button', class: 'btn-alat btn-panah btn-alat-utama', 'aria-label': 'Soal selanjutnya', title: 'Soal selanjutnya', onclick: function () { pindah(U.idx + 1); } }, window.ikon('kanan', 16));
+    var kepala = el('div', { class: 'kartu-kepala' },
+      el('span', { class: 'u-nomor' }, el('small', null, 'Soal'), e.nomor),
+      el('div', { class: 'kartu-info' }, e.status, e.tipe),
+      el('div', { class: 'u-alat' }, e.hKecil, e.hBesar, e.panahKiri, e.panahKanan));
+    e.kartu = el('div', { class: 'kartu-soal' }, el('div', { class: 'u-progres', 'aria-hidden': 'true' }, e.progres), kepala, e.isi);
     e.sebelumnya = el('button', { type: 'button', class: 'btn', onclick: function () { pindah(U.idx - 1); } }, window.ikon('kiri'), 'Sebelumnya');
-    e.berikutnya = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { pindah(U.idx + 1); } }, 'Berikutnya', window.ikon('kanan'));
+    e.berikutnya = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { pindah(U.idx + 1); } }, 'Selanjutnya', window.ikon('kanan'));
     e.posisi = el('span', { class: 'u-posisi' });
     var main = el('section', { class: 'u-main', 'aria-label': 'Soal' }, e.kartu, el('div', { class: 'u-nav' }, e.sebelumnya, e.posisi, e.berikutnya));
 
@@ -465,6 +483,23 @@
 
     s.appendChild(el('div', { class: 'ujian' }, side, main, panel));
     document.addEventListener('keydown', escLaci);
+    var tersimpan = window.bacaLokal(KUNCI_HURUF);
+    U.huruf = typeof tersimpan === 'number' && tersimpan >= 0 && tersimpan < SKALA_HURUF.length ? tersimpan : 1;
+    terapkanHuruf();
+  }
+
+  function terapkanHuruf() {
+    var e = U.el;
+    e.kartu.style.setProperty('--skala-huruf', String(SKALA_HURUF[U.huruf]));
+    e.hKecil.disabled = U.huruf === 0;
+    e.hBesar.disabled = U.huruf === SKALA_HURUF.length - 1;
+  }
+  function ubahHuruf(arah) {
+    var baru = Math.max(0, Math.min(SKALA_HURUF.length - 1, U.huruf + arah));
+    if (baru === U.huruf) return;
+    U.huruf = baru;
+    window.simpanLokal(KUNCI_HURUF, baru);
+    terapkanHuruf();
   }
 
   function bukaLaci() {
@@ -482,7 +517,7 @@
     var butir = [
       'Pilih jawaban dengan menekan opsi. Pada soal pilihan ganda kompleks, Anda boleh memilih lebih dari satu.',
       'Pada soal isian, ketik jawaban singkat Anda pada kolom yang tersedia.',
-      'Gunakan Sebelumnya dan Berikutnya, atau pilih nomor pada Daftar Soal, untuk berpindah soal.',
+      'Gunakan Sebelumnya dan Selanjutnya (atau panah kecil di atas soal), atau pilih nomor pada Daftar Soal, untuk berpindah soal. Tombol A- dan A+ mengubah ukuran huruf soal.',
       'Kosongkan Jawaban menghapus jawaban pada soal yang sedang dibuka.',
       'Refresh menyinkronkan jam dan menyimpan jawaban Anda ke server. Jawaban juga tersimpan otomatis di perangkat ini.',
       'Bila halaman tertutup, buka kembali dan masukkan data yang sama untuk melanjutkan. Waktu tetap berjalan.',
@@ -512,6 +547,8 @@
     U.el.tombolLaci.lastChild.textContent = 'Daftar Soal ' + n + '/' + U.soal.length;
     U.el.progres.style.transform = 'scaleX(' + (U.soal.length ? n / U.soal.length : 0) + ')';
     U.el.posisi.textContent = (U.idx + 1) + ' / ' + U.soal.length;
+    U.el.nomor.textContent = String(U.idx + 1);
+    U.el.status.textContent = 'Status: ' + n + ' dari ' + U.soal.length + ' Soal';
   }
 
   // soal
@@ -569,9 +606,6 @@
     var badan = el('div', { class: 'kartu-badan' });
     badan.innerHTML = window.blokHTML(soal.blok);
     pasangGambar(badan);
-    isi.appendChild(el('div', { class: 'kartu-kepala' },
-      el('strong', null, 'Soal ' + (U.idx + 1) + ' dari ' + U.soal.length),
-      el('span', { class: 'lencana' }, LABEL_TIPE[soal.tipe])));
     isi.appendChild(badan);
     isi.appendChild(el('p', { class: 'instruksi' }, INSTRUKSI[soal.tipe]));
     if (soal.tipe === 'isian') {
@@ -585,8 +619,9 @@
     window.mathify(isi);
     U.el.isi.replaceWith(isi);
     U.el.isi = isi;
-    U.el.sebelumnya.disabled = U.idx === 0;
-    U.el.berikutnya.disabled = U.idx === U.soal.length - 1;
+    U.el.sebelumnya.disabled = U.el.panahKiri.disabled = U.idx === 0;
+    U.el.berikutnya.disabled = U.el.panahKanan.disabled = U.idx === U.soal.length - 1;
+    U.el.tipe.textContent = LABEL_TIPE[soal.tipe];
     segarkanGrid();
   }
 
