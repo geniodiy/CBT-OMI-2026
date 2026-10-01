@@ -775,7 +775,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
         .catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) galat.textContent = e.message; })
         .then(function () { tbPeriksa.disabled = false; });
     } }, 'Periksa');
-    var tbSalin = el('button', { type: 'button', class: 'btn btn-teks', onclick: function () { salinTeks(PROMPT_AI); } }, window.ikon('salin', 15), 'Salin prompt untuk AI');
+    var tbSalin = el('button', { type: 'button', class: 'btn', onclick: function () { salinTeks(PROMPT_AI); } }, window.ikon('salin', 15), 'Salin prompt untuk AI');
 
     function jalankan(modal) {
       tbImpor.disabled = true;
@@ -804,6 +804,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
 
     var badan = el('div', null,
       el('p', { class: 'redup' }, 'Ujian: ' + (u ? labelUjian(u) : '')),
+      el('p', { class: 'redup petunjuk' }, 'Belum punya JSON? Salin prompt, kirim ke AI bersama PDF atau Word soal Anda, lalu tempel hasilnya di bawah atau unggah berkasnya.'),
       el('div', { class: 'bar', style: 'justify-content:flex-start' }, tbSalin, tbUnggah, berkas),
       kotak,
       el('div', { class: 'cek-baris' },
