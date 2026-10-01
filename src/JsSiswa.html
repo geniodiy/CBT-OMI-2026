@@ -525,8 +525,10 @@
       'Bila ada kendala, hubungi pengawas.'
     ];
     window.openModal({
-      judul: 'Pusat Bantuan',
-      isi: el('ul', { class: 'daftar-info' }, butir.map(function (b) { return el('li', null, b); })),
+      judul: 'Pusat Bantuan', sub: 'Panduan singkat mengerjakan ujian.', ikon: 'bantuan', kelas: 'modal-ujian',
+      isi: el('ol', { class: 'bantuan-daftar' }, butir.map(function (b, i) {
+        return el('li', null, el('span', { class: 'bantuan-no' }, String(i + 1)), el('span', null, b));
+      })),
       tombol: [{ teks: 'Tutup', utama: true }]
     });
   }
@@ -640,9 +642,9 @@
     var soal = U.soal[U.idx];
     if (!adaJawaban(soal.id)) { window.toast('Soal ini belum dijawab.'); return; }
     window.openModal({
-      judul: 'Kosongkan jawaban soal ' + (U.idx + 1) + '?',
-      isi: 'Jawaban yang sudah Anda pilih untuk soal ini akan dihapus.',
-      tombol: [{ teks: 'Batal' }, { teks: 'Kosongkan', utama: true, aksi: function () { ubahJawaban(soal, []); tampilSoal(); } }]
+      judul: 'Kosongkan jawaban soal ' + (U.idx + 1) + '?', sub: 'Jawaban soal ini akan dihapus.', ikon: 'silang', kelas: 'modal-ujian',
+      isi: el('p', { class: 'modal-teks' }, 'Jawaban yang sudah Anda pilih untuk soal ini akan dihapus. Anda tetap bisa menjawabnya lagi selama waktu masih ada.'),
+      tombol: [{ teks: 'Batal' }, { teks: 'Kosongkan', bahaya: true, aksi: function () { ubahJawaban(soal, []); tampilSoal(); } }]
     });
   }
 
@@ -690,12 +692,20 @@
   // selesai
 
   function konfirmasiSelesai() {
-    var belum = U.soal.length - jumlahTerjawab();
+    var total = U.soal.length, terjawab = jumlahTerjawab(), belum = total - terjawab;
+    var nomorBelum = [];
+    U.soal.forEach(function (soal, i) { if (!adaJawaban(soal.id)) nomorBelum.push(i + 1); });
+    var ubin = function (label, nilai, kelas) {
+      return el('div', { class: 'ubin-kecil' + (kelas ? ' ' + kelas : '') }, el('span', null, label), el('strong', null, String(nilai)));
+    };
+    var isi = el('div', null,
+      el('div', { class: 'ubin-kecil-baris' }, ubin('Terjawab', terjawab + '/' + total), ubin('Belum dijawab', belum, belum ? 'peringatan' : '')),
+      belum ? el('div', { class: 'belum-kotak' },
+        el('p', null, 'Soal berikut masih kosong:'),
+        el('div', { class: 'belum-nomor' }, nomorBelum.map(function (n) { return el('span', null, String(n)); }))) : null,
+      el('p', { class: 'modal-teks' }, 'Setelah dikirim, jawaban tidak dapat diubah.'));
     window.openModal({
-      judul: 'Kirim jawaban sekarang?',
-      isi: belum
-        ? 'Masih ada ' + belum + ' soal yang belum dijawab. Setelah dikirim, jawaban tidak dapat diubah.'
-        : 'Semua soal sudah dijawab. Setelah dikirim, jawaban tidak dapat diubah.',
+      judul: 'Kirim jawaban sekarang?', sub: belum ? 'Masih ada soal yang belum dijawab.' : 'Semua soal sudah dijawab.', ikon: 'selesai', kelas: 'modal-ujian', isi: isi,
       tombol: [{ teks: 'Kembali mengerjakan' }, { teks: 'Kirim jawaban', utama: true, aksi: function () { kirimSelesai(false); } }]
     });
   }
