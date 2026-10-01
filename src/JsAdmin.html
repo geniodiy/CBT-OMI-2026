@@ -44,6 +44,7 @@
     if (popoverLogin) { tutupLogin(); return; }
     var btn = document.getElementById('btnAdmin');
     var input = el('input', { type: 'password', autocomplete: 'current-password', 'aria-label': 'Kata sandi admin', placeholder: 'Kata sandi' });
+    var kolomSandi = el('div', { class: 'popover-kolom' }, window.ikon('gembok', 16), input);
     var masuk = el('button', { class: 'btn btn-utama', type: 'button' }, 'Masuk');
     var galat = el('div', { class: 'galat', role: 'alert' });
     function kirim() {
@@ -62,12 +63,12 @@
     masuk.addEventListener('click', kirim);
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); kirim(); } });
     var pop = el('div', { class: 'popover', role: 'dialog', 'aria-label': 'Login admin' },
-      el('h3', null, 'Login admin'),
-      el('p', null, 'Masukkan kata sandi admin.'),
-      el('div', { class: 'popover-baris' }, input, masuk),
-      galat);
+      el('div', { class: 'popover-kepala' },
+        el('span', { class: 'modal-ikon' }, window.ikon('gembok', 18)),
+        el('div', null, el('h3', null, 'Login admin'), el('p', null, 'Masukkan kata sandi admin.'))),
+      kolomSandi, galat, masuk);
     var r = btn.getBoundingClientRect();
-    pop.style.top = Math.round(r.bottom + 8) + 'px';
+    pop.style.top = Math.round(r.bottom + 10) + 'px';
     pop.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
     document.body.appendChild(pop);
     popoverLogin = pop;

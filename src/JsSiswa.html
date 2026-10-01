@@ -260,12 +260,16 @@
     }
     var galatNama = el('div', { class: 'galat', role: 'alert' });
     var galatToken = el('div', { class: 'galat', role: 'alert' });
-    var badan = el('div', null,
-      el('p', { class: 'redup' }, u.mapel + ' · ' + u.nama),
+    f.token = null;
+    var badan = el('div', { class: 'form-peserta' },
+      el('div', { class: 'ringkas-ujian' },
+        el('span', { class: 'kontainer-ikon' }, window.ikon(ikonMapel(u.mapel), 20)),
+        el('div', null, el('strong', null, u.nama), el('span', null, [u.jenjang, u.mapel, u.sesi].filter(Boolean).join(' \u00b7 ')))),
       kolom('nama', 'Nama lengkap', true), galatNama,
       el('div', { class: 'grid2' }, kolom('nomor', 'Nomor peserta', false), kolom('kelas', 'Kelas', false)),
       kolom('sekolah', 'Sekolah', false),
-      kolom('token', 'Token', true, { autocapitalize: 'characters', spellcheck: false }), galatToken);
+      kolom('token', 'Token ujian', true, { autocapitalize: 'characters', spellcheck: false, class: 'input-token', placeholder: 'Contoh: MTK7R2' }), galatToken,
+      el('p', { class: 'bantu' }, 'Token dibagikan oleh pengawas sebelum ujian dimulai.'));
     f.token.addEventListener('input', function () { f.token.value = f.token.value.toUpperCase(); });
 
     function ambil() {
@@ -286,7 +290,7 @@
       return false;
     }
     var modal = window.openModal({
-      judul: 'Data peserta', isi: badan, tutupDiLuar: false,
+      judul: 'Data peserta', sub: 'Isi data Anda, lalu masukkan token ujian.', ikon: 'orang', isi: badan, tutupDiLuar: false,
       tombol: [{ teks: 'Batal' }, { teks: 'Lanjut', utama: true, aksi: lanjut }]
     });
     var tombol = modal.el.querySelector('.btn-utama');
@@ -295,20 +299,22 @@
 
   function langkah2(u, d) {
     function daftar(judul, butir) {
-      return el('div', null, el('h3', null, judul), el('ul', { class: 'daftar-info' }, butir.map(function (b) { return el('li', null, b); })));
+      return el('section', { class: 'info-kartu' }, el('h3', null, judul),
+        el('ol', { class: 'daftar-info' }, butir.map(function (b) { return el('li', null, b); })));
     }
-    var badan = el('div', null,
-      el('dl', { class: 'info-grid' },
-        el('div', null, el('dt', null, 'Ujian'), el('dd', null, u.nama)),
-        el('div', null, el('dt', null, 'Jenjang dan mata pelajaran'), el('dd', null, u.jenjang + ' · ' + u.mapel + (u.sesi ? ' · ' + u.sesi : ''))),
-        el('div', null, el('dt', null, 'Jumlah soal'), el('dd', null, u.jumlah_soal + ' soal: ' + rincianTipe(u))),
-        el('div', null, el('dt', null, 'Durasi'), el('dd', null, u.durasi_menit + ' menit'))),
-      u.catatan && String(u.catatan).trim() ? el('div', null, el('h3', null, 'Catatan dari pengawas'), el('p', { class: 'catatan' }, String(u.catatan).trim())) : null,
-      daftar('Aturan penilaian', ATURAN_NILAI),
-      daftar('Tata tertib', TATA_TERTIB),
-      el('p', { class: 'redup' }, 'Waktu mulai dihitung saat Anda menekan "Mulai ujian".'));
+    function ubin(label, nilai, kecil) {
+      return el('div', { class: 'ubin' }, el('span', null, label), el('strong', null, nilai), kecil ? el('small', null, kecil) : null);
+    }
+    var badan = el('div', { class: 'form-peserta' },
+      el('div', { class: 'ringkas-ujian' },
+        el('span', { class: 'kontainer-ikon' }, window.ikon(ikonMapel(u.mapel), 20)),
+        el('div', null, el('strong', null, u.nama), el('span', null, [u.jenjang, u.mapel, u.sesi].filter(Boolean).join(' \u00b7 ')))),
+      el('div', { class: 'ubin-baris' }, ubin('Jumlah soal', String(u.jumlah_soal), rincianTipe(u)), ubin('Durasi', u.durasi_menit + ' menit'), ubin('Peserta', d.nama, d.kelas || '')),
+      u.catatan && String(u.catatan).trim() ? el('div', { class: 'catatan-pengawas' }, el('strong', null, 'Catatan dari pengawas'), el('p', null, String(u.catatan).trim())) : null,
+      el('div', { class: 'info-dua' }, daftar('Aturan penilaian', ATURAN_NILAI), daftar('Tata tertib', TATA_TERTIB)),
+      el('p', { class: 'bantu' }, 'Waktu mulai dihitung saat Anda menekan "Mulai ujian".'));
     window.openModal({
-      judul: 'Sebelum mulai', isi: badan, lebar: true, tutupDiLuar: false,
+      judul: 'Sebelum mulai', sub: 'Baca aturan berikut dengan teliti.', ikon: 'dokumen', isi: badan, lebar: true, tutupDiLuar: false,
       tombol: [
         { teks: 'Kembali', aksi: function () { setTimeout(function () { langkah1(u, d); }, 0); } },
         { teks: 'Mulai ujian', utama: true, aksi: function () { mulai(u.id, d.token, { nama: d.nama, nomor: d.nomor, kelas: d.kelas, sekolah: d.sekolah }); } }

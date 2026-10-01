@@ -84,6 +84,8 @@ Modal lebar maks. 520 px, judul di atas, tombol di kanan bawah. Aksi utama biru 
 
 **Langkah 2** "Sebelum mulai": ringkasan dua kolom (jumlah soal dengan rincian tipe, durasi), lalu daftar aturan penilaian, tata tertib, dan "Catatan dari pengawas" (disembunyikan jika kosong). Tombol "Kembali" dan **"Mulai ujian"**. Tulis dengan kalimat pendek, kata kerja aktif.
 
+**Popup dan login (gaya selaras admin)**: header popup memakai ubin ikon hijau muda + judul + sub-judul (`openModal` menerima `ikon` dan `sub`). Data peserta: ringkasan paket di panel hijau sangat muda, kolom bergaris tipis, kolom token huruf besar berjarak, catatan bantu di bawah. Sebelum mulai: tiga ubin (jumlah soal dan rincian tipe, durasi, peserta), catatan pengawas bergaris kuning, dua kartu bernomor (aturan penilaian dan tata tertib). Login admin: popover dengan ikon gembok, kolom sandi berikon, tombol Masuk selebar kotak. Footer tombol popup selalu tampak, hanya badan yang menggulir.
+
 ## 3. Halaman ujian (tiga kolom, lihat referensi)
 
 ```
