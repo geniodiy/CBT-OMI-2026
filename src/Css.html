@@ -70,6 +70,31 @@ p { margin: 0 0 .75em; }
 .modal-badan { padding: 14px 20px; }
 .modal-kaki { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 0 20px 18px; }
 
+/* tab dan tabel admin */
+.tabs { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid var(--garis); margin-bottom: 16px; }
+.tab { font: inherit; font-weight: 600; min-height: 44px; padding: 0 14px; background: none; border: 0; border-bottom: 3px solid transparent; color: var(--teks-redup); cursor: pointer; }
+.tab[aria-selected="true"] { color: var(--biru-tua); border-bottom-color: var(--biru); }
+.tabs .spacer { flex: 1; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.bar h2 { margin: 0; }
+.tabel-bungkus { overflow-x: auto; background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius); }
+table.tabel { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.tabel th, .tabel td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--garis); vertical-align: top; }
+.tabel th { font-weight: 600; color: var(--teks-redup); white-space: nowrap; }
+.tabel tr:last-child td { border-bottom: 0; }
+.tabel .aksi { white-space: nowrap; text-align: right; }
+.tabel .btn { min-height: 36px; padding: 0 10px; }
+.tabel code { font-family: ui-monospace, Consolas, monospace; }
+.kosong { padding: 24px; text-align: center; color: var(--teks-redup); }
+.status-aktif { color: var(--hijau); font-weight: 600; }
+.status-mati { color: var(--teks-redup); font-weight: 600; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+@media (max-width: 600px) { .grid2 { grid-template-columns: 1fr; } }
+.cek { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.cek input { width: 20px; height: 20px; min-height: 0; }
+.baris-token { display: flex; gap: 8px; }
+.baris-token input { flex: 1; }
+
 /* toast */
 #toastRoot { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 8px; align-items: center; width: calc(100% - 24px); max-width: 420px; pointer-events: none; }
 .toast { pointer-events: auto; padding: 10px 16px; border-radius: var(--radius); background: var(--teks); color: var(--putih); font-size: .95rem; }

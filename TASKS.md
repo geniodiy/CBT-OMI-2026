@@ -23,11 +23,13 @@ Status uji: logika `Nilai.gs` lulus uji Node (pg, pgk, isian koma/titik, kosong,
 ## M2. Admin: ujian
 
 Berkas: `src/ApiAdmin.gs` (login, ujian), `src/JsAdmin.html`.
-- [ ] `adminLogin`, token di `CacheService`, tombol Login admin di header, modal login.
-- [ ] `adminUjianList/Simpan/Hapus`; tab Ujian dengan tabel dan formulir (token acak, catatan, sesi, semua pengaturan).
-- [ ] Hapus cache beranda saat simpan.
+- [x] `adminLogin`, token di `CacheService`, tombol Login admin di header, modal login.
+- [x] `adminUjianList/Simpan/Hapus`; tab Ujian dengan tabel dan formulir (token acak, catatan, sesi, semua pengaturan).
+- [x] Hapus cache beranda saat simpan.
 
 Uji: salah sandi ditolak; buat 3 ujian (MI/MTs/MA); ubah; hapus meminta konfirmasi; token sesi kedaluwarsa mengembalikan ke beranda dengan pesan.
+
+Status uji: validasi `normUjian_` lulus uji Node; alur login, tambah, ubah, hapus, dan Keluar lulus uji browser dengan server tiruan. Belum dicentang: uji di Apps Script asli (salah sandi, 3 ujian MI/MTs/MA, token kedaluwarsa kembali ke beranda).
 
 ## M3. Admin: soal (manual)
 

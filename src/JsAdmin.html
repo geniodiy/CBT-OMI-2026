@@ -1,0 +1,211 @@
+<script>
+(function () {
+  var KUNCI_TOKEN = 'cbt_admin_v1';
+  var tokenAdmin = null;
+  var daftarUjian = [];
+
+  function bacaTokenTersimpan() {
+    try { return sessionStorage.getItem(KUNCI_TOKEN); } catch (e) { return null; }
+  }
+  function simpanToken(t) {
+    tokenAdmin = t;
+    try { if (t) sessionStorage.setItem(KUNCI_TOKEN, t); else sessionStorage.removeItem(KUNCI_TOKEN); } catch (e) { /* tanpa storage: sesi hilang saat refresh */ }
+  }
+
+  function keBeranda() {
+    window.showView('beranda');
+    document.getElementById('btnAdmin').textContent = 'Login admin';
+  }
+
+  function sesiHabis(pesan) {
+    simpanToken(null);
+    keBeranda();
+    window.toast(String(pesan).replace(/^SESI_ADMIN:\s*/, 'Sesi admin berakhir, ') + '.', true);
+  }
+  window.App.onSesiAdminHabis = sesiHabis;
+
+  function bukaLogin() {
+    var input = el('input', { type: 'password', autocomplete: 'current-password', 'aria-label': 'Kata sandi admin' });
+    var galat = el('div', { class: 'galat', role: 'alert' });
+    var badan = el('div', null, el('label', { class: 'field' }, el('span', null, 'Kata sandi'), input, galat));
+    function kirim(modal) {
+      if (!input.value) { galat.textContent = 'Isi kata sandi admin.'; return false; }
+      tombol.disabled = true; galat.textContent = '';
+      window.call('adminLogin', input.value).then(function (t) {
+        simpanToken(t);
+        modal.close();
+        tampilAdmin();
+      }).catch(function (e) {
+        galat.textContent = e.message;
+        tombol.disabled = false;
+        input.select();
+      });
+      return false;
+    }
+    var modal = window.openModal({
+      judul: 'Login admin', isi: badan,
+      tombol: [
+        { teks: 'Batal' },
+        { teks: 'Masuk', utama: true, aksi: kirim }
+      ]
+    });
+    var tombol = modal.el.querySelector('.btn-utama');
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); kirim(modal); } });
+  }
+
+  function tampilAdmin() {
+    var s = document.querySelector('[data-view="admin"]');
+    s.textContent = '';
+    s.appendChild(el('div', { class: 'tabs', role: 'tablist' },
+      el('button', { class: 'tab', role: 'tab', 'aria-selected': 'true', type: 'button' }, 'Ujian'),
+      el('span', { class: 'spacer' }),
+      el('button', { class: 'btn btn-teks', type: 'button', onclick: keluar }, 'Keluar')));
+    s.appendChild(el('div', { id: 'panelUjian' }));
+    window.showView('admin');
+    document.getElementById('btnAdmin').textContent = 'Panel admin';
+    muatUjian();
+  }
+
+  function keluar() {
+    var t = tokenAdmin;
+    simpanToken(null);
+    keBeranda();
+    window.call('adminKeluar', t).catch(function () { /* token tetap kedaluwarsa sendiri */ });
+  }
+
+  function muatUjian() {
+    var p = document.getElementById('panelUjian');
+    p.textContent = '';
+    p.appendChild(el('div', { class: 'kerangka' })); p.appendChild(el('div', { class: 'kerangka' }));
+    window.call('adminUjianList', tokenAdmin).then(function (d) {
+      daftarUjian = d;
+      gambarUjian();
+    }).catch(function (e) {
+      if (e.message.indexOf('SESI_ADMIN') === 0) return;
+      p.textContent = '';
+      p.appendChild(el('p', { class: 'kosong' }, e.message));
+    });
+  }
+
+  function gambarUjian() {
+    var p = document.getElementById('panelUjian');
+    p.textContent = '';
+    p.appendChild(el('div', { class: 'bar' },
+      el('h2', null, 'Daftar ujian'),
+      el('button', { class: 'btn btn-utama', type: 'button', onclick: function () { bukaForm(null); } }, 'Tambah ujian')));
+    if (!daftarUjian.length) {
+      p.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Klik "Tambah ujian" untuk membuat yang pertama.')));
+      return;
+    }
+    var tbody = el('tbody');
+    daftarUjian.forEach(function (u) {
+      tbody.appendChild(el('tr', null,
+        el('td', null, el('strong', null, u.nama)),
+        el('td', null, u.jenjang),
+        el('td', null, u.mapel),
+        el('td', null, u.sesi || '-'),
+        el('td', null, u.durasi_menit + ' menit'),
+        el('td', null, String(u.jumlah_soal)),
+        el('td', null, el('code', null, u.token)),
+        el('td', null, el('span', { class: u.aktif ? 'status-aktif' : 'status-mati' }, u.aktif ? 'Aktif' : 'Nonaktif')),
+        el('td', { class: 'aksi' },
+          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { bukaForm(u); } }, 'Ubah'),
+          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { konfirmasiHapus(u); } }, 'Hapus'))));
+    });
+    var tabel = el('table', { class: 'tabel' },
+      el('thead', null, el('tr', null, ['Nama', 'Jenjang', 'Mapel', 'Sesi', 'Durasi', 'Soal', 'Token', 'Status', ''].map(function (t) { return el('th', null, t); }))),
+      tbody);
+    p.appendChild(el('div', { class: 'tabel-bungkus' }, tabel));
+  }
+
+  function tokenAcak() {
+    var abjad = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var b = new Uint32Array(6), hasil = '';
+    try { window.crypto.getRandomValues(b); } catch (e) { for (var i = 0; i < 6; i++) b[i] = Math.floor(Math.random() * 4294967296); }
+    for (var j = 0; j < 6; j++) hasil += abjad.charAt(b[j] % abjad.length);
+    return hasil;
+  }
+
+  function bukaForm(u) {
+    var baru = !u;
+    var d = u || { jenjang: '', durasi_menit: 60, aktif: true, token: tokenAcak() };
+    var f = {};
+    function isian(kunci, label, tipe, extra) {
+      f[kunci] = el('input', Object.assign({ type: tipe || 'text', value: d[kunci] == null ? '' : d[kunci] }, extra || {}));
+      return el('label', { class: 'field' }, el('span', null, label), f[kunci]);
+    }
+    function cek(kunci, label) {
+      f[kunci] = el('input', { type: 'checkbox', checked: !!d[kunci] });
+      return el('label', { class: 'cek' }, f[kunci], el('span', null, label));
+    }
+    f.jenjang = el('input', { type: 'text', list: 'daftarJenjang', value: d.jenjang || '', maxLength: 30 });
+    var jenjangField = el('label', { class: 'field' }, el('span', null, 'Jenjang *'), f.jenjang,
+      el('datalist', { id: 'daftarJenjang' }, ['MI', 'MTs', 'MA'].map(function (j) { return el('option', { value: j }); })));
+    f.token = el('input', { type: 'text', value: d.token || '', maxLength: 30, autocapitalize: 'characters' });
+    var tokenField = el('div', { class: 'field' }, el('span', null, 'Token *'),
+      el('div', { class: 'baris-token' }, f.token,
+        el('button', { class: 'btn', type: 'button', onclick: function () { f.token.value = tokenAcak(); } }, 'Acak')));
+    f.catatan = el('textarea', { rows: 3, value: d.catatan || '' });
+    var galat = el('div', { class: 'galat', role: 'alert' });
+
+    var badan = el('div', null,
+      isian('nama', 'Nama ujian *', 'text', { maxLength: 150 }),
+      el('div', { class: 'grid2' }, jenjangField, isian('mapel', 'Mata pelajaran *')),
+      el('div', { class: 'grid2' }, isian('sesi', 'Sesi (opsional)', 'text', { placeholder: 'Contoh: Sesi 1' }),
+        isian('durasi_menit', 'Durasi (menit) *', 'number', { min: 1, step: 1 })),
+      tokenField,
+      el('label', { class: 'field' }, el('span', null, 'Catatan dari pengawas (opsional)'), f.catatan),
+      cek('aktif', 'Tampil di beranda (aktif)'),
+      cek('acak_soal', 'Acak urutan soal'),
+      cek('acak_opsi', 'Acak urutan opsi jawaban'),
+      cek('tampil_kunci', 'Tampilkan kunci jawaban di hasil siswa'),
+      galat);
+
+    function simpan(modal) {
+      var data = {
+        id: u ? u.id : undefined,
+        nama: f.nama.value, jenjang: f.jenjang.value, mapel: f.mapel.value, sesi: f.sesi.value,
+        token: f.token.value, durasi_menit: Number(f.durasi_menit.value), catatan: f.catatan.value,
+        aktif: f.aktif.checked, acak_soal: f.acak_soal.checked, acak_opsi: f.acak_opsi.checked, tampil_kunci: f.tampil_kunci.checked
+      };
+      tombol.disabled = true; galat.textContent = '';
+      window.call('adminUjianSimpan', tokenAdmin, data).then(function () {
+        modal.close();
+        window.toast(baru ? 'Ujian ditambahkan.' : 'Ujian disimpan.');
+        muatUjian();
+      }).catch(function (e) {
+        tombol.disabled = false;
+        if (e.message.indexOf('SESI_ADMIN') !== 0) galat.textContent = e.message;
+      });
+      return false;
+    }
+    var modal = window.openModal({
+      judul: baru ? 'Tambah ujian' : 'Ubah ujian', isi: badan, tutupDiLuar: false,
+      tombol: [{ teks: 'Batal' }, { teks: 'Simpan ujian', utama: true, aksi: simpan }]
+    });
+    var tombol = modal.el.querySelector('.btn-utama');
+  }
+
+  function konfirmasiHapus(u) {
+    window.openModal({
+      judul: 'Hapus ujian?',
+      isi: 'Ujian "' + u.nama + '" akan dihapus beserta seluruh soal dan hasil siswa (' + u.jumlah_soal + ' soal). Tindakan ini tidak bisa dibatalkan.',
+      tombol: [
+        { teks: 'Batal' },
+        { teks: 'Hapus ujian', bahaya: true, aksi: function () {
+          window.call('adminUjianHapus', tokenAdmin, u.id).then(function () {
+            window.toast('Ujian dihapus.'); muatUjian();
+          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
+        } }
+      ]
+    });
+  }
+
+  var btn = document.getElementById('btnAdmin');
+  btn.hidden = false;
+  btn.addEventListener('click', function () {
+    if (tokenAdmin) tampilAdmin(); else bukaLogin();
+  });
+  tokenAdmin = bacaTokenTersimpan();
+})();
+</script>

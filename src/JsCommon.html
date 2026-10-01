@@ -168,6 +168,24 @@
     bungkusArab(el);
   };
 
+  /** Buat elemen: el('div', {class:'x', onclick:fn}, anak1, 'teks', ...). Teks selalu lewat textContent. */
+  window.el = function (tag, props) {
+    var e = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (k) {
+      var v = props[k];
+      if (v == null || v === false) return;
+      if (k.indexOf('on') === 0 && typeof v === 'function') e.addEventListener(k.slice(2), v);
+      else if (k === 'class') e.className = v;
+      else if (k in e && k !== 'list') e[k] = v;
+      else e.setAttribute(k, v === true ? '' : v);
+    });
+    Array.prototype.slice.call(arguments, 2).forEach(function (a) {
+      if (a == null || a === false) return;
+      e.appendChild(a instanceof Node ? a : document.createTextNode(String(a)));
+    });
+    return e;
+  };
+
   window.showView = function (nama) {
     document.querySelectorAll('[data-view]').forEach(function (s) { s.hidden = s.getAttribute('data-view') !== nama; });
     window.scrollTo(0, 0);

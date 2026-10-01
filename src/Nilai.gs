@@ -212,3 +212,35 @@ function normSoal_(x, i) {
 
   return { soal: { tipe: tipe, blok: blok, opsi: opsi, kunci: kunci, bobot: bobot }, peringatan: uniq_(peringatan) };
 }
+
+/**
+ * Validasi dan bersihkan isian ujian dari admin. Hanya kolom yang diizinkan yang lolos.
+ * Mengembalikan objek siap simpan; melempar Error berbahasa Indonesia.
+ */
+function normUjian_(u) {
+  if (!u || typeof u !== 'object') throw new Error('Data ujian tidak valid.');
+  function teks(v) { return String(v == null ? '' : v).trim(); }
+  var nama = teks(u.nama), jenjang = teks(u.jenjang), mapel = teks(u.mapel), token = teks(u.token);
+  if (!nama) throw new Error('Nama ujian wajib diisi.');
+  if (!jenjang) throw new Error('Jenjang wajib diisi.');
+  if (!mapel) throw new Error('Mata pelajaran wajib diisi.');
+  if (!token) throw new Error('Token wajib diisi.');
+  if (nama.length > 150) throw new Error('Nama ujian maksimal 150 karakter.');
+  var durasi = Number(u.durasi_menit);
+  if (!isFinite(durasi) || durasi < 1 || Math.floor(durasi) !== durasi) {
+    throw new Error('Durasi harus berupa bilangan bulat minimal 1 menit.');
+  }
+  return {
+    nama: nama,
+    jenjang: jenjang,
+    mapel: mapel,
+    sesi: teks(u.sesi) || null,
+    token: token,
+    durasi_menit: durasi,
+    aktif: u.aktif === true,
+    acak_soal: u.acak_soal === true,
+    acak_opsi: u.acak_opsi === true,
+    tampil_kunci: u.tampil_kunci === true,
+    catatan: teks(u.catatan) || null
+  };
+}
