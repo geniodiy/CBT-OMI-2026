@@ -164,6 +164,8 @@ Kalimat sapaan netral, kata kerja aktif, huruf kalimat. Tombol menyebut hasilnya
 
 Kontras teks ≥ 4,5:1. Semua kontrol bisa dicapai dengan keyboard, fokus `outline: 2px solid var(--biru)` dengan offset 2 px. Target sentuh ≥ 44 px. Status tidak hanya dengan warna. Uji lebar 360 px, 768 px, dan 1366 px.
 
+**Keyboard layar di HP**: viewport memakai `interactive-widget=resizes-content` (Chrome Android) dan skrip di `JsCommon.html` memantau `visualViewport` (iOS dan lainnya): mengisi variabel `--vv-h` dan `--vv-top`, memberi kelas `kbd-aktif` pada `<body>` saat keyboard terbuka, dan menggulir kolom yang difokus ke tengah area terlihat. Popup (`.modal-latar`) mengikuti tinggi area terlihat sehingga tombol footer tidak tertutup. Popover login dan panel dropdown/pencarian tidak boleh menutup diri karena perubahan tinggi jendela (hanya perubahan lebar, mis. rotasi, yang menutupnya). Di perangkat sentuh semua kolom isian berukuran 16 px agar iOS tidak memperbesar halaman. Bilah bawah ujian disembunyikan selama keyboard terbuka.
+
 ## 8. Dilarang (ulang)
 
 Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emoji. Label huruf kapital semua. Tanda "→" di tombol. Animasi masuk di tiap bagian. Hiasan angka "01/02/03" selain nomor soal yang memang berurutan. Kata pemasaran di antarmuka.

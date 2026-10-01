@@ -31,8 +31,20 @@
     var p = popoverLogin; popoverLogin = null;
     document.removeEventListener('mousedown', luarLogin, true);
     document.removeEventListener('keydown', escLogin, true);
-    window.removeEventListener('resize', tutupLogin);
+    window.removeEventListener('resize', posisiLogin);
+    if (window.visualViewport) window.visualViewport.removeEventListener('resize', posisiLogin);
     p.remove();
+  }
+  /** Keyboard layar mengubah tinggi jendela: popover tidak boleh menutup diri, cukup disusun ulang di area yang terlihat. */
+  function posisiLogin() {
+    if (!popoverLogin) return;
+    var btn = document.getElementById('btnAdmin'), pop = popoverLogin;
+    var vv = window.visualViewport, vt = (vv && vv.offsetTop) || 0, vh = (vv && vv.height) || window.innerHeight;
+    var r = btn.getBoundingClientRect();
+    var atas = r.bottom + 10;
+    atas = Math.min(atas, vt + vh - pop.offsetHeight - 8);
+    pop.style.top = Math.max(vt + 8, Math.round(atas)) + 'px';
+    pop.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
   }
   function luarLogin(e) {
     if (popoverLogin && !popoverLogin.contains(e.target) && e.target !== document.getElementById('btnAdmin')) tutupLogin();
@@ -67,14 +79,13 @@
         el('span', { class: 'modal-ikon' }, window.ikon('gembok', 18)),
         el('div', null, el('h3', null, 'Login admin'), el('p', null, 'Masukkan kata sandi admin.'))),
       kolomSandi, galat, masuk);
-    var r = btn.getBoundingClientRect();
-    pop.style.top = Math.round(r.bottom + 10) + 'px';
-    pop.style.right = Math.max(8, Math.round(window.innerWidth - r.right)) + 'px';
     document.body.appendChild(pop);
     popoverLogin = pop;
+    posisiLogin();
     document.addEventListener('mousedown', luarLogin, true);
     document.addEventListener('keydown', escLogin, true);
-    window.addEventListener('resize', tutupLogin);
+    window.addEventListener('resize', posisiLogin);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', posisiLogin);
     input.focus();
   }
 

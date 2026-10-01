@@ -78,12 +78,12 @@ p { margin: 0 0 .75em; }
 
 /* modal */
 .modal-latar {
-  position: fixed; inset: 0; z-index: 50; background: rgba(28, 39, 51, .45);
+  position: fixed; left: 0; right: 0; top: var(--vv-top, 0px); height: var(--vv-h, 100%); z-index: 50; background: rgba(28, 39, 51, .45);
   display: flex; align-items: center; justify-content: center; padding: 3vh 12px; overflow: hidden;
   animation: pudar .25s ease-out both;
 }
 .modal {
-  display: flex; flex-direction: column; max-height: 94vh; max-height: 94dvh;
+  display: flex; flex-direction: column; max-height: 94vh; max-height: calc(var(--vv-h, 100dvh) * .94);
   width: 100%; max-width: 460px; background: var(--putih); border-radius: 16px;
   border: 1px solid var(--garis); box-shadow: 0 8px 24px rgba(28, 39, 51, .18);
   animation: modalMasuk .4s var(--ease-pegas) both;
@@ -678,8 +678,11 @@ body[data-halaman="ujian"] .modal-kaki .btn-teks { color: var(--teks-redup); }
 @media (pointer: coarse) {
   .btn, .tab, .btn-tb, .btn-kecil, .tabel .btn, .bagian-kepala select, .field input, .field select, .field textarea { min-height: 44px; }
   .btn-tb { min-width: 44px; }
-  input, select, textarea { font-size: 16px; }
+  /* 16 px mencegah iOS memperbesar halaman saat kolom difokus (zoom itulah yang membuat form tertutup keyboard) */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .editor-area { font-size: 16px !important; }
 }
+input, select, textarea, [contenteditable="true"] { scroll-margin-block: 96px; }
+@media (max-width: 900px) { body.kbd-aktif .u-nav { display: none; } body.kbd-aktif .ujian { padding-bottom: 24px; } }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */
