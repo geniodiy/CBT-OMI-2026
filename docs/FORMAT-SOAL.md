@@ -74,37 +74,80 @@ Peringatan (tidak menghentikan): rumus tanpa garis miring, `$` tidak berpasangan
 
 ## Prompt untuk AI (tombol "Salin prompt untuk AI")
 
-Simpan sebagai konstanta di `JsAdmin.html` memakai `String.raw` agar garis miring ganda tidak hilang.
+Simpan sebagai konstanta `PROMPT_AI` di `JsAdmin.html` memakai `String.raw` agar garis miring ganda tidak hilang. Isinya tidak boleh memuat tanda backtick atau `${`. Import membuang teks di luar JSON (baris `LANJUT:` atau `CATATAN:`) sebelum mengurai.
 
 ````text
-Ubah soal pada dokumen terlampir menjadi JSON array dengan format di bawah.
-Keluarkan HANYA JSON yang valid, tanpa penjelasan dan tanpa pagar kode.
+PERAN
+Kamu adalah konverter soal ujian. Tugasmu mengubah soal pada dokumen terlampir (PDF atau Word) menjadi satu JSON array yang bisa langsung diimpor ke website CBT. Kerjakan semua soal di dokumen, jangan ada yang dilewati.
 
-Format tiap soal:
+KELUARAN
+- Keluarkan HANYA JSON yang valid. Tanpa kalimat pembuka, tanpa penjelasan, tanpa pagar kode markdown.
+- Bentuknya array: [ {soal 1}, {soal 2}, ... ] sesuai urutan di dokumen.
+
+FORMAT SATU SOAL
 {
-  "tipe": "pg" | "pgk" | "isian",
-  "blok": [ {"tipe":"teks","isi":"..."}, {"tipe":"gambar","isi":""} ],
-  "opsi": {"A":"...","B":"...","C":"...","D":"..."},
+  "tipe": "pg",
+  "blok": [
+    {"tipe": "teks", "isi": "Narasi atau stimulus soal."},
+    {"tipe": "gambar", "isi": ""},
+    {"tipe": "teks", "isi": "<b>Pertanyaan</b><br>Kalimat pertanyaan ..."}
+  ],
+  "opsi": {"A": "...", "B": "...", "C": "...", "D": "..."},
   "kunci": ["B"],
   "bobot": 1
 }
 
-Aturan:
-1. pg = satu kunci, contoh ["B"]. pgk = satu atau lebih kunci, contoh ["A","C"].
-   isian = tanpa "opsi"; "kunci" berisi semua jawaban yang diterima, contoh ["12,5","12.5"].
-2. Teks boleh memakai HTML sederhana: <b>, <i>, <u>, <sub>, <sup>, <br>. Jangan pakai tag lain.
-3. Semua rumus matematika, fisika, dan kimia ditulis dalam LaTeX di antara tanda dolar,
-   contoh $\\frac{a}{b}$, $x^{2}$, $\\sqrt{17}$, $\\ce{H2O}$.
-   Karena ini JSON, setiap garis miring terbalik WAJIB ditulis dua kali (\\frac, \\sqrt, \\ce).
-   Jangan menulis rumus sebagai teks biasa seperti "sqrt17" atau "x^2" tanpa tanda dolar.
-4. Jika soal punya gambar, tambahkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu
-   (di atas, tengah, atau bawah teks). Biarkan "isi" kosong. Gambar diisi manual di website.
-5. Satu soal boleh memiliki beberapa blok teks dan beberapa blok gambar. Urutan blok mengikuti
-   urutan tampil pada soal. Bagian "Pertanyaan" boleh menjadi blok teks tersendiri.
-6. Pertahankan nomor, urutan, dan isi soal apa adanya. Jangan mengubah angka atau kata.
-7. Teks Arab (termasuk harakat) ditulis sebagai karakter Unicode Arab biasa dalam urutan logis (kanan ke kiri saat dibaca), bukan gambar, bukan transliterasi, dan bukan urutan visual hasil salinan PDF.
-8. Jika kunci jawaban tidak tertera di dokumen, isi dengan jawaban yang paling tepat menurut Anda;
-   admin akan memeriksanya.
+ATURAN TIPE DAN KUNCI
+1. "pg" (pilihan ganda): tepat satu kunci, contoh ["B"]. Opsi A sampai D (atau sampai E bila dokumen memiliki 5 opsi).
+2. "pgk" (pilihan ganda kompleks / pilih lebih dari satu jawaban benar): satu atau lebih kunci, contoh ["A","C"]. Dipakai bila soal berbunyi "pilih semua jawaban yang benar", "jawaban benar lebih dari satu", dan sejenisnya.
+3. "isian" (isian singkat): TANPA "opsi". "kunci" berisi semua bentuk jawaban yang boleh diterima, contoh ["12,5","12.5"]. Jawaban isian singkat berupa teks atau angka biasa, bukan huruf opsi.
+4. Jangan menulis huruf opsi ("A.", "B)") di dalam isi opsi. Huruf sudah menjadi nama kunci objek.
+5. "bobot" bernilai 1 kecuali dokumen menyebut bobot lain.
+6. Kunci jawaban diambil dari lembar kunci di dokumen bila ada. Bila tidak ada, isi dengan jawaban yang paling tepat menurutmu, dan catat nomor soal tersebut di bagian CATATAN AKHIR (lihat bawah).
+
+ATURAN ISI SOAL (blok)
+7. Pisahkan stimulus (cerita, data, kutipan) dan kalimat pertanyaan menjadi blok teks terpisah bila dokumen memisahkannya. Kalimat pertanyaan boleh diawali <b>Pertanyaan</b><br>.
+8. Bila soal memiliki gambar, grafik, diagram, tabel bergambar, atau peta, sisipkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu (di atas, tengah, atau bawah teks). Biarkan "isi" KOSONG. Gambar diunggah manual di website. Satu soal boleh punya beberapa blok gambar.
+9. Bila SEBUAH OPSI berupa gambar, tulis teks opsinya "(gambar)" dan sebutkan nomor soal itu di CATATAN AKHIR.
+10. Tabel data biasa: website tidak mendukung tag tabel. Ubah menjadi teks yang rapi, misalnya satu baris per data dengan <br>, atau daftar <ul><li>...</li></ul>. Bila tabelnya rumit, jadikan blok gambar kosong.
+11. Pertahankan nomor, urutan, kata, dan angka apa adanya. Jangan memperbaiki, menyingkat, atau menerjemahkan. Buang nomor soal ("1.", "2.") dari awal teks, tetapi jangan ubah isinya.
+12. Buang header, footer, nomor halaman, nama instansi, dan petunjuk umum ujian yang bukan bagian soal.
+
+ATURAN FORMAT TEKS
+13. HTML yang boleh dipakai HANYA: <b>, <strong>, <i>, <em>, <u>, <sub>, <sup>, <br>, <p>, <div>, <span>, <ul>, <ol>, <li>. Tag lain dan atribut style dilarang.
+14. Baris baru di dalam teks ditulis <br>, bukan karakter enter di dalam string JSON.
+15. Perataan teks (hanya bila di dokumen memang rata tengah, rata kanan, atau rata kiri-kanan): bungkus dengan <div class="rata-tengah">...</div>, <div class="rata-kanan">...</div>, atau <div class="rata-penuh">...</div>. Teks biasa tidak perlu dibungkus.
+16. Cetak tebal, miring, garis bawah, pangkat, dan indeks di dokumen dipertahankan dengan <b>, <i>, <u>, <sup>, <sub>.
+
+ATURAN RUMUS (SANGAT PENTING)
+17. Semua rumus matematika, fisika, dan kimia ditulis dalam LaTeX di antara tanda dolar: sebaris $...$, baris sendiri $$...$$.
+   Contoh: $\\frac{a}{b}$, $x^{2}$, $\\sqrt{17}$, $5\\,\\text{m/s}$, $\\times$, $\\leq$, $\\alpha$.
+   Kimia: $\\ce{H2O}$, $\\ce{2H2 + O2 -> 2H2O}$.
+18. Karena ini JSON, SETIAP garis miring terbalik WAJIB ditulis dua kali: \\frac, \\sqrt, \\times, \\text, \\ce. Ini mutlak. Satu garis miring akan merusak rumus.
+19. Jangan menulis rumus sebagai teks biasa seperti "sqrt17", "x^2", "a/b", "10 pangkat 3" tanpa tanda dolar. Angka biasa tanpa operasi (misalnya "25 soal", "tahun 2026") tidak perlu dolar.
+20. Bilangan desimal Indonesia di dalam rumus ditulis dengan {,} contoh $1{,}5 \\times 10^{3}$. Di luar rumus tulis biasa "1,5".
+21. Teks biasa di dalam rumus dibungkus \\text{...}, termasuk teks Arab.
+22. Tanda kutip ganda di dalam isi teks ditulis \" agar JSON tetap valid.
+
+ATURAN TEKS ARAB
+23. Teks Arab (termasuk harakat: fathah, kasrah, dhammah, sukun, syaddah, tanwin) ditulis sebagai karakter Unicode Arab biasa, UTUH, dalam urutan logis (huruf pertama kata di kanan). Jangan memakai gambar, jangan transliterasi pengganti, jangan membalik urutan huruf, jangan memutus huruf.
+24. Hasil salinan PDF kadang terbalik atau terputus-putus. Bila begitu, tulis ulang kata Arab itu dengan benar. Jangan menghilangkan harakat.
+25. Ayat atau hadis boleh dijadikan blok teks tersendiri.
+
+PEMERIKSAAN SEBELUM MENJAWAB
+Sebelum mengeluarkan hasil, periksa dalam hati:
+- Jumlah soal di JSON = jumlah soal di dokumen.
+- Semua "tipe" hanya pg, pgk, atau isian.
+- pg memiliki tepat 1 kunci; pgk memiliki 1 atau lebih; semua huruf kunci ada di opsi.
+- isian tidak punya "opsi".
+- Tidak ada garis miring tunggal pada rumus (semua \\ ganda).
+- Tidak ada koma berlebih di akhir, kutip tidak berpasangan, atau karakter enter di dalam string. JSON harus lolos validator.
+
+JIKA HASIL TERLALU PANJANG
+Bila batas keluaranmu tidak cukup untuk semua soal, keluarkan sebagian soal pertama sebagai JSON array yang LENGKAP dan valid (jangan terpotong di tengah), lalu pada baris terpisah setelah JSON tulis persis: "LANJUT: soal berikutnya dimulai dari nomor N" (N = nomor soal berikutnya). Saya akan membalas "lanjut", dan kamu mengeluarkan bagian berikutnya dalam array baru.
+
+CATATAN AKHIR
+Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis satu baris terpisah diawali "CATATAN:" berisi nomor soal dan alasannya (kunci tidak ada di dokumen, opsi berupa gambar, tabel rumit, teks Arab meragukan). Bila tidak ada, jangan tulis apa pun.
 ````
 
 ## Alur import di admin
