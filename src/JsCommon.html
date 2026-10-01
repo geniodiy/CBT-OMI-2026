@@ -97,7 +97,7 @@
 
   /** Sanitasi HTML dari admin atau JSON. Dipanggil setiap kali dirender. */
   // Satu-satunya atribut yang diizinkan: class, dan hanya tiga nilai perataan teks.
-  var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan'];
+  var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan', 'rata-penuh'];
   DOMPurify.addHook('afterSanitizeAttributes', function (node) {
     if (!node.hasAttribute || !node.hasAttribute('class')) return;
     var ok = node.getAttribute('class').split(/\s+/).filter(function (c) { return KELAS_BOLEH.indexOf(c) >= 0; });

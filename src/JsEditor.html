@@ -21,7 +21,7 @@
   function normRata(html) {
     // DOMParser menghasilkan dokumen inert: skrip dan gambar di dalamnya tidak dijalankan atau dimuat.
     var wadah = new DOMParser().parseFromString('<body>' + html + '</body>', 'text/html').body;
-    var peta = { left: 'rata-kiri', start: 'rata-kiri', center: 'rata-tengah', right: 'rata-kanan', end: 'rata-kanan' };
+    var peta = { left: 'rata-kiri', start: 'rata-kiri', center: 'rata-tengah', right: 'rata-kanan', end: 'rata-kanan', justify: 'rata-penuh' };
     wadah.querySelectorAll('[style], [align]').forEach(function (e) {
       var nilai = (e.style && e.style.textAlign) || e.getAttribute('align') || '';
       var kelas = peta[String(nilai).toLowerCase()];
@@ -103,6 +103,7 @@
       tb.appendChild(rata('kiri', 'Kiri', 'Rata kiri', 'justifyLeft'));
       tb.appendChild(rata('tengah', 'Tengah', 'Rata tengah', 'justifyCenter'));
       tb.appendChild(rata('kanan', 'Kanan', 'Rata kanan', 'justifyRight'));
+      tb.appendChild(rata('penuh', 'Kiri-kanan', 'Rata kiri dan kanan (justify)', 'justifyFull'));
       tb.appendChild(tombolTb('Daftar', 'Daftar berpoin', perintah('insertUnorderedList')));
       tb.appendChild(tombolTb('Nomor', 'Daftar bernomor', perintah('insertOrderedList')));
       tb.appendChild(tombolTb('Hapus format', 'Hapus format', perintah('removeFormat')));

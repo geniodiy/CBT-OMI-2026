@@ -35,7 +35,7 @@ Import menerima array soal, atau objek `{ "soal": [ ... ] }`. Pembungkus pagar k
 
 ## Pemformatan teks
 
-**HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`. Satu-satunya atribut yang lolos adalah `class` dengan nilai `rata-kiri`, `rata-tengah`, atau `rata-kanan` (perataan teks dari editor); nilai class lain dibuang, begitu juga `style` dan atribut lain.
+**HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`. Satu-satunya atribut yang lolos adalah `class` dengan nilai `rata-kiri`, `rata-tengah`, `rata-kanan`, atau `rata-penuh` (perataan teks dari editor; `rata-penuh` = rata kiri dan kanan/justify); nilai class lain dibuang, begitu juga `style` dan atribut lain.
 
 **LaTeX** dirender KaTeX:
 - Sebaris: `$ ... $` (juga `\( ... \)`)
