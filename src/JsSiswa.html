@@ -249,11 +249,12 @@
     var inisial = (p.nama || '?').trim().split(/\s+/).slice(0, 2).map(function (x) { return x.charAt(0); }).join('').toUpperCase();
 
     var side = el('aside', { class: 'u-side', 'aria-label': 'Data peserta' },
-      el('div', { class: 'u-avatar', 'aria-hidden': 'true' }, inisial),
-      el('strong', { class: 'u-nama' }, p.nama),
-      p.nomor ? el('div', { class: 'redup' }, p.nomor) : null,
-      el('div', { class: 'u-lencana' }, el('span', { class: 'lencana' }, U.ujian.jenjang + ' ' + U.ujian.mapel),
-        U.ujian.sesi ? el('span', { class: 'lencana' }, U.ujian.sesi) : null),
+      el('div', { class: 'u-identitas' },
+        el('div', { class: 'u-avatar', 'aria-hidden': 'true' }, inisial),
+        el('strong', { class: 'u-nama' }, p.nama),
+        p.nomor ? el('div', { class: 'redup' }, p.nomor) : null,
+        el('div', { class: 'u-lencana' }, el('span', { class: 'lencana' }, U.ujian.jenjang + ' ' + U.ujian.mapel),
+          U.ujian.sesi ? el('span', { class: 'lencana' }, U.ujian.sesi) : null)),
       el('nav', { class: 'u-menu', 'aria-label': 'Menu' },
         el('button', { type: 'button', class: 'u-menu-item aktif', 'aria-current': 'page' }, window.ikon('buku', 20), 'Ruang Ujian'),
         el('button', { type: 'button', class: 'u-menu-item', onclick: pusatBantuan }, window.ikon('bantuan', 20), 'Pusat Bantuan')));
@@ -374,7 +375,7 @@
     teks.innerHTML = window.clean(op.h);
     var label = el('label', { class: 'opsi' + (dipilih ? ' terpilih' : ''), style: '--n:' + n }, input,
       el('span', { class: 'opsi-huruf ' + (soal.tipe === 'pg' ? 'bulat' : 'kotak') }, HURUF.charAt(n)), teks,
-      el('span', { class: 'opsi-centang' }, window.ikon('centang', 20)));
+      el('span', { class: 'opsi-tanda ' + (soal.tipe === 'pg' ? 'bulat' : 'kotak'), 'aria-hidden': 'true' }, soal.tipe === 'pg' ? null : window.ikon('centang', 15)));
     input.addEventListener('change', function () {
       var skrg = (U.jawaban[soal.id] || []).slice();
       if (soal.tipe === 'pg') skrg = [op.k];

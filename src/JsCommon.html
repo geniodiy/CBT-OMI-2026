@@ -234,6 +234,7 @@
     var btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.hidden = nama === 'ujian';
     document.body.classList.toggle('mode-ujian', nama === 'ujian');
+    document.documentElement.classList.toggle('mode-ujian', nama === 'ujian');
     window.scrollTo(0, 0);
   };
 

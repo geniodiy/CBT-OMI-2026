@@ -140,11 +140,12 @@ Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emo
 
 Tujuan situs adalah simulasi, jadi **halaman ujian** (dan kartu soal pada pratinjau admin) meniru tampilan CBT OMI asli (`referensi/halaman-ujian-omi.png`). Halaman lain (beranda, hasil, admin) tetap mengikuti aturan minimalis di atas. Pengecualian di halaman ujian:
 
+- **Header tetap putih** seperti halaman lain. **Skala** halaman ujian dikecilkan (`html.mode-ujian`, ukuran dasar 14 px) supaya muat di laptop sekolah tanpa perlu zoom-out.
 - **Latar** pastel lembut dengan semburat warna (`--latar-ujian`, satu-satunya gradien latar). Avatar peserta boleh bergradien halus.
 - **Permukaan kaca**: putih tembus pandang (`--kaca`), tepi putih 1 px, sudut besar 22 px, bayangan lembut bernuansa biru (`--bayangan-lembut`, `--bayangan-angkat`). Tanpa `backdrop-filter` (latar halus membuat blur tidak terlihat, dan hemat untuk Chromebook). Bayangan hitam pekat tetap dilarang.
 - **Label Title Case** seperti aslinya: Sisa Waktu Ujian, Kosongkan Jawaban, Selesaikan Ujian, Daftar Soal, Terjawab, Ruang Ujian, Pusat Bantuan. Nama peserta ditulis kapital.
 - **Ikon garis tipis** (SVG, `ikon()` di `JsCommon.html`) yang selalu disertai teks: jam, segarkan, silang, henti, buku, bantuan, panah, daftar, centang.
-- **Tata letak** tiga kolom: sidebar peserta (menu Ruang Ujian dan Pusat Bantuan di bawah), kartu soal dengan garis kemajuan tipis di tepi atas, dan panel kanan (timer biru besar, Refresh, Kosongkan Jawaban, Selesaikan Ujian merah, Daftar Soal dengan penghitung Terjawab dan grid nomor).
+- **Tata letak** tiga kolom: sidebar peserta dengan identitas (avatar, nama, nomor, mapel, sesi) di dalam kontainer samar, lalu menu ( Ruang Ujian dan Pusat Bantuan di bawah), kartu soal dengan garis kemajuan tipis. Opsi punya penanda di kanan: lingkaran berisi titik (pg) atau kotak berisi ceklis putih di atas biru (pgk) di tepi atas, dan panel kanan (timer biru besar, Refresh, Kosongkan Jawaban, Selesaikan Ujian merah, Daftar Soal dengan penghitung Terjawab dan grid nomor).
 - **HP (< 900 px)**: sidebar hilang. Panel menjadi bilah atas yang menempel (timer dan tombol Daftar Soal). Daftar Soal, Refresh, Kosongkan Jawaban, dan Selesaikan Ujian berada di laci geser dari bawah (ditutup dengan tombol Escape, ketuk latar, atau memilih nomor). Tombol Sebelumnya dan Berikutnya menempel di bawah layar dengan penunjuk posisi dan area aman perangkat.
 
 **Gerak** (hanya `transform` dan `opacity`, kurva pegas `--ease-pegas` = `cubic-bezier(.32,.72,0,1)`):
