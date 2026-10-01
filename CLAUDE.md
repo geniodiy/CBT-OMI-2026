@@ -29,7 +29,7 @@ CLAUDE.md, README.md, TASKS.md
 docs/            PRD, ARSITEKTUR, UI, API, FORMAT-SOAL, referensi/
 supabase/        schema.sql
 contoh/          soal-contoh.json
-assets/          logo-omi.png, logo-kemenag.png (sumber; yang dipakai web ada di Supabase Storage bucket "aset")
+assets/          logo-omi.png, logo-genio.png (sumber). Logo OMI dibaca dari Supabase Storage bucket "aset"; logo Genio tertanam (data URI) di Index.html
 src/             SEMUA kode Apps Script (dikirim ke Google lewat clasp)
   appsscript.json
   Code.gs        doGet, include

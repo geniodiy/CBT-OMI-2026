@@ -94,7 +94,7 @@ Sistem tidak membatasi jumlah atau komposisi; admin bebas.
 
 ## 10. Branding
 
-Header: logo Kemenag dan logo OMI (`assets/`), label "Try Out OMI 2026" dan "CBT". Footer: "Dibuat oleh Genio Institute Yogyakarta". Lihat `UI.md`.
+Header: logo Genio Institute Yogyakarta (tertanam) dan logo OMI (`assets/`), label "Try Out OMI 2026" dan "CBT". Footer: "Dibuat oleh Genio Institute Yogyakarta". Lihat `UI.md`.
 
 ## 11. Non-fungsional
 

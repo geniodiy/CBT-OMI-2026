@@ -80,7 +80,7 @@ Optimasi jika kuota/konkurensi kurang (jangan dikerjakan di awal): cache soal+ku
 
 `adminUpload(tok, base64, mime, nama)`: klien mengecilkan gambar (lebar maks. 1000 px, JPEG kualitas 0,85 atau PNG), mengirim base64 ke server, server mengunggah ke `storage/v1/object/soal-img/<uuid>.<ext>` dengan service_role dan mengembalikan URL publik `.../storage/v1/object/public/soal-img/<uuid>.<ext>`. Batas 3 MB per gambar.
 
-Logo web dibaca dari bucket `aset` (URL publik) agar ringan dan ter-cache; unggah `assets/logo-omi.png` dan `assets/logo-kemenag.png` ke bucket itu secara manual lewat dashboard Supabase.
+Logo web dibaca dari bucket `aset` (URL publik) agar ringan dan ter-cache; unggah `assets/logo-omi.png` ke bucket itu. Logo Genio (`assets/logo-genio.png`, versi kecil 200 px) tertanam sebagai data URI di `Index.html`, jadi tidak perlu diunggah secara manual lewat dashboard Supabase.
 
 ## PDF hasil
 

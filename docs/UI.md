@@ -1,10 +1,10 @@
 # Panduan Tampilan
 
-Acuan: `referensi/halaman-ujian-omi.png` (CBT OMI). Tema mengikuti identitas OMI 2026 dan Kemenag. Prinsip: **simpel, tegas, mudah dibaca saat ujian**. Bukan tampilan "template AI".
+Acuan: `referensi/halaman-ujian-omi.png` (CBT OMI). Tema mengikuti identitas OMI 2026 dan Genio Institute. Prinsip: **simpel, tegas, mudah dibaca saat ujian**. Bukan tampilan "template AI".
 
 ## Warna
 
-Ambil sampel warna asli dari `assets/logo-omi.png` dan `assets/logo-kemenag.png`, lalu sesuaikan nilai di bawah (ini perkiraan awal; `--biru` sudah digelapkan sedikit dari logo agar teks putih di atasnya memenuhi kontras 4,5:1).
+Ambil sampel warna asli dari `assets/logo-omi.png` dan `assets/logo-genio.png`, lalu sesuaikan nilai di bawah (ini perkiraan awal; `--biru` sudah digelapkan sedikit dari logo agar teks putih di atasnya memenuhi kontras 4,5:1).
 
 | Token | Perkiraan | Dipakai untuk |
 |---|---|---|
@@ -24,7 +24,7 @@ Satu aksen kuat per layar. Merah dan hijau tidak dipakai sebagai hiasan.
 
 ## Tipografi
 
-Satu keluarga sans-serif. Pilihan: **Plus Jakarta Sans** (Google Fonts, bobot 400/600/700) dengan cadangan `system-ui, "Segoe UI", Roboto, sans-serif`. Dasar 16 px, tinggi baris 1,55, panjang baris soal maksimal ±75 karakter. Angka timer memakai `font-variant-numeric: tabular-nums`. Judul tidak huruf kapital semua; gunakan huruf kalimat biasa.
+Satu keluarga sans-serif. Pilihan: **Plus Jakarta Sans** (Google Fonts, bobot 400/600/700) dengan cadangan `system-ui, "Segoe UI", Roboto, sans-serif`. Dasar **14 px** di seluruh situs (`html { font-size: 14px }`; semua ukuran dalam `rem` ikut), kecuali kolom isian di perangkat sentuh yang 16 px agar iOS tidak memperbesar halaman saat kolom difokuskan, tinggi baris 1,55, panjang baris soal maksimal ±75 karakter. Angka timer memakai `font-variant-numeric: tabular-nums`. Judul tidak huruf kapital semua; gunakan huruf kalimat biasa.
 
 **Teks Arab**: keluarga kedua **Noto Naskh Arabic** (Google Fonts, bobot 400/700) untuk `.ar`, cadangan `"Traditional Arabic", "Geeza Pro", serif`. Ukuran 1,25 em, tinggi baris 2, `direction: rtl`, `unicode-bidi: isolate`. Ini satu-satunya pengecualian dari aturan satu keluarga font.
 
@@ -39,7 +39,7 @@ Satu keluarga sans-serif. Pilihan: **Plus Jakarta Sans** (Google Fonts, bobot 40
 ## Header (semua halaman)
 
 ```
-[Logo Kemenag] [Logo OMI]  Try Out OMI 2026  CBT                 [Login admin]
+[Logo Genio] [Logo OMI]  Try Out OMI 2026 / CBT                 [Login admin]
 ```
 Tinggi ±64 px, putih, garis bawah 1 px. Logo tinggi 40 px. Pada halaman ujian, tombol Login admin disembunyikan. Footer halaman beranda: "Dibuat oleh Genio Institute Yogyakarta".
 
@@ -140,8 +140,7 @@ Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emo
 
 Tujuan situs adalah simulasi, jadi **halaman ujian** (dan kartu soal pada pratinjau admin) meniru tampilan CBT OMI asli (`referensi/halaman-ujian-omi.png`). Halaman lain (beranda, hasil, admin) tetap mengikuti aturan minimalis di atas. Pengecualian di halaman ujian:
 
-- **Header tetap putih** seperti halaman lain. **Skala** halaman ujian dikecilkan (`html.mode-ujian`, ukuran dasar 14 px) supaya muat di laptop sekolah tanpa perlu zoom-out.
-- **Latar** pastel lembut dengan semburat warna (`--latar-ujian`, satu-satunya gradien latar). Avatar peserta boleh bergradien halus.
+- **Header tetap putih** seperti halaman lain. **Latar polos** (`--latar`), tanpa gradien. Avatar peserta boleh bergradien halus.
 - **Permukaan kaca**: putih tembus pandang (`--kaca`), tepi putih 1 px, sudut besar 22 px, bayangan lembut bernuansa biru (`--bayangan-lembut`, `--bayangan-angkat`). Tanpa `backdrop-filter` (latar halus membuat blur tidak terlihat, dan hemat untuk Chromebook). Bayangan hitam pekat tetap dilarang.
 - **Label Title Case** seperti aslinya: Sisa Waktu Ujian, Kosongkan Jawaban, Selesaikan Ujian, Daftar Soal, Terjawab, Ruang Ujian, Pusat Bantuan. Nama peserta ditulis kapital.
 - **Ikon garis tipis** (SVG, `ikon()` di `JsCommon.html`) yang selalu disertai teks: jam, segarkan, silang, henti, buku, bantuan, panah, daftar, centang.

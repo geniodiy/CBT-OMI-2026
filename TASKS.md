@@ -5,7 +5,7 @@ Kerjakan berurutan, satu milestone per sesi. Centang saat uji manual lulus. Ruju
 ## M0. Persiapan (dikerjakan pemilik, bukan Claude Code)
 
 - [ ] Buat project Supabase. Jalankan `supabase/schema.sql` di SQL Editor.
-- [ ] Unggah `assets/logo-omi.png` dan `assets/logo-kemenag.png` ke bucket `aset` (dashboard Supabase > Storage). Catat URL publiknya.
+- [ ] Unggah `assets/logo-omi.png` ke bucket `aset` (logo Genio sudah tertanam di `Index.html`) (dashboard Supabase > Storage). Catat URL publiknya.
 - [ ] Buat project Apps Script (atau `clasp create`). Isi Script Properties: `SUPABASE_URL`, `SUPABASE_KEY` (service_role), `ADMIN_PASSWORD`.
 - [ ] `clasp login`, salin `.clasp.json.example` menjadi `.clasp.json`, isi `scriptId`.
 
@@ -126,6 +126,8 @@ Status uji: logika jadwal, duplikat, dan batas tutup lulus uji Node (`node tests
 - [x] Animasi: panel masuk bertahap, soal bergeser maju/mundur, opsi masuk berurutan dan bereaksi saat disorot, ditekan, dan dipilih, nomor memantul saat baru terjawab, timer berdenyut saat sisa waktu ≤ 5 menit, modal dan toast halus. Mati otomatis bila perangkat meminta `prefers-reduced-motion`.
 - [x] HP: bilah atas menempel (timer dan Daftar Soal), laci geser dari bawah untuk Daftar Soal dan tombol aksi, tombol Sebelumnya/Berikutnya menempel di bawah dengan area aman perangkat, tanpa scroll ke samping di 390 px.
 - [x] `docs/UI.md` bagian 9 dan `CLAUDE.md` memuat pengecualian ini; `tests/statis.test.js` membatasi gradien, bayangan, kapital, dan blur.
+
+- [x] Logo Genio menggantikan logo Kemenag di header dan kop hasil/PDF (tertanam sebagai data URI, tanpa unggahan). Latar halaman ujian polos. Skala seluruh situs dikecilkan (dasar 14 px; target sentuh tetap 44 px dan kolom isian 16 px di perangkat sentuh).
 
 Status uji: alur lengkap (jawab pg/pgk/isian, pindah soal, kosongkan, bantuan, Refresh, selesai, laci HP, Escape, ketuk latar, tombol bawah) lulus uji browser desktop 1440 px dan HP 390 px. Belum dicentang: pemeriksaan di perangkat sungguhan (iPad Safari, Chrome Android, Chromebook) dan kecepatan animasi di laptop sekolah.
 
