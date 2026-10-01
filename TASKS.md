@@ -70,13 +70,17 @@ Status uji: urutan kontainer, pencocokan token lulus uji Node; beranda, popup, t
 
 ## M6. Halaman ujian
 
-- [ ] `apiMulai` (buat sesi, atau lanjutkan sesi berjalan yang sama), `apiSinkron`.
-- [ ] Layout tiga kolom sesuai `UI.md` dan referensi; label instruksi per tipe; opsi pg/pgk/isian; grid nomor dan penghitung terjawab; Sebelumnya/Berikutnya; Kosongkan jawaban; Refresh (sinkron jam dan simpan jawaban).
-- [ ] Timer dari `akhirMs` + `offset`; ≤ 5 menit merah; habis = kirim otomatis.
-- [ ] Simpan lokal tiap perubahan; sinkron server tiap 3 menit; peringatan sebelum menutup halaman.
-- [ ] Responsif (< 900 px): sidebar disembunyikan, laci daftar soal.
+- [x] `apiMulai` (buat sesi, atau lanjutkan sesi berjalan yang sama), `apiSinkron`.
+- [x] Layout tiga kolom sesuai `UI.md` dan referensi; label instruksi per tipe; opsi pg/pgk/isian; grid nomor dan penghitung terjawab; Sebelumnya/Berikutnya; Kosongkan jawaban; Refresh (sinkron jam dan simpan jawaban).
+- [x] Timer dari `akhirMs` + `offset`; ≤ 5 menit merah; habis = kirim otomatis.
+- [x] Simpan lokal tiap perubahan; sinkron server tiap 3 menit; peringatan sebelum menutup halaman.
+- [x] Responsif (< 900 px): sidebar disembunyikan, laci daftar soal.
 
 Uji: refresh browser di tengah ujian lalu lanjut tanpa kehilangan jawaban dan waktu tidak reset; ubah jam perangkat tidak mengubah timer; acak soal/opsi konsisten saat dilanjutkan; kunci tidak terlihat di Network/respon; uji di layar 360 px; soal Arab tampil rata kanan dengan font Naskh dan jawaban isian Arab tersimpan utuh.
+
+Catatan: soal dengan bagian gambar kosong tidak ditampilkan dan tidak dinilai (total = soal yang tampil). `apiSinkron` hanya dipanggil bila ada perubahan (hemat UrlFetch); tombol Refresh selalu menyinkron. Halaman hasil di M6 masih versi sementara (angka saja); M7 menggantinya.
+
+Status uji: logika server (lanjut sesi, acak konsisten, kunci tidak bocor, idempoten, durasi dibatasi, sesi lewat waktu) lulus uji Node dengan Supabase tiruan; halaman ujian (pg, pgk, isian Arab, grid, kosongkan, simpan lokal, sinkron, laci 360 px, kirim gagal lalu kirim ulang, lanjut setelah reload, kirim otomatis saat waktu habis) lulus uji browser. Belum dicentang: uji di Apps Script asli (termasuk ubah jam perangkat, kunci tidak terlihat di Network).
 
 ## M7. Hasil dan PDF
 

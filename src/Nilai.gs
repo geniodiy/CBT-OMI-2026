@@ -309,3 +309,31 @@ function tokenCocok_(a, b) {
   var x = String(a == null ? '' : a).trim().toLowerCase();
   return x !== '' && x === String(b == null ? '' : b).trim().toLowerCase();
 }
+
+/** Soal dengan bagian gambar yang masih kosong tidak ditampilkan dan tidak dinilai. */
+function soalTampil_(baris) {
+  return baris.filter(function (r) {
+    return !(r.blok || []).some(function (b) { return b.tipe === 'gambar' && !String(b.isi || '').trim(); });
+  });
+}
+
+/** Bersihkan jawaban dari klien: hanya {id: [teks]} dengan batas ukuran; jawaban kosong dibuang. */
+function bersihJawaban_(j) {
+  var out = {};
+  if (!j || typeof j !== 'object' || Array.isArray(j)) return out;
+  Object.keys(j).slice(0, 1000).forEach(function (id) {
+    if (id.length > 64 || !Array.isArray(j[id])) return;
+    var a = j[id].slice(0, 8).map(function (x) { return String(x == null ? '' : x).slice(0, 500); })
+      .filter(function (x) { return x.trim() !== ''; });
+    if (a.length) out[id] = a;
+  });
+  return out;
+}
+
+/** Data peserta dari klien. Nama wajib. */
+function normPeserta_(p) {
+  function t(v) { return String(v == null ? '' : v).trim().slice(0, 100); }
+  var o = { nama: t(p && p.nama), nomor: t(p && p.nomor), kelas: t(p && p.kelas), sekolah: t(p && p.sekolah) };
+  if (!o.nama) throw new Error('Nama peserta wajib diisi.');
+  return o;
+}

@@ -158,11 +158,320 @@
     });
   }
 
-  // M6 mengisi App.mulaiUjian; sampai itu ada, tombol memberi tahu dengan jelas.
   function mulai(ujianId, token, peserta) {
-    if (typeof window.App.mulaiUjian === 'function') window.App.mulaiUjian(ujianId, token, peserta);
-    else window.toast('Halaman ujian belum tersedia di versi ini.', true);
+    window.App.mulaiUjian(ujianId, token, peserta);
   }
+
+  // ---------- mengerjakan ujian ----------
+
+  var HURUF = 'ABCDEFGH';
+  var LABEL_TIPE = { pg: 'Pilihan ganda', pgk: 'Pilihan ganda kompleks', isian: 'Isian singkat' };
+  var INSTRUKSI = {
+    pg: 'Pilih satu jawaban benar!',
+    pgk: 'Pilih satu atau lebih jawaban benar!',
+    isian: 'Ketik jawaban singkat Anda!'
+  };
+  var INTERVAL_SINKRON_MS = 3 * 60 * 1000;
+  var BATAS_MEPET_MS = 5 * 60 * 1000;
+  var U = null;
+  var pengatur = { timer: null, sinkron: null };
+
+  function layarPesan(teks) {
+    var s = document.querySelector('[data-view="ujian"]');
+    window.showView('ujian');
+    s.textContent = '';
+    s.appendChild(el('p', { class: 'kosong' }, teks));
+    return s;
+  }
+
+  window.App.mulaiUjian = function (ujianId, token, peserta) {
+    layarPesan('Menyiapkan ujian...');
+    window.call('apiMulai', ujianId, token, peserta)
+      .then(function (d) { mulaiSesi(d, ujianId, token); })
+      .catch(function (e) { window.toast(e.message, true); muatBeranda(); });
+  };
+
+  function mulaiSesi(d, ujianId, token) {
+    bersihkan();
+    var lokal = window.bacaLokal(KUNCI_SESI);
+    var sama = lokal && lokal.sesiId === d.sesiId && lokal.jawaban && typeof lokal.jawaban === 'object';
+    U = {
+      sesiId: d.sesiId, ujianId: ujianId, token: token, peserta: d.peserta, ujian: d.ujian, soal: d.soal,
+      jawaban: sama ? lokal.jawaban : (d.jawaban || {}),
+      idx: sama && lokal.idx >= 0 && lokal.idx < d.soal.length ? lokal.idx : 0,
+      offset: d.serverNow - Date.now(), akhirMs: d.akhirMs,
+      versi: 0, versiKirim: 0, selesai: false, mengirim: false, el: {}
+    };
+    simpanSesiLokal();
+    bangunLayar();
+    tampilSoal();
+    mulaiTimer();
+    pengatur.sinkron = setInterval(function () { sinkron(false); }, INTERVAL_SINKRON_MS);
+    window.addEventListener('beforeunload', peringatTutup);
+    if (d.lanjut) window.toast('Melanjutkan ujian Anda.');
+  }
+
+  function simpanSesiLokal() {
+    if (!U) return;
+    window.simpanLokal(KUNCI_SESI, {
+      sesiId: U.sesiId, ujianId: U.ujianId, ujianNama: U.ujian.nama, akhirMs: U.akhirMs, offset: U.offset,
+      token: U.token, peserta: U.peserta, jawaban: U.jawaban, idx: U.idx
+    });
+  }
+
+  function peringatTutup(e) {
+    if (U && !U.selesai) { e.preventDefault(); e.returnValue = ''; }
+  }
+
+  function bersihkan() {
+    clearInterval(pengatur.timer); clearInterval(pengatur.sinkron);
+    pengatur.timer = pengatur.sinkron = null;
+    window.removeEventListener('beforeunload', peringatTutup);
+    document.removeEventListener('visibilitychange', tick);
+  }
+
+  function adaJawaban(id) {
+    var j = U.jawaban[id];
+    return Array.isArray(j) && j.some(function (x) { return String(x).trim() !== ''; });
+  }
+  function jumlahTerjawab() {
+    return U.soal.filter(function (s) { return adaJawaban(s.id); }).length;
+  }
+
+  // tata letak
+
+  function bangunLayar() {
+    var s = document.querySelector('[data-view="ujian"]');
+    var p = U.peserta, e = U.el;
+    window.showView('ujian');
+    s.textContent = '';
+
+    var side = el('aside', { class: 'u-side' },
+      el('div', { class: 'u-avatar', 'aria-hidden': 'true' }, (p.nama || '?').trim().charAt(0).toUpperCase()),
+      el('strong', { class: 'u-nama' }, p.nama),
+      p.nomor ? el('div', { class: 'redup' }, 'No. peserta ' + p.nomor) : null,
+      el('div', { class: 'u-lencana' }, el('span', { class: 'lencana' }, U.ujian.jenjang + ' ' + U.ujian.mapel),
+        U.ujian.sesi ? el('span', { class: 'lencana' }, U.ujian.sesi) : null));
+
+    e.kartu = el('div', { class: 'kartu-soal' });
+    e.sebelumnya = el('button', { type: 'button', class: 'btn', onclick: function () { pindah(U.idx - 1); } }, 'Sebelumnya');
+    e.berikutnya = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { pindah(U.idx + 1); } }, 'Berikutnya');
+    var main = el('section', { class: 'u-main' }, e.kartu, el('div', { class: 'u-nav' }, e.sebelumnya, e.berikutnya));
+
+    e.timer = el('div', { class: 'u-timer', role: 'timer' }, '--:--:--');
+    e.refresh = el('button', { type: 'button', class: 'btn', onclick: function () {
+      e.refresh.disabled = true;
+      sinkron(true).then(function () { e.refresh.disabled = false; });
+    } }, 'Refresh');
+    e.hitung = el('span', { class: 'redup' });
+    e.grid = el('div', { class: 'u-grid' }, U.soal.map(function (soal, i) {
+      return el('button', { type: 'button', class: 'sel', onclick: function () { pindah(i); } }, (i < 9 ? '0' : '') + (i + 1));
+    }));
+    e.laci = el('div', { class: 'u-laci tutup' }, e.grid);
+    var tombolLaci = el('button', { type: 'button', class: 'btn u-laci-tombol', 'aria-expanded': 'false', onclick: function () {
+      var buka = e.laci.classList.toggle('tutup') === false;
+      tombolLaci.setAttribute('aria-expanded', buka ? 'true' : 'false');
+    } }, 'Daftar soal');
+    var panel = el('aside', { class: 'u-panel' },
+      el('div', { class: 'redup' }, 'Sisa waktu ujian'), e.timer,
+      el('div', { class: 'u-aksi' }, e.refresh,
+        el('button', { type: 'button', class: 'btn', onclick: kosongkanJawaban }, 'Kosongkan jawaban'),
+        el('button', { type: 'button', class: 'btn btn-bahaya', onclick: konfirmasiSelesai }, 'Selesaikan ujian')),
+      el('div', { class: 'u-daftar-kepala' }, el('strong', null, 'Daftar soal'), e.hitung),
+      tombolLaci, e.laci);
+
+    s.appendChild(el('div', { class: 'ujian' }, side, main, panel));
+  }
+
+  function segarkanGrid() {
+    var sel = U.el.grid.children;
+    for (var i = 0; i < sel.length; i++) {
+      var ada = adaJawaban(U.soal[i].id);
+      sel[i].className = 'sel' + (ada ? ' terjawab' : '') + (i === U.idx ? ' aktif' : '');
+      sel[i].setAttribute('aria-label', 'Soal ' + (i + 1) + (ada ? ', terjawab' : ', belum dijawab') + (i === U.idx ? ', sedang dibuka' : ''));
+      if (i === U.idx) sel[i].setAttribute('aria-current', 'true'); else sel[i].removeAttribute('aria-current');
+    }
+    U.el.hitung.textContent = jumlahTerjawab() + '/' + U.soal.length + ' terjawab';
+  }
+
+  // soal
+
+  function pasangGambar(akar) {
+    akar.querySelectorAll('img.blok-gambar').forEach(function (img) {
+      img.addEventListener('error', function () {
+        var asal = img.getAttribute('src');
+        var kotak = el('div', { class: 'gambar-gagal' }, el('span', null, 'Gambar tidak dapat dimuat. '),
+          el('button', { type: 'button', class: 'btn btn-teks', onclick: function () {
+            var baru = img.cloneNode(false);
+            baru.src = asal + (asal.indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+            kotak.replaceWith(baru);
+            pasangGambar(baru.parentNode || akar);
+          } }, 'Coba lagi'));
+        img.replaceWith(kotak);
+      }, { once: true });
+    });
+  }
+
+  function ubahJawaban(soal, nilaiArray) {
+    var kosong = !nilaiArray.length || nilaiArray.every(function (x) { return String(x).trim() === ''; });
+    if (kosong) delete U.jawaban[soal.id]; else U.jawaban[soal.id] = nilaiArray;
+    U.versi++;
+    simpanSesiLokal();
+    segarkanGrid();
+  }
+
+  function opsiEl(soal, op, n) {
+    var jawab = U.jawaban[soal.id] || [];
+    var dipilih = jawab.indexOf(op.k) >= 0;
+    var input = el('input', { type: soal.tipe === 'pg' ? 'radio' : 'checkbox', name: 'opsi-' + soal.id, value: op.k, checked: dipilih });
+    var teks = el('div', { class: 'opsi-teks' });
+    teks.innerHTML = window.clean(op.h);
+    var label = el('label', { class: 'opsi' + (dipilih ? ' terpilih' : '') }, input,
+      el('span', { class: 'opsi-huruf ' + (soal.tipe === 'pg' ? 'bulat' : 'kotak') }, HURUF.charAt(n)), teks);
+    input.addEventListener('change', function () {
+      var skrg = (U.jawaban[soal.id] || []).slice();
+      if (soal.tipe === 'pg') skrg = [op.k];
+      else if (input.checked) { if (skrg.indexOf(op.k) < 0) skrg.push(op.k); }
+      else skrg = skrg.filter(function (x) { return x !== op.k; });
+      ubahJawaban(soal, skrg);
+      U.el.kartu.querySelectorAll('.opsi').forEach(function (l) {
+        l.classList.toggle('terpilih', l.querySelector('input').checked);
+      });
+    });
+    return label;
+  }
+
+  function tampilSoal() {
+    var soal = U.soal[U.idx], k = U.el.kartu;
+    k.textContent = '';
+    var badan = el('div', { class: 'kartu-badan' });
+    badan.innerHTML = window.blokHTML(soal.blok);
+    pasangGambar(badan);
+    k.appendChild(el('div', { class: 'kartu-kepala' },
+      el('strong', null, 'Soal ' + (U.idx + 1) + ' dari ' + U.soal.length),
+      el('span', { class: 'lencana' }, LABEL_TIPE[soal.tipe])));
+    k.appendChild(badan);
+    k.appendChild(el('p', { class: 'instruksi' }, INSTRUKSI[soal.tipe]));
+    if (soal.tipe === 'isian') {
+      var jawab = U.jawaban[soal.id] || [];
+      var input = el('input', { type: 'text', class: 'isian-siswa', value: jawab[0] || '', dir: 'auto', autocomplete: 'off', autocapitalize: 'off', spellcheck: false, 'aria-label': 'Jawaban Anda' });
+      input.addEventListener('input', function () { ubahJawaban(soal, [input.value]); });
+      k.appendChild(input);
+    } else {
+      soal.opsi.forEach(function (op, n) { k.appendChild(opsiEl(soal, op, n)); });
+    }
+    window.mathify(k);
+    U.el.sebelumnya.disabled = U.idx === 0;
+    U.el.berikutnya.disabled = U.idx === U.soal.length - 1;
+    segarkanGrid();
+  }
+
+  function pindah(i) {
+    if (!U || i < 0 || i >= U.soal.length || i === U.idx) return;
+    U.idx = i;
+    simpanSesiLokal();
+    tampilSoal();
+    var atas = U.el.kartu.getBoundingClientRect().top;
+    if (atas < 0) window.scrollTo(0, window.scrollY + atas - 16);
+  }
+
+  function kosongkanJawaban() {
+    var soal = U.soal[U.idx];
+    if (!adaJawaban(soal.id)) { window.toast('Soal ini belum dijawab.'); return; }
+    window.openModal({
+      judul: 'Kosongkan jawaban soal ' + (U.idx + 1) + '?',
+      isi: 'Jawaban yang sudah Anda pilih untuk soal ini akan dihapus.',
+      tombol: [{ teks: 'Batal' }, { teks: 'Kosongkan', utama: true, aksi: function () { ubahJawaban(soal, []); tampilSoal(); } }]
+    });
+  }
+
+  // waktu
+
+  function sisaMs() { return U.akhirMs - (Date.now() + U.offset); }
+
+  function format(ms) {
+    var d = Math.max(0, Math.ceil(ms / 1000)), h = Math.floor(d / 3600), m = Math.floor(d % 3600 / 60), s = d % 60;
+    return [h, m, s].map(function (x) { return (x < 10 ? '0' : '') + x; }).join(':');
+  }
+
+  function tick() {
+    if (!U || U.selesai || U.mengirim) return;
+    var sisa = sisaMs();
+    U.el.timer.textContent = format(sisa);
+    U.el.timer.classList.toggle('mepet', sisa <= BATAS_MEPET_MS);
+    if (sisa <= 0) kirimSelesai(true);
+  }
+
+  function mulaiTimer() {
+    tick();
+    pengatur.timer = setInterval(tick, 1000);
+    document.addEventListener('visibilitychange', tick);
+  }
+
+  function sinkron(manual) {
+    if (!U || U.selesai || U.mengirim) return Promise.resolve();
+    if (!manual && U.versi === U.versiKirim) return Promise.resolve();
+    var versi = U.versi;
+    return window.call('apiSinkron', U.sesiId, U.jawaban).then(function (h) {
+      if (!U) return;
+      U.offset = h.serverNow - Date.now();
+      U.akhirMs = h.akhirMs;
+      if (U.versi === versi) U.versiKirim = versi;
+      simpanSesiLokal();
+      tick();
+      if (manual) window.toast('Waktu dan jawaban sudah disinkronkan.');
+    }).catch(function (e) {
+      if (/sudah selesai/.test(e.message)) { kirimSelesai(false); return; }
+      if (manual) window.toast(e.message + ' Jawaban tetap tersimpan di perangkat ini.', true);
+    });
+  }
+
+  // selesai
+
+  function konfirmasiSelesai() {
+    var belum = U.soal.length - jumlahTerjawab();
+    window.openModal({
+      judul: 'Kirim jawaban sekarang?',
+      isi: belum
+        ? 'Masih ada ' + belum + ' soal yang belum dijawab. Setelah dikirim, jawaban tidak dapat diubah.'
+        : 'Semua soal sudah dijawab. Setelah dikirim, jawaban tidak dapat diubah.',
+      tombol: [{ teks: 'Kembali mengerjakan' }, { teks: 'Kirim jawaban', utama: true, aksi: function () { kirimSelesai(false); } }]
+    });
+  }
+
+  function kirimSelesai(otomatis) {
+    if (!U || U.mengirim || U.selesai) return;
+    U.mengirim = true;
+    clearInterval(pengatur.timer); clearInterval(pengatur.sinkron);
+    kirimJawaban(otomatis ? 'Waktu habis. Mengirim jawaban Anda...' : 'Mengirim jawaban Anda...');
+  }
+
+  function kirimJawaban(pesan) {
+    layarPesan(pesan);
+    window.call('apiSelesai', U.sesiId, U.jawaban).then(function (h) {
+      U.selesai = true;
+      var sesiAktif = U;
+      bersihkan();
+      window.hapusLokal(KUNCI_SESI);
+      window.App.tampilHasil(h, sesiAktif);
+      U = null;
+    }).catch(function (e) {
+      var s = layarPesan('Jawaban belum terkirim: ' + e.message);
+      s.appendChild(el('p', { class: 'redup' }, 'Jawaban Anda aman di perangkat ini. Periksa koneksi internet, lalu kirim ulang.'));
+      s.appendChild(el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { kirimJawaban('Mengirim jawaban Anda...'); } }, 'Kirim ulang'));
+    });
+  }
+
+  // Ditimpa oleh halaman hasil lengkap (M7); versi sementara hanya menampilkan angka.
+  window.App.tampilHasil = function (h) {
+    var s = document.querySelector('[data-view="hasil"]');
+    window.showView('hasil');
+    s.textContent = '';
+    s.appendChild(el('h1', null, 'Hasil ujian'));
+    s.appendChild(el('p', null, h.nama + ' · ' + h.ujian.nama));
+    s.appendChild(el('p', null, 'Nilai ' + h.skor + '. Benar ' + h.benar + ', salah ' + h.salah + ', kosong ' + h.kosong + ' dari ' + h.total + ' soal.'));
+    s.appendChild(el('button', { type: 'button', class: 'btn btn-utama', onclick: muatBeranda }, 'Kembali ke beranda'));
+  };
 
   window.App.tampilAwal = muatBeranda;
   muatBeranda();

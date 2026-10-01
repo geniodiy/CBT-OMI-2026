@@ -190,6 +190,8 @@
 
   window.showView = function (nama) {
     document.querySelectorAll('[data-view]').forEach(function (s) { s.hidden = s.getAttribute('data-view') !== nama; });
+    var btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin) btnAdmin.hidden = nama === 'ujian';
     window.scrollTo(0, 0);
   };
 
