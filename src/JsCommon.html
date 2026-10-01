@@ -187,6 +187,13 @@
   };
 
   /** HTML aman untuk daftar bagian soal. Bagian gambar kosong atau bukan https dilewati. */
+  /** Hanya judul "Pertanyaan" yang digarisbawahi (seperti CBT OMI); huruf tebal lain tidak ikut bergaris bawah. */
+  window.tandaiPertanyaan = function (akar) {
+    akar.querySelectorAll('b, strong').forEach(function (b) {
+      if (b.textContent.trim().toLowerCase() === 'pertanyaan') b.classList.add('judul-tanya');
+    });
+  };
+
   window.blokHTML = function (bloks) {
     return (bloks || []).map(function (b) {
       if (b.tipe === 'gambar') {
