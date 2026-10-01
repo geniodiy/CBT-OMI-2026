@@ -68,7 +68,7 @@ Aturan:
 - **Nilai** = (jumlah bobot soal benar ÷ jumlah bobot semua soal) × 100, dibulatkan 2 desimal.
 - `benar + salah + kosong = jumlah soal`.
 
-Halaman hasil dan PDF memuat: identitas (nama, nomor peserta, kelas, sekolah), nama ujian, jenjang, mapel, sesi, tanggal, **waktu pengerjaan** (contoh "32 menit 15 detik"), **benar**, **salah**, **kosong**, **nilai**, dan tabel per nomor (jawaban siswa dan status). Kolom kunci hanya jika `tampil_kunci`. Tanpa pembahasan di Tahap 1.
+Halaman hasil dan PDF memuat: identitas (nama, nomor peserta, kelas, sekolah), nama ujian, jenjang, mapel, sesi, tanggal, **waktu pengerjaan** (contoh "32 menit 15 detik"), **benar**, **salah**, **kosong**, **nilai**, dan tabel per nomor (jawaban siswa dan status). Kolom kunci hanya di layar, hanya untuk pg dan pgk, dan hanya jika `tampil_kunci`; kunci ditulis sebagai huruf abjad sesuai urutan tampilan siswa. Kunci isian tidak pernah ditampilkan. **PDF dan cetak tidak memuat kolom kunci.** Tanpa pembahasan di Tahap 1.
 
 **Waktu pengerjaan** = dari "Mulai ujian" sampai kirim, dicatat server, maksimal sebesar durasi ujian.
 
@@ -116,5 +116,5 @@ Header: logo Kemenag dan logo OMI (`assets/`), label "Try Out OMI 2026" dan "CBT
 | Tipe soal | pg, pgk, isian |
 | Pembahasan | Tahap 2 |
 | PDF | Dibuat di browser, tidak disimpan |
-| Kunci di hasil | Opsi per ujian, default mati |
+| Kunci di hasil | Opsi per ujian, default mati; hanya huruf pg/pgk di layar; tidak ada di PDF dan cetak; isian tidak pernah |
 | Upload gambar | Supabase Storage |

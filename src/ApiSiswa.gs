@@ -125,8 +125,10 @@ function apiSelesai(sesiId, jawaban) {
     selesaiAt: selesaiAt, durasi: durasi,
     benar: h.benar, salah: h.salah, kosong: h.kosong, total: soal.length, skor: h.skor,
     tampilKunci: u.tampil_kunci === true,
-    rincian: h.rincian.map(function (r) {
-      return { id: r.id, status: r.status, jawaban: r.jawaban, kunci: u.tampil_kunci === true ? r.kunci : null };
+    rincian: h.rincian.map(function (r, n) {
+      // Kunci isian tidak pernah dikirim; kunci pilihan ganda hanya bila tampil_kunci aktif.
+      var tampil = u.tampil_kunci === true && soal[n].tipe !== 'isian';
+      return { id: r.id, status: r.status, jawaban: r.jawaban, kunci: tampil ? r.kunci : null };
     })
   };
 }

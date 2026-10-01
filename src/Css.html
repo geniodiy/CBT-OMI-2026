@@ -228,5 +228,39 @@ button.kontainer:hover { border-color: var(--biru); }
 .ar-blok { text-align: right; direction: rtl; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
-@media print { .header-aksi, #toastRoot { display: none !important; } }
+/* hasil */
+.hasil { max-width: 820px; margin: 0 auto; background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius); padding: 24px; }
+.hasil h1 { margin-top: 18px; }
+.hasil-kop { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--garis); }
+.hasil-logo { display: flex; gap: 8px; }
+.hasil-logo img { height: 36px; width: auto; }
+.hasil-ujian { margin: 0 0 16px; color: var(--teks-redup); }
+.hasil-ujian strong { color: var(--teks); }
+.hasil-atas { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.hasil-identitas { margin: 0; display: grid; gap: 4px; }
+.hasil-baris { display: grid; grid-template-columns: 130px 1fr; gap: 8px; }
+.hasil-baris dt { color: var(--teks-redup); }
+.hasil-baris dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.hasil-nilai { text-align: right; }
+.hasil-skor { font-size: 3rem; font-weight: 700; line-height: 1.1; color: var(--biru-tua); font-variant-numeric: tabular-nums; }
+.hasil-angka { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 12px 0; margin-bottom: 16px; border-top: 1px solid var(--garis); border-bottom: 1px solid var(--garis); }
+.hasil-angka strong { font-size: 1.25rem; }
+@media (max-width: 600px) { .hasil { padding: 16px; } .hasil-angka { grid-template-columns: 1fr 1fr; } .hasil-nilai { text-align: left; } }
+.tabel-gulir { overflow-x: auto; }
+.hasil-tabel td { overflow-wrap: anywhere; }
+.hasil-tabel tr { page-break-inside: avoid; }
+.status-benar { color: var(--hijau); font-weight: 600; }
+.status-salah { color: var(--merah); font-weight: 600; }
+.status-kosong { color: var(--teks-redup); font-weight: 600; }
+.hasil-aksi { max-width: 820px; margin: 16px auto 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.pdf-gudang { position: fixed; left: -10000px; top: 0; width: 190mm; background: #ffffff; color: #1c2733; }
+.pdf-gudang .hasil { border: 0; padding: 0; border-radius: 0; max-width: none; }
+
+@media print {
+  body { background: #fff; }
+  .header, .footer, .no-print, .no-pdf, #toastRoot, #modalRoot { display: none !important; }
+  #app { padding: 0; max-width: none; }
+  [data-view]:not([data-view="hasil"]) { display: none !important; }
+  .hasil { border: 0; padding: 0; max-width: none; }
+}
 </style>

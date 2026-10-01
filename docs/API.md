@@ -57,7 +57,7 @@ type Hasil = {
   rincian: { id: string; status: 'benar'|'salah'|'kosong'; jawaban: string[]; kunci: string[] | null }[];
 };
 ```
-`kunci` hanya terisi jika `tampilKunci`. `rincian` dalam urutan database (`urutan`); klien memetakan ke nomor sesuai urutan tampilan.
+`kunci` hanya terisi jika `tampilKunci` dan tipe soal pg atau pgk (kunci isian selalu `null`). Huruf kunci dan jawaban adalah huruf asli opsi (`k`); klien memetakannya ke huruf tampilan. `rincian` dalam urutan database (`urutan`); klien memetakan ke nomor sesuai urutan tampilan.
 
 ## Admin
 

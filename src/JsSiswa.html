@@ -462,15 +462,118 @@
     });
   }
 
-  // Ditimpa oleh halaman hasil lengkap (M7); versi sementara hanya menampilkan angka.
-  window.App.tampilHasil = function (h) {
+  // ---------- hasil, PDF, cetak ----------
+
+  function formatDurasi(detik) {
+    var d = Math.max(0, Math.round(detik || 0)), j = Math.floor(d / 3600), m = Math.floor(d % 3600 / 60), s = d % 60;
+    var bagian = [];
+    if (j) bagian.push(j + ' jam');
+    if (m) bagian.push(m + ' menit');
+    if (s || !bagian.length) bagian.push(s + ' detik');
+    return bagian.join(' ');
+  }
+
+  function formatTanggal(iso) {
+    var t = new Date(iso);
+    if (isNaN(t.getTime())) return '';
+    try { return t.toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' }); } catch (e) { return t.toLocaleString(); }
+  }
+
+  /** Huruf sesuai tampilan siswa (urutan opsi bisa diacak), bukan huruf asli di database. */
+  function hurufTampil(soal, daftarK) {
+    return (daftarK || []).map(function (k) {
+      var n = soal.opsi.map(function (o) { return o.k; }).indexOf(k);
+      return n >= 0 ? HURUF.charAt(n) : k;
+    }).sort().join(', ');
+  }
+
+  function teksJawaban(soal, r) {
+    if (!r || !r.jawaban || !r.jawaban.length) return '-';
+    if (soal.tipe === 'isian') return String(r.jawaban[0]);
+    return hurufTampil(soal, r.jawaban) || '-';
+  }
+
+  var LABEL_STATUS = { benar: 'Benar', salah: 'Salah', kosong: 'Kosong' };
+
+  function baris(label, nilai) {
+    return el('div', { class: 'hasil-baris' }, el('dt', null, label), el('dd', null, nilai || '-'));
+  }
+
+  function bangunHasil(h, sesi) {
+    var daftar = sesi.soal;
+    var perId = {};
+    h.rincian.forEach(function (r) { perId[r.id] = r; });
+    var adaKunci = h.tampilKunci === true;
+
+    var kop = el('div', { class: 'hasil-kop' },
+      el('div', { class: 'hasil-logo' }, Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
+        return el('img', { src: g.src, alt: g.alt, crossOrigin: 'anonymous' });
+      })),
+      el('div', null, el('strong', null, 'Try Out OMI 2026'), el('div', { class: 'redup' }, 'Dibuat oleh Genio Institute Yogyakarta')));
+
+    var kepalaTabel = el('tr', null, el('th', null, 'No'), el('th', null, 'Jawaban Anda'),
+      adaKunci ? el('th', { class: 'no-pdf' }, 'Kunci') : null, el('th', null, 'Hasil'));
+    var badan = el('tbody');
+    daftar.forEach(function (soal, i) {
+      var r = perId[soal.id];
+      var status = r ? r.status : 'kosong';
+      var sel = el('td', null, el('span', { class: 'status-' + status }, LABEL_STATUS[status]));
+      var jawab = el('td', { dir: 'auto' }, teksJawaban(soal, r));
+      var kunci = adaKunci ? el('td', { class: 'no-pdf' }, r && r.kunci && soal.tipe !== 'isian' ? hurufTampil(soal, r.kunci) : '-') : null;
+      badan.appendChild(el('tr', null, el('td', null, String(i + 1)), jawab, kunci, sel));
+    });
+
+    var cetak = el('div', { id: 'hasilCetak', class: 'hasil' },
+      kop,
+      el('h1', null, 'Hasil ujian'),
+      el('p', { class: 'hasil-ujian' }, el('strong', null, h.ujian.nama), el('br'),
+        [h.ujian.jenjang, h.ujian.mapel, h.ujian.sesi].filter(Boolean).join(' · '), el('br'), formatTanggal(h.selesaiAt)),
+      el('div', { class: 'hasil-atas' },
+        el('dl', { class: 'hasil-identitas' }, baris('Nama', h.nama), baris('Nomor peserta', h.nomor), baris('Kelas', h.kelas), baris('Sekolah', h.sekolah)),
+        el('div', { class: 'hasil-nilai' }, el('div', { class: 'redup' }, 'Nilai'), el('div', { class: 'hasil-skor' }, String(h.skor)))),
+      el('div', { class: 'hasil-angka' },
+        el('div', null, el('div', { class: 'redup' }, 'Benar'), el('strong', null, String(h.benar))),
+        el('div', null, el('div', { class: 'redup' }, 'Salah'), el('strong', null, String(h.salah))),
+        el('div', null, el('div', { class: 'redup' }, 'Kosong'), el('strong', null, String(h.kosong))),
+        el('div', null, el('div', { class: 'redup' }, 'Waktu pengerjaan'), el('strong', null, formatDurasi(h.durasi)))),
+      el('div', { class: 'tabel-gulir' }, el('table', { class: 'tabel hasil-tabel' }, el('thead', null, kepalaTabel), badan)));
+    return cetak;
+  }
+
+  function namaBerkas(h) {
+    var aman = function (t) { return String(t || '').trim().replace(/[^\p{L}\p{N}]+/gu, '_').replace(/^_+|_+$/g, ''); };
+    return 'Hasil_' + (aman(h.nama) || 'Peserta') + '_' + (aman(h.ujian.nama) || 'Ujian') + '.pdf';
+  }
+
+  function unduhPdf(h, cetak, tombol) {
+    if (!window.html2pdf) { window.toast('Pustaka PDF tidak termuat. Gunakan tombol Cetak.', true); return; }
+    tombol.disabled = true;
+    var gudang = el('div', { class: 'pdf-gudang' });
+    var salinan = cetak.cloneNode(true);
+    salinan.querySelectorAll('.no-pdf').forEach(function (x) { x.remove(); });
+    gudang.appendChild(salinan);
+    document.body.appendChild(gudang);
+    var pilihan = {
+      margin: 10, filename: namaBerkas(h), image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'], avoid: ['tr'] }
+    };
+    var siap = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    siap.then(function () { return window.html2pdf().set(pilihan).from(salinan).save(); })
+      .catch(function () { window.toast('PDF gagal dibuat. Coba tombol Cetak.', true); })
+      .then(function () { gudang.remove(); tombol.disabled = false; });
+  }
+
+  window.App.tampilHasil = function (h, sesi) {
     var s = document.querySelector('[data-view="hasil"]');
     window.showView('hasil');
     s.textContent = '';
-    s.appendChild(el('h1', null, 'Hasil ujian'));
-    s.appendChild(el('p', null, h.nama + ' · ' + h.ujian.nama));
-    s.appendChild(el('p', null, 'Nilai ' + h.skor + '. Benar ' + h.benar + ', salah ' + h.salah + ', kosong ' + h.kosong + ' dari ' + h.total + ' soal.'));
-    s.appendChild(el('button', { type: 'button', class: 'btn btn-utama', onclick: muatBeranda }, 'Kembali ke beranda'));
+    var cetak = bangunHasil(h, sesi);
+    var tbPdf = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { unduhPdf(h, cetak, tbPdf); } }, 'Download PDF');
+    s.appendChild(cetak);
+    s.appendChild(el('div', { class: 'hasil-aksi no-print' }, tbPdf,
+      el('button', { type: 'button', class: 'btn', onclick: function () { window.print(); } }, 'Cetak'),
+      el('button', { type: 'button', class: 'btn btn-teks', onclick: muatBeranda }, 'Kembali ke beranda')));
   };
 
   window.App.tampilAwal = muatBeranda;

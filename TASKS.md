@@ -84,11 +84,15 @@ Status uji: logika server (lanjut sesi, acak konsisten, kunci tidak bocor, idemp
 
 ## M7. Hasil dan PDF
 
-- [ ] `apiSelesai` (penilaian server, idempoten), modal konfirmasi selesai dengan jumlah belum dijawab, tombol kirim ulang saat gagal.
-- [ ] Halaman hasil: identitas, nilai, benar, salah, kosong, waktu pengerjaan, tabel per nomor, kunci hanya jika `tampil_kunci`.
-- [ ] Unduh PDF (html2pdf.js, `useCORS`), Cetak (`@media print`), Kembali ke beranda.
+- [x] `apiSelesai` (penilaian server, idempoten), modal konfirmasi selesai dengan jumlah belum dijawab, tombol kirim ulang saat gagal.
+- [x] Halaman hasil: identitas, nilai, benar, salah, kosong, waktu pengerjaan, tabel per nomor, kunci hanya jika `tampil_kunci`.
+- [x] Unduh PDF (html2pdf.js, `useCORS`), Cetak (`@media print`), Kembali ke beranda.
 
 Uji: kombinasi jawaban pg/pgk/isian menghasilkan benar/salah/kosong yang tepat dan `benar+salah+kosong = total`; waktu habis mengirim otomatis; PDF terunduh di Chrome desktop, Chrome Android, Safari iOS, dan gambar, rumus, dan teks Arab ikut tampil benar (tidak terbalik/terputus); kunci muncul hanya jika diaktifkan.
+
+Keputusan: PDF dan cetak tidak memuat kolom kunci. Di layar, kunci hanya untuk pg dan pgk (huruf abjad sesuai tampilan siswa, jadi ikut berubah bila opsi diacak) dan hanya jika `tampil_kunci` aktif; kunci isian tidak pernah dikirim ke klien. Jawaban isian dianggap bukan Arab, jadi hasil dan PDF tidak menangani teks Arab.
+
+Status uji: server lulus uji Node (kunci isian null, pg/pgk hanya bila tampil_kunci); hasil lulus uji browser (angka, tabel, pemetaan huruf kunci, PDF terunduh bernama `Hasil_<Nama>_<Ujian>.pdf` tanpa kunci, cetak menyembunyikan kunci dan tombol, 360 px). Belum dicentang: uji di Apps Script asli di Chrome desktop, Chrome Android, dan Safari iOS.
 
 ## M8. Admin: hasil
 
