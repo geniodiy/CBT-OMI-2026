@@ -114,6 +114,9 @@
    * opt: { judul, isi (string teks, atau Node), tombol: [{teks, utama, bahaya, aksi}], lebar, tutupDiLuar }
    * aksi(modal) boleh mengembalikan false agar modal tidak tertutup.
    */
+  /** True pada HP dan tablet (penunjuk sentuh): dipakai untuk melewati fokus otomatis dan menyesuaikan tata letak keyboard. */
+  window.layarSentuh = function () { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); };
+
   window.openModal = function (opt) {
     var terakhirFokus = document.activeElement;
     var latar = document.createElement('div');
@@ -174,8 +177,9 @@
       latar.addEventListener('mousedown', function (e) { if (e.target === latar) modal.close(); });
     }
     document.getElementById('modalRoot').appendChild(latar);
-    var fokus = kotak.querySelector('input, select, textarea') || kaki.querySelector('.btn-utama, .btn-bahaya') || kotak.querySelector('button');
-    if (fokus) fokus.focus();
+    // Di layar sentuh kolom isian tidak difokus otomatis: keyboard baru muncul bila pengguna mengetuk kolomnya.
+    var fokus = window.layarSentuh() ? null : (kotak.querySelector('input, select, textarea') || kaki.querySelector('.btn-utama, .btn-bahaya') || kotak.querySelector('button'));
+    if (fokus) fokus.focus(); else { kotak.setAttribute('tabindex', '-1'); kotak.focus({ preventScroll: true }); }
     return modal;
   };
 
@@ -717,18 +721,15 @@
   };
 
   // ---------- keyboard layar (HP) ----------
-  // Tinggi area terlihat dipantau lewat visualViewport; kolom isian yang difokus digulir ke tengah area itu.
+  // Halaman Apps Script berjalan di dalam iframe sehingga tinggi keyboard tidak dapat dibaca andal. Karena itu, begitu kolom
+  // isian difokus di layar sentuh, keyboard dianggap terbuka: kolom dipindah ke bagian atas area terlihat (maksimal sekitar
+  // 30 persen dari atas layar), popup dipendekkan dan ditempel ke atas, dan halaman diberi ruang kosong di bawah agar bisa digulir.
   (function () {
     var vv = window.visualViewport, root = document.documentElement;
-    var tinggiPenuh = window.innerHeight, lebarAwal = window.innerWidth, jadwal = null;
+    var tinggiPenuh = window.innerHeight, lebarAwal = window.innerWidth, jadwal = null, lepas = null;
     function dapatDiketik(e) {
       return !!e && e.nodeType === 1 && (/^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName) || e.isContentEditable) &&
         !(e.tagName === 'INPUT' && /^(checkbox|radio|button|submit|file|range|color)$/.test(e.type));
-    }
-    function gulirKeTengah() {
-      var a = document.activeElement;
-      if (!dapatDiketik(a)) return;
-      try { a.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' }); } catch (e) { a.scrollIntoView(); }
     }
     function atur() {
       if (window.innerWidth !== lebarAwal) { lebarAwal = window.innerWidth; tinggiPenuh = window.innerHeight; }
@@ -736,15 +737,47 @@
       var h = vv ? vv.height : window.innerHeight, top = vv ? vv.offsetTop : 0;
       root.style.setProperty('--vv-h', Math.round(h) + 'px');
       root.style.setProperty('--vv-top', Math.round(top) + 'px');
-      var terbuka = tinggiPenuh - h > 120;
-      document.body && document.body.classList.toggle('kbd-aktif', terbuka);
-      if (terbuka) { clearTimeout(jadwal); jadwal = setTimeout(gulirKeTengah, 140); }
+      document.body && document.body.classList.toggle('kbd-aktif', tinggiPenuh - h > 120);
+    }
+    /** Memindahkan elemen ke bagian atas area terlihat; di dalam popup yang menggulir, gulir isi popup. */
+    function naikkan(el, caret) {
+      if (!el || !el.getBoundingClientRect) return;
+      var r = caret || el.getBoundingClientRect(), tinggi = (vv && vv.height) || window.innerHeight;
+      var batasAtas = tinggi * 0.12, batasBawah = tinggi * 0.34;
+      var wadah = el.closest ? el.closest('.modal-badan') : null;
+      if (r.top >= batasAtas && r.bottom <= batasBawah) return;
+      var selisih = r.top - tinggi * 0.2;
+      if (wadah) wadah.scrollTo({ top: wadah.scrollTop + selisih, behavior: 'smooth' });
+      else window.scrollBy({ top: selisih, left: 0, behavior: 'smooth' });
+    }
+    function posisiCaret() {
+      var sel = window.getSelection && window.getSelection();
+      if (!sel || !sel.rangeCount) return null;
+      var rg = sel.getRangeAt(0).cloneRange(); rg.collapse(false);
+      var rc = rg.getClientRects()[0] || rg.getBoundingClientRect();
+      return rc && (rc.top || rc.bottom) ? rc : null;
     }
     if (vv) { vv.addEventListener('resize', atur); vv.addEventListener('scroll', atur); }
     window.addEventListener('resize', atur);
     window.addEventListener('orientationchange', function () { setTimeout(atur, 300); });
     document.addEventListener('focusin', function (e) {
-      if (dapatDiketik(e.target)) setTimeout(gulirKeTengah, 320);
+      if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
+      clearTimeout(lepas);
+      document.body.classList.add('kbd-fokus');
+      var el = e.target;
+      clearTimeout(jadwal);
+      jadwal = setTimeout(function () { naikkan(el); }, 380);   // menunggu popup selesai disusun ulang
+    });
+    document.addEventListener('focusout', function () {
+      clearTimeout(lepas);
+      lepas = setTimeout(function () { if (!dapatDiketik(document.activeElement)) document.body.classList.remove('kbd-fokus'); }, 300);
+    });
+    // Saat mengetik di editor/kolom panjang, pastikan tulisan yang sedang diketik tetap di atas keyboard.
+    document.addEventListener('input', function (e) {
+      if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
+      var rc = e.target.isContentEditable ? posisiCaret() : null;
+      var tinggi = (vv && vv.height) || window.innerHeight;
+      if (rc && rc.bottom > tinggi * 0.45) naikkan(e.target, rc);
     });
     atur();
   })();

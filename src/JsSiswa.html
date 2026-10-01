@@ -875,7 +875,7 @@
     document.body.appendChild(gudang);
     var pilihan = {
       margin: 10, filename: namaBerkas(h), image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      html2canvas: { scale: 2, useCORS: true, windowWidth: 800, windowHeight: Math.max(1123, salinan.scrollHeight + 40), scrollX: 0, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak: { mode: ['css', 'legacy'], avoid: ['tr'] }
     };
     var siap = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();

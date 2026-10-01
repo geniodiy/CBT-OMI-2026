@@ -584,6 +584,10 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
 .ujian .u-logo strong { font-size: .78rem; }
 @media (max-width: 900px) {
   .ujian .kartu-soal { padding: 12px 12px 10px; }
+  .ujian .u-nav { grid-template-columns: auto 1fr auto; padding-left: 10px; padding-right: 10px; }
+  .ujian .u-nav .btn { width: auto; min-width: 0; padding: 0 12px; min-height: 38px; justify-self: start; }
+  .ujian .u-nav .btn-utama { justify-self: end; }
+  .ujian .u-nav .u-posisi { text-align: center; justify-self: center; }
   .ujian .btn-alat.btn-panah { display: none; }
   .ujian .u-timer { font-size: 1.2rem; }
   .ujian .u-nav .btn { min-height: 40px; font-size: .8rem; }
@@ -678,11 +682,20 @@ body[data-halaman="ujian"] .modal-kaki .btn-teks { color: var(--teks-redup); }
 @media (pointer: coarse) {
   .btn, .tab, .btn-tb, .btn-kecil, .tabel .btn, .bagian-kepala select, .field input, .field select, .field textarea { min-height: 44px; }
   .btn-tb { min-width: 44px; }
-  /* 16 px mencegah iOS memperbesar halaman saat kolom difokus (zoom itulah yang membuat form tertutup keyboard) */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .editor-area { font-size: 16px !important; }
+}
+/* 16 px mencegah iOS (Safari) memperbesar halaman saat kolom difokus; Android tidak memperbesar sehingga ukuran rancangan dipertahankan */
+@supports (-webkit-touch-callout: none) {
+  @media (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .editor-area { font-size: 16px !important; }
+  }
 }
 input, select, textarea, [contenteditable="true"] { scroll-margin-block: 96px; }
-@media (max-width: 900px) { body.kbd-aktif .u-nav { display: none; } body.kbd-aktif .ujian { padding-bottom: 24px; } }
+@media (max-width: 900px) { body.kbd-aktif .u-nav, body.kbd-fokus .u-nav { display: none; } body.kbd-aktif .ujian { padding-bottom: 24px; } }
+/* keyboard layar dianggap terbuka selama kolom isian difokus di layar sentuh */
+body.kbd-fokus { padding-bottom: 58vh; }
+body.kbd-fokus .modal-latar { align-items: flex-start; padding-top: 6px; }
+body.kbd-fokus .modal { max-height: min(calc(var(--vv-h, 100dvh) * .94), 52vh); }
+body.kbd-fokus .popover { max-height: 52vh; overflow-y: auto; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */
@@ -835,8 +848,8 @@ html.adm-aktif .modal-kepala { padding: 13px 18px 0; }
   .adm-kepala span:nth-child(4), .adm-kepala span:nth-child(6), .adm-kepala span:nth-child(7) { display: none; }
 }
 @media (max-width: 860px) {
-  .adm { grid-template-columns: minmax(0, 1fr); }
-  .adm-side { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-right: 0; border-bottom: 1px solid var(--garis); }
+  .adm { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); align-content: start; }
+  .adm-side { position: static; height: auto; align-self: start; align-content: flex-start; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 10px 12px; border-right: 0; border-bottom: 1px solid var(--garis); }
   .adm-merek { display: flex; align-items: center; gap: 10px; padding: 0; }
   .adm-judul span { display: none; }
   .adm-nav { order: 3; display: flex; width: 100%; overflow-x: auto; gap: 4px; }

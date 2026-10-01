@@ -328,7 +328,7 @@
       if (bagian.length >= 8) { window.toast('Maksimal 8 bagian.', true); return; }
       var nb = buatBagian({ tipe: 'teks', isi: '' }, ctx);
       bagian.push(nb); gambarUrutBagian();
-      var ta = nb.root.querySelector('[contenteditable]'); if (ta) ta.focus();
+      var ta = nb.root.querySelector('[contenteditable]'); if (ta && !window.layarSentuh()) ta.focus();
     } }, window.ikon('tambah', 14), 'Tambah bagian');
     gambarUrutBagian();
 

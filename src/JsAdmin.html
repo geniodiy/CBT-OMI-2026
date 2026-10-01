@@ -86,7 +86,7 @@
     document.addEventListener('keydown', escLogin, true);
     window.addEventListener('resize', posisiLogin);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', posisiLogin);
-    input.focus();
+    if (!window.layarSentuh()) input.focus();
   }
 
   var tabAktif = 'ujian';
