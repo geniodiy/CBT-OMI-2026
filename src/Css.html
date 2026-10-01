@@ -109,6 +109,7 @@ table.tabel { width: 100%; border-collapse: collapse; font-size: .95rem; }
 .editor-tb { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border-bottom: 1px solid var(--garis); }
 .btn-tb { font: inherit; min-width: 36px; min-height: 36px; padding: 0 8px; border: 1px solid var(--garis); border-radius: 6px; background: var(--putih); color: var(--teks); cursor: pointer; }
 .btn-tb:hover { border-color: var(--biru); }
+.btn-tb.aktif { background: var(--biru-muda); border-color: var(--biru); color: var(--biru-tua); }
 .editor-area { min-height: 96px; padding: 10px 12px; outline: none; overflow-wrap: anywhere; }
 .editor-area:focus { box-shadow: inset 0 0 0 2px var(--biru); border-radius: 0 0 var(--radius) var(--radius); }
 .editor-mini .editor-area, .editor-area.editor-mini { min-height: 44px; }
@@ -128,6 +129,11 @@ table.tabel { width: 100%; border-collapse: collapse; font-size: .95rem; }
 .opsi-huruf.bulat { border-radius: 50%; }
 .opsi-huruf.kotak { border-radius: 6px; }
 h3 { margin-top: 18px; }
+
+/* perataan teks soal (satu-satunya kelas yang lolos sanitasi) */
+.rata-kiri { text-align: left; }
+.rata-tengah { text-align: center; }
+.rata-kanan { text-align: right; }
 
 /* tampilan soal (siswa dan pratinjau) */
 .kartu-soal { background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius); padding: 18px 20px; }

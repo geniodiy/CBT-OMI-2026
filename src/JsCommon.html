@@ -96,8 +96,16 @@
   };
 
   /** Sanitasi HTML dari admin atau JSON. Dipanggil setiap kali dirender. */
+  // Satu-satunya atribut yang diizinkan: class, dan hanya tiga nilai perataan teks.
+  var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan'];
+  DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+    if (!node.hasAttribute || !node.hasAttribute('class')) return;
+    var ok = node.getAttribute('class').split(/\s+/).filter(function (c) { return KELAS_BOLEH.indexOf(c) >= 0; });
+    if (ok.length) node.setAttribute('class', ok.join(' ')); else node.removeAttribute('class');
+  });
+
   window.clean = function (html) {
-    return DOMPurify.sanitize(String(html == null ? '' : html), { ALLOWED_TAGS: TAG_BOLEH, ALLOWED_ATTR: [] });
+    return DOMPurify.sanitize(String(html == null ? '' : html), { ALLOWED_TAGS: TAG_BOLEH, ALLOWED_ATTR: ['class'] });
   };
 
   /** Sama dengan normArab_ di Nilai.gs (jaga keduanya tetap seragam). Dipakai saat tempel. */

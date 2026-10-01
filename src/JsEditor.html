@@ -17,6 +17,20 @@
 
   // ---------- editor teks kaya ----------
 
+  /** execCommand menulis perataan sebagai style atau atribut align; ubah ke kelas yang lolos sanitasi. */
+  function normRata(html) {
+    var wadah = document.createElement('div');
+    wadah.innerHTML = html;
+    var peta = { left: 'rata-kiri', start: 'rata-kiri', center: 'rata-tengah', right: 'rata-kanan', end: 'rata-kanan' };
+    wadah.querySelectorAll('[style], [align]').forEach(function (e) {
+      var nilai = (e.style && e.style.textAlign) || e.getAttribute('align') || '';
+      var kelas = peta[String(nilai).toLowerCase()];
+      e.removeAttribute('style'); e.removeAttribute('align');
+      if (kelas) e.className = kelas;
+    });
+    return wadah.innerHTML;
+  }
+
   function editorTeks(awal, mini) {
     var area = el('div', { class: 'editor-area' + (mini ? ' editor-mini' : ''), contenteditable: 'true', role: 'textbox', 'aria-multiline': 'true' });
     area.innerHTML = window.clean(awal || '');
@@ -57,7 +71,27 @@
         onclick: aksi
       }, label);
     }
-    function perintah(c) { return function () { area.focus(); document.execCommand(c); simpanRentang(); }; }
+    function perintah(c) { return function () { area.focus(); document.execCommand(c); simpanRentang(); segarkanRata(); }; }
+    var tombolRata = {};
+    function rata(kunci, label, judul, perintahRata) {
+      var b = tombolTb(label, judul, function () {
+        area.focus();
+        document.execCommand('styleWithCSS', false, true);
+        document.execCommand(perintahRata);
+        simpanRentang(); segarkanRata();
+      });
+      tombolRata[perintahRata] = b;
+      return b;
+    }
+    function segarkanRata() {
+      Object.keys(tombolRata).forEach(function (c) {
+        var aktif = false;
+        try { aktif = document.queryCommandState(c); } catch (e) { aktif = false; }
+        tombolRata[c].classList.toggle('aktif', aktif);
+        tombolRata[c].setAttribute('aria-pressed', aktif ? 'true' : 'false');
+      });
+    }
+    ['keyup', 'mouseup', 'touchend'].forEach(function (n) { area.addEventListener(n, segarkanRata); });
 
     var tb = el('div', { class: 'editor-tb' },
       tombolTb('B', 'Tebal', perintah('bold')),
@@ -66,6 +100,9 @@
       tombolTb('x₂', 'Subskrip', perintah('subscript')),
       tombolTb('x²', 'Superskrip', perintah('superscript')));
     if (!mini) {
+      tb.appendChild(rata('kiri', 'Kiri', 'Rata kiri', 'justifyLeft'));
+      tb.appendChild(rata('tengah', 'Tengah', 'Rata tengah', 'justifyCenter'));
+      tb.appendChild(rata('kanan', 'Kanan', 'Rata kanan', 'justifyRight'));
       tb.appendChild(tombolTb('Daftar', 'Daftar berpoin', perintah('insertUnorderedList')));
       tb.appendChild(tombolTb('Nomor', 'Daftar bernomor', perintah('insertOrderedList')));
       tb.appendChild(tombolTb('Hapus format', 'Hapus format', perintah('removeFormat')));
@@ -81,7 +118,7 @@
       el: wrap,
       kosong: function () { return area.textContent.replace(/ /g, ' ').trim() === '' && !area.querySelector('img'); },
       ambil: function () {
-        var h = window.clean(area.innerHTML).replace(/&nbsp;/g, ' ');
+        var h = window.clean(normRata(area.innerHTML)).replace(/&nbsp;/g, ' ');
         return window.normArab(h).replace(/(?:<br\s*\/?>|\s)+$/i, '').trim();
       }
     };

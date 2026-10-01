@@ -116,7 +116,7 @@ Satu halaman dengan tab teks sederhana (Ujian, Soal, Hasil) dan tombol "Keluar" 
 
 **Editor soal** (modal lebar, tidak tertutup jika klik di luar):
 - Baris atas: Tipe soal, Bobot.
-- "Isi soal": tiga kartu bagian. Tiap kartu: pegangan seret, judul "Bagian 1/2/3", pilihan Teks / Gambar / Kosong, tombol naik dan turun. Isi teks = editor dengan toolbar: **B**, *I*, U, subskrip, superskrip, daftar, hapus format, "∑ Rumus". Isi gambar = kolom URL + tombol "Unggah" + pratinjau.
+- "Isi soal": tiga kartu bagian. Tiap kartu: pegangan seret, judul "Bagian 1/2/3", pilihan Teks / Gambar / Kosong, tombol naik dan turun. Isi teks = editor dengan toolbar: **B**, *I*, U, subskrip, superskrip, rata kiri/tengah/kanan (berlaku pada teks yang diblok atau baris tempat kursor berada; tombol perataan yang aktif disorot), daftar, hapus format, "∑ Rumus". Editor mini untuk opsi jawaban tidak punya tombol perataan. Isi gambar = kolom URL + tombol "Unggah" + pratinjau.
 - Panel rumus (muncul di bawah toolbar): kolom LaTeX, tombol cepat (pecahan, akar, pangkat, indeks, ×, ÷, ±, ≤, ≥, ≠, ≈, π, Δ, °, panah reaksi, `\ce{}`, satuan), pilihan "baris sendiri", pratinjau langsung (KaTeX), tombol "Sisipkan". Rumus masuk ke teks sebagai `$...$`.
 - "Pilihan jawaban": tiap opsi = editor mini + pilihan kunci (radio untuk pg, centang untuk pgk) + hapus. Tombol "Tambah opsi" (maks. 8). Isian: satu kolom "Jawaban benar" dengan pemisah `|`.
 - Tombol "Pratinjau" menampilkan soal persis seperti yang dilihat siswa. Tombol "Simpan".
