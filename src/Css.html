@@ -500,7 +500,7 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
 }
 
 /* ---- panel admin: sidebar kiri, tabel padat. Ukuran dasar 13 px agar banyak data muat di layar. ---- */
-html.adm-aktif { font-size: 13px; --biru: #1f8a4c; --biru-tua: #14693a; --biru-muda: #e4f3e9; --latar: #f3f7f3; --garis: #e0e9e2; --teks: #14231c; --teks-redup: #587064; --radius: 10px; --radius-kartu: 16px; }
+html.adm-aktif { --tk: 30px; font-size: 13px; --biru: #1f8a4c; --biru-tua: #14693a; --biru-muda: #e4f3e9; --latar: #f3f7f3; --garis: #e0e9e2; --teks: #14231c; --teks-redup: #587064; --radius: 10px; --radius-kartu: 16px; }
 html.adm-aktif body { background: var(--latar); }
 body[data-halaman="admin"] .header { display: none; }
 body[data-halaman="admin"] #app { max-width: none; padding: 0; }
@@ -525,13 +525,13 @@ body[data-halaman="admin"] #app { max-width: none; padding: 0; }
 .adm-atas h1 { margin: 0; font-size: 1.3rem; letter-spacing: -.015em; }
 .adm-atas .redup { font-size: .9rem; }
 .adm-atas .btn { margin-left: auto; }
-.adm-isi .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 30px; padding: 0 11px; font-size: .92rem; gap: 6px; }
+.adm-isi .btn { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; height: var(--tk); min-height: var(--tk); line-height: 1; padding: 0 12px; font-size: .92rem; gap: 6px; }
 .adm-alat { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
-.adm-seg { display: flex; max-width: 100%; overflow-x: auto; padding: 2px; background: var(--putih); border: 1px solid var(--garis); border-radius: 10px; }
-.adm-seg button { white-space: nowrap; font: inherit; font-size: .88rem; font-weight: 600; min-height: 24px; padding: 0 10px; color: var(--teks-redup); background: none; border: 0; border-radius: 8px; cursor: pointer; }
+.adm-seg { display: flex; align-items: stretch; box-sizing: border-box; height: var(--tk); max-width: 100%; overflow-x: auto; padding: 2px; background: var(--putih); border: 1px solid var(--garis); border-radius: 10px; }
+.adm-seg button { display: inline-flex; align-items: center; white-space: nowrap; font: inherit; line-height: 1; font-size: .88rem; font-weight: 600; min-height: 0; padding: 0 10px; color: var(--teks-redup); background: none; border: 0; border-radius: 8px; cursor: pointer; }
 .adm-seg button small { margin-left: 4px; opacity: .6; font-size: inherit; }
 .adm-seg button[aria-pressed="true"] { background: var(--teks); color: #fff; }
-.adm-cari { margin-left: auto; display: flex; align-items: center; gap: 7px; min-height: 30px; width: 250px; max-width: 100%; padding: 0 10px; background: var(--putih); border: 1px solid var(--garis); border-radius: 10px; color: var(--teks-redup); }
+.adm-cari { margin-left: auto; display: flex; align-items: center; gap: 7px; box-sizing: border-box; height: var(--tk); min-height: var(--tk); width: 250px; max-width: 100%; padding: 0 10px; background: var(--putih); border: 1px solid var(--garis); border-radius: 10px; color: var(--teks-redup); }
 .adm-cari input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: .92rem; color: var(--teks); }
 .adm-cari:focus-within { border-color: var(--biru); box-shadow: 0 0 0 3px rgba(31, 138, 76, .16); }
 .adm-tabel { background: var(--putih); border: 1px solid var(--garis); border-radius: 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(20, 70, 40, .04); }
@@ -607,14 +607,15 @@ html.adm-aktif .modal-kepala { padding: 13px 18px 0; }
   .adm-cek { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (pointer: coarse) {
-  .adm-ikon { width: 40px; height: 40px; }
-  .adm-isi .btn, .dd-tombol, .adm-cari, .adm-seg button, .adm-nav-btn { min-height: 40px; }
-  .adm-token { min-height: 34px; }
+  html.adm-aktif { --tk: 34px; }
+  .adm-ikon { width: 36px; height: 36px; }
+  .adm-nav-btn { min-height: 38px; }
+  .adm-token { min-height: 32px; }
 }
 
 /* dropdown dan pemilih tanggal buatan sendiri (menggantikan tampilan bawaan perangkat) */
 .dd { position: relative; min-width: 0; }
-.dd-tombol { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 30px; padding: 0 9px; font: inherit; font-size: .92rem; font-weight: 600; text-align: left; color: var(--teks); background: var(--putih); border: 1px solid #cfdcd3; border-radius: 10px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.dd-tombol { display: flex; align-items: center; justify-content: space-between; gap: 8px; box-sizing: border-box; width: 100%; height: var(--tk); min-height: var(--tk); line-height: 1; padding: 0 9px; font: inherit; font-size: .92rem; font-weight: 600; text-align: left; color: var(--teks); background: var(--putih); border: 1px solid #cfdcd3; border-radius: 10px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
 .dd-tombol:hover { border-color: #a9c1b2; }
 .dd-tombol[aria-expanded="true"], .dd-tombol:focus-visible { border-color: var(--biru); box-shadow: 0 0 0 3px rgba(31, 138, 76, .16); outline: none; }
 .dd-tombol svg { flex: none; color: var(--teks-redup); }
@@ -658,7 +659,7 @@ html.adm-aktif .modal-kepala { padding: 13px 18px 0; }
 .dd-teks-btn { padding: 0; font: inherit; font-size: .88rem; font-weight: 600; color: var(--teks-redup); background: none; border: 0; cursor: pointer; }
 .dd-teks-btn:hover { color: var(--teks); }
 html.adm-aktif .modal { border-radius: 18px; }
-@media (pointer: coarse) { .dd-sel { height: 40px; } .dd-butir { min-height: 40px; } .dd-nav { width: 36px; height: 36px; } .dd-wkt { height: 36px; } }
+@media (pointer: coarse) { .dd-sel { height: 36px; } .dd-butir { min-height: 36px; } .dd-nav { width: 34px; height: 34px; } .dd-wkt { height: 34px; } }
 
 /* toolbar editor: ikon dan simbol, dikelompokkan */
 .editor-tb { align-items: center; gap: 2px; }
@@ -701,4 +702,25 @@ html.adm-aktif .modal { border-radius: 18px; }
   .adm-sopsi, .adm-sbobot, .adm-kunci, .adm-sgambar { display: none; }
   .adm-soal-isi { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 }
+
+/* admin: tinggi kontrol seragam (tanpa ruang kosong di atas dan bawah teks), checkbox dan radio hijau */
+html.adm-aktif .btn, html.adm-aktif .btn-tb, html.adm-aktif .btn-kecil,
+html.adm-aktif .field input, html.adm-aktif .field select { min-height: var(--tk); }
+html.adm-aktif .field textarea { min-height: 56px; }
+html.adm-aktif .btn-tb { min-width: var(--tk); }
+html.adm-aktif input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+html.adm-aktif input[type="number"]::-webkit-inner-spin-button, html.adm-aktif input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+html.adm-aktif input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; display: none; }
+html.adm-aktif input[type="checkbox"], html.adm-aktif input[type="radio"] {
+  -webkit-appearance: none; appearance: none; display: inline-grid; place-content: center; flex: none; width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0;
+  background: var(--putih); border: 1.5px solid #b9cbbf; border-radius: 6px; cursor: pointer; transition: background-color .15s, border-color .15s, box-shadow .15s;
+}
+html.adm-aktif input[type="radio"] { border-radius: 50%; }
+html.adm-aktif input[type="checkbox"]:hover, html.adm-aktif input[type="radio"]:hover { border-color: var(--biru); }
+html.adm-aktif input[type="checkbox"]:checked { background: var(--biru); border-color: var(--biru); }
+html.adm-aktif input[type="checkbox"]:checked::after { content: ""; width: 9px; height: 5px; margin-top: -1px; border: solid #fff; border-width: 0 0 2px 2px; transform: rotate(-45deg); }
+html.adm-aktif input[type="radio"]:checked { background: var(--biru); border-color: var(--biru); box-shadow: inset 0 0 0 3.5px var(--putih); }
+html.adm-aktif input[type="checkbox"]:focus-visible, html.adm-aktif input[type="radio"]:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(31, 138, 76, .22); }
+html.adm-aktif input[type="radio"]:checked:focus-visible { box-shadow: inset 0 0 0 3.5px var(--putih), 0 0 0 3px rgba(31, 138, 76, .22); }
+html.adm-aktif input[type="checkbox"]:disabled, html.adm-aktif input[type="radio"]:disabled { opacity: .5; cursor: default; }
 </style>

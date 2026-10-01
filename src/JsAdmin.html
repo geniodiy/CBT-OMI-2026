@@ -717,7 +717,8 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
   function bukaImport() {
     var u = daftarUjian.filter(function (x) { return x.id === ujianTerpilih; })[0];
     var kotak = el('textarea', { rows: 10, class: 'import-ta', spellcheck: false, placeholder: 'Tempel JSON soal di sini', 'aria-label': 'JSON soal' });
-    var berkas = el('input', { type: 'file', accept: '.json,application/json,text/plain', 'aria-label': 'Unggah berkas JSON' });
+    var berkas = el('input', { type: 'file', accept: '.json,application/json,text/plain', 'aria-label': 'Unggah berkas JSON', hidden: true });
+    var tbUnggah = el('button', { type: 'button', class: 'btn', onclick: function () { berkas.click(); } }, window.ikon('unggah', 15), 'Unggah berkas');
     var modeTambah = el('input', { type: 'radio', name: 'modeImport', value: 'tambah', checked: true });
     var modeGanti = el('input', { type: 'radio', name: 'modeImport', value: 'ganti' });
     var hasil = el('div', { class: 'import-hasil', 'aria-live': 'polite' });
@@ -774,7 +775,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
         .catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) galat.textContent = e.message; })
         .then(function () { tbPeriksa.disabled = false; });
     } }, 'Periksa');
-    var tbSalin = el('button', { type: 'button', class: 'btn btn-teks', onclick: function () { salinTeks(PROMPT_AI); } }, 'Salin prompt untuk AI');
+    var tbSalin = el('button', { type: 'button', class: 'btn btn-teks', onclick: function () { salinTeks(PROMPT_AI); } }, window.ikon('salin', 15), 'Salin prompt untuk AI');
 
     function jalankan(modal) {
       tbImpor.disabled = true;
@@ -803,7 +804,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
 
     var badan = el('div', null,
       el('p', { class: 'redup' }, 'Ujian: ' + (u ? labelUjian(u) : '')),
-      el('div', { class: 'bar' }, tbSalin, berkas),
+      el('div', { class: 'bar', style: 'justify-content:flex-start' }, tbSalin, tbUnggah, berkas),
       kotak,
       el('div', { class: 'cek-baris' },
         el('label', { class: 'cek' }, modeTambah, el('span', null, 'Tambahkan ke soal yang ada')),
