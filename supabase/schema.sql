@@ -75,7 +75,8 @@ create index if not exists sesi_peserta_idx on sesi(ujian_id, lower(nama), nomor
 -- Hanya dibaca dari server (service_role). Server WAJIB membuang kolom token
 -- sebelum mengirim ke siswa.
 -- -----------------------------------------------------
-create or replace view ujian_ringkas as
+create or replace view ujian_ringkas
+with (security_invoker = true) as
 select
   u.*,
   count(s.id)                                  as jumlah_soal,
