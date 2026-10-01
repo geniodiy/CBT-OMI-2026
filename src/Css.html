@@ -695,9 +695,9 @@ html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem
   .btn, .tab, .btn-tb, .btn-kecil, .tabel .btn, .bagian-kepala select, .field input, .field select, .field textarea { min-height: 44px; }
   .btn-tb { min-width: 44px; }
 }
-/* 16 px mencegah iOS (Safari) memperbesar halaman saat kolom difokus; Android tidak memperbesar sehingga ukuran rancangan dipertahankan */
+/* iPhone: 16 px mencegah Safari memperbesar halaman saat kolom difokus. iPad dan tablet memakai ukuran rancangan (kecil); zoom-saat-fokus dicegah lewat maximum-scale di meta viewport (Code.gs). */
 @supports (-webkit-touch-callout: none) {
-  @media (pointer: coarse) {
+  @media (pointer: coarse) and (max-width: 600px) {
     input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), select, textarea, .editor-area { font-size: 16px !important; }
   }
 }
