@@ -250,14 +250,6 @@ button.kontainer:hover .kontainer-pilih svg { transform: translateX(3px); }
 .fakta div:last-child { border-bottom: 1px solid var(--garis); }
 .fakta dt { color: var(--teks-redup); font-size: .9rem; }
 .fakta dd { margin: 0; font-weight: 600; }
-.cabang { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 30px; border-top: 1px solid var(--garis); }
-.cabang > div { padding: 18px 20px 4px 0; }
-.cabang > div + div { padding-left: 20px; border-left: 1px solid var(--garis); }
-.cabang h3 { margin: 0 0 2px; font-size: 1rem; }
-.cabang .redup { font-size: .85rem; margin: 0 0 10px; }
-.cabang ul, .daftar-centang { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
-.cabang li { padding-left: 16px; position: relative; }
-.cabang li::before { content: ""; position: absolute; left: 0; top: .55em; width: 6px; height: 6px; border-radius: 50%; background: var(--biru); }
 
 .aturan { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr); gap: 40px; align-items: start; }
 .tahap { display: grid; }
@@ -269,11 +261,6 @@ button.kontainer:hover .kontainer-pilih svg { transform: translateX(3px); }
 .urutan { margin: 0; padding: 0; list-style: none; counter-reset: u; display: grid; gap: 10px; }
 .urutan li { counter-increment: u; display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; }
 .urutan li::before { content: counter(u); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: var(--biru-muda); color: var(--biru-tua); font-weight: 700; font-size: .85rem; }
-.tertib { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 34px; }
-.tertib h3 { margin: 0 0 12px; font-size: 1.02rem; }
-.daftar-centang li { display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: start; }
-.daftar-centang svg { margin-top: 2px; color: var(--hijau); }
-.daftar-centang.larangan svg { color: var(--merah); }
 
 .footer-situs { background: var(--putih); border-top: 1px solid var(--garis); padding: 26px 0 30px; }
 .footer-situs .isi { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -288,9 +275,6 @@ html.js .muncul.terlihat { opacity: 1; transform: none; }
 
 @media (max-width: 900px) {
   .hero .isi, .tentang, .aturan { grid-template-columns: 1fr; gap: 24px; }
-  .tertib { grid-template-columns: 1fr; gap: 26px; }
-  .cabang { grid-template-columns: 1fr; border-top: 0; margin-top: 22px; }
-  .cabang > div, .cabang > div + div { padding: 16px 0; border-left: 0; border-top: 1px solid var(--garis); }
   .footer-situs .isi { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
@@ -378,19 +362,11 @@ body[data-halaman="beranda"] .tema { margin: 12px 0 0; padding: 10px 14px; backg
 body[data-halaman="beranda"] .fakta { background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius-kartu); padding: 6px 22px; }
 body[data-halaman="beranda"] .fakta div:first-child { border-top: 0; }
 body[data-halaman="beranda"] .fakta div:last-child { border-bottom: 0; }
-body[data-halaman="beranda"] .cabang { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; border-top: 0; margin-top: 14px; }
-body[data-halaman="beranda"] .cabang > div, body[data-halaman="beranda"] .cabang > div + div { padding: 18px; border: 1px solid var(--garis); border-left: 1px solid var(--garis); border-radius: var(--radius-kartu); background: var(--putih); }
-body[data-halaman="beranda"] .cabang li { padding: 5px 0 5px 16px; border-top: 1px solid var(--garis); }
-body[data-halaman="beranda"] .cabang li::before { top: 1.05em; }
-body[data-halaman="beranda"] .cabang ul { gap: 0; }
 body[data-halaman="beranda"] .aturan > div { }
 body[data-halaman="beranda"] .tahap, body[data-halaman="beranda"] .urutan { background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius-kartu); padding: 6px 20px; }
 body[data-halaman="beranda"] .urutan { padding: 18px 20px; gap: 12px; }
 body[data-halaman="beranda"] .tahap-baris:first-child { border-top: 0; }
 body[data-halaman="beranda"] .tahap-baris:last-child { border-bottom: 0; }
-body[data-halaman="beranda"] .tertib > div { background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius-kartu); padding: 18px 22px; }
-body[data-halaman="beranda"] .daftar-centang { gap: 0; }
-body[data-halaman="beranda"] .daftar-centang li { padding: 7px 0; border-top: 1px solid var(--garis); }
 
 /* footer: kotak putih dengan secuil kuning (hijau dan kuning ala madrasah) */
 body[data-halaman="beranda"] .footer-situs { position: relative; margin-top: 56px; background: var(--putih); border-top: 1px solid var(--garis); padding: 26px 0 30px; }
@@ -398,8 +374,6 @@ body[data-halaman="beranda"] .footer-situs::before { content: ""; position: abso
 body[data-halaman="beranda"] .footer-situs a { border-bottom: 2px solid var(--kuning); }
 @media (max-width: 900px) {
   .langkah { grid-template-columns: 1fr; gap: 14px; }
-  body[data-halaman="beranda"] .cabang { grid-template-columns: 1fr; }
-  body[data-halaman="beranda"] .cabang > div, body[data-halaman="beranda"] .cabang > div + div { padding: 16px 18px; }
 }
 @media (max-width: 600px) {
   body[data-halaman="beranda"] .hero { padding: 46px 0 96px; }

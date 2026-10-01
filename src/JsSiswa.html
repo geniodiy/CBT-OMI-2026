@@ -184,25 +184,12 @@
         el('dl', { class: 'fakta' },
           [['Penyelenggara', 'Ditjen Pendidikan Islam, Kementerian Agama'], ['Dasar', 'Keputusan Dirjen Pendidikan Islam Nomor 6843 Tahun 2026'], ['Bidang', 'Sains dan Riset'], ['Peserta sains', 'Siswa kelas V–VI, VII–IX, dan X–XII, satu bidang per peserta'], ['Tahap', 'Satuan pendidikan, kabupaten/kota, provinsi, nasional']].map(function (r) {
             return el('div', null, el('dt', null, r[0]), el('dd', null, r[1]));
-          }))),
-      el('div', { class: 'cabang' },
-        [['MI/SD/sederajat', 'Kelas V–VI', ['Matematika Terintegrasi', 'IPAS Terintegrasi']],
-         ['MTs/SMP/sederajat', 'Kelas VII–IX', ['Matematika Terintegrasi', 'IPA Terintegrasi', 'IPS Terintegrasi']],
-         ['MA/SMA/sederajat', 'Kelas X–XII', ['Matematika Terintegrasi', 'Biologi Terintegrasi', 'Fisika Terintegrasi', 'Kimia Terintegrasi', 'Ekonomi Terintegrasi', 'Geografi Terintegrasi']]].map(function (c) {
-          return el('div', null, el('h3', null, c[0]), el('p', { class: 'redup' }, c[1]), el('ul', null, c[2].map(function (x) { return el('li', null, x); })));
-        }))));
+          })))));
 
     // aturan dan penilaian
     var tahap = [['Kabupaten/Kota', '25 soal pilihan ganda', '7–8 September 2026'],
       ['Provinsi', '20 pilihan ganda dan 5 pilihan ganda kompleks', '5–6 Oktober 2026'],
       ['Nasional', '10 isian singkat dan 5 esai', '10–11 November 2026']];
-    var siap = ['Hadir 30 menit sebelum pelaksanaan dimulai.', 'Membawa kartu peserta OMI.', 'Berpakaian seragam madrasah dengan rapi.', 'Menyiapkan alat tulis sendiri: ballpoint, pensil, kertas polos, penghapus.'];
-    var larang = ['Digantikan oleh orang lain.', 'Menerima bantuan dari orang lain.', 'Keluar ruangan tanpa izin pengawas.', 'Memakai alat bantu seperti alat komunikasi dan kalkulator.', 'Membawa buku, kamus, catatan, atau tabel.'];
-    function daftarIkon(items, ikonNama, kelas) {
-      return el('ul', { class: 'daftar-centang' + (kelas ? ' ' + kelas : '') }, items.map(function (t) {
-        return el('li', null, window.ikon(ikonNama, 16), el('span', null, t));
-      }));
-    }
     var aturan = el('section', { class: 'pita muncul', id: 'aturan' }, el('div', { class: 'isi' },
       el('div', { class: 'aturan' },
         el('div', null,
@@ -210,17 +197,14 @@
           el('div', { class: 'tahap' }, tahap.map(function (t) {
             return el('div', { class: 'tahap-baris' }, el('strong', null, t[0]), el('span', null, t[1]), el('span', { class: 'tgl' }, t[2]));
           })),
-          el('p', { class: 'catatan-kecil' }, 'Simulasi ini memakai pilihan ganda, pilihan ganda kompleks, dan isian singkat. Durasi pengerjaan 120 menit untuk semua jenjang.')),
+          el('p', { class: 'catatan-kecil' }, 'Simulasi ini memakai pilihan ganda, pilihan ganda kompleks, dan isian singkat.')),
         el('div', null,
           el('div', { class: 'judul-bagian' }, el('h2', null, 'Penilaian')),
           el('ol', { class: 'urutan' }, [
             'Nilai ditentukan dari jawaban benar. Soal kosong tidak dihitung salah dan jawaban salah tidak mengurangi nilai.',
             'Bila nilai sama, peringkat ditentukan oleh jumlah benar terbanyak.',
             'Berikutnya jumlah salah tersedikit.',
-            'Terakhir waktu penyelesaian tercepat.'].map(function (t) { return el('li', null, el('span', null, t)); })))),
-      el('div', { class: 'tertib' },
-        el('div', null, el('h3', null, 'Yang perlu disiapkan peserta'), daftarIkon(siap, 'centang')),
-        el('div', null, el('h3', null, 'Larangan bagi peserta'), daftarIkon(larang, 'silang', 'larangan')))));
+            'Terakhir waktu penyelesaian tercepat.'].map(function (t) { return el('li', null, el('span', null, t)); }))))));
 
     // footer
     var logoFooter = el('div', { class: 'footer-logo' });

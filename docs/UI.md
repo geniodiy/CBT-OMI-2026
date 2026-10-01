@@ -72,7 +72,7 @@ MTs
 2. Hero berfoto: foto dibaca dari `hero.jpg` di bucket Storage `aset` (sama dengan logo OMI); bila berkas tidak ada, tampil hijau polos. Lapisan hijau tua rata (bukan gradien) menutup foto agar teks terbaca. Kuning hanya titik kecil di label "Try Out OMI 2026".
 3. Kartu tiga langkah (Pilih ujian, Isi data dan token, Kerjakan dan lihat hasil) menempel di perbatasan hero.
 4. Pilih ujian: filter jenjang berbentuk segmen; kartu paket berisi ikon mapel, nama, jenjang, mapel, sesi, chip jumlah soal per tipe, durasi, dan "Mulai ujian".
-5. Apa itu OMI, kartu jenjang, bentuk tes dan jadwal, penilaian, hal yang disiapkan dan larangan, semuanya kartu putih bergaris tipis.
+5. Di bawah Pilih ujian hanya tiga bagian: Apa itu OMI, Bentuk tes dan jadwal, dan Penilaian (kartu putih bergaris tipis). Kartu jenjang, daftar yang disiapkan, dan larangan sudah dihapus.
 6. Footer: kotak putih berisi logo dan catatan simulasi, dengan aksen kuning kecil di tepi atas dan garis bawah tautan resmi.
 Info "120 menit" tidak lagi tampil di hero.
 
