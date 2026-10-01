@@ -270,7 +270,7 @@
       (soal.opsi || []).forEach(function (op, n) {
         var teks = el('div', { class: 'opsi-teks' });
         teks.innerHTML = window.clean(op.h);
-        kartu.appendChild(el('div', { class: 'opsi' },
+        kartu.appendChild(el('div', { class: 'opsi', style: '--n:' + n },
           el('span', { class: 'opsi-huruf ' + (soal.tipe === 'pg' ? 'bulat' : 'kotak') }, HURUF.charAt(n)), teks));
       });
     }

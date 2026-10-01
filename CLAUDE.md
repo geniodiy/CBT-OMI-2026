@@ -82,7 +82,7 @@ Secret disimpan di **Script Properties** (Project Settings di editor Apps Script
 
 ## Aturan tampilan (ringkas, rinci di `docs/UI.md`)
 
-Simpel dan tegas, bukan tampilan "template AI". **Dilarang:** gradien, glassmorphism, bayangan tebal, kartu bertumpuk di dalam kartu, ikon dekoratif berlebihan, emoji di antarmuka, animasi masuk di setiap bagian, label huruf kapital semua, tanda panah "→" di tombol. Warna diambil dari logo (biru OMI, merah kecil, hijau Kemenag).
+Simpel dan tegas, bukan tampilan "template AI". **Pengecualian:** halaman ujian meniru CBT OMI asli (kaca tembus pandang, bayangan lembut, ikon garis, label Title Case, animasi halus), lihat bagian 9 `docs/UI.md`. Di luar halaman ujian berlaku **Dilarang:** gradien, glassmorphism, bayangan tebal, kartu bertumpuk di dalam kartu, ikon dekoratif berlebihan, emoji di antarmuka, animasi masuk di setiap bagian, label huruf kapital semua, tanda panah "→" di tombol. Warna diambil dari logo (biru OMI, merah kecil, hijau Kemenag).
 
 ## Cara bekerja
 

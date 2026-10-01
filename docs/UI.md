@@ -135,3 +135,23 @@ Kontras teks ≥ 4,5:1. Semua kontrol bisa dicapai dengan keyboard, fokus `outli
 ## 8. Dilarang (ulang)
 
 Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emoji. Label huruf kapital semua. Tanda "→" di tombol. Animasi masuk di tiap bagian. Hiasan angka "01/02/03" selain nomor soal yang memang berurutan. Kata pemasaran di antarmuka.
+
+## 9. Halaman ujian meniru CBT OMI (pengecualian yang disengaja)
+
+Tujuan situs adalah simulasi, jadi **halaman ujian** (dan kartu soal pada pratinjau admin) meniru tampilan CBT OMI asli (`referensi/halaman-ujian-omi.png`). Halaman lain (beranda, hasil, admin) tetap mengikuti aturan minimalis di atas. Pengecualian di halaman ujian:
+
+- **Latar** pastel lembut dengan semburat warna (`--latar-ujian`, satu-satunya gradien latar). Avatar peserta boleh bergradien halus.
+- **Permukaan kaca**: putih tembus pandang (`--kaca`), tepi putih 1 px, sudut besar 22 px, bayangan lembut bernuansa biru (`--bayangan-lembut`, `--bayangan-angkat`). Tanpa `backdrop-filter` (latar halus membuat blur tidak terlihat, dan hemat untuk Chromebook). Bayangan hitam pekat tetap dilarang.
+- **Label Title Case** seperti aslinya: Sisa Waktu Ujian, Kosongkan Jawaban, Selesaikan Ujian, Daftar Soal, Terjawab, Ruang Ujian, Pusat Bantuan. Nama peserta ditulis kapital.
+- **Ikon garis tipis** (SVG, `ikon()` di `JsCommon.html`) yang selalu disertai teks: jam, segarkan, silang, henti, buku, bantuan, panah, daftar, centang.
+- **Tata letak** tiga kolom: sidebar peserta (menu Ruang Ujian dan Pusat Bantuan di bawah), kartu soal dengan garis kemajuan tipis di tepi atas, dan panel kanan (timer biru besar, Refresh, Kosongkan Jawaban, Selesaikan Ujian merah, Daftar Soal dengan penghitung Terjawab dan grid nomor).
+- **HP (< 900 px)**: sidebar hilang. Panel menjadi bilah atas yang menempel (timer dan tombol Daftar Soal). Daftar Soal, Refresh, Kosongkan Jawaban, dan Selesaikan Ujian berada di laci geser dari bawah (ditutup dengan tombol Escape, ketuk latar, atau memilih nomor). Tombol Sebelumnya dan Berikutnya menempel di bawah layar dengan penunjuk posisi dan area aman perangkat.
+
+**Gerak** (hanya `transform` dan `opacity`, kurva pegas `--ease-pegas` = `cubic-bezier(.32,.72,0,1)`):
+- panel masuk bertahap saat ujian dimulai;
+- soal bergeser masuk dari kanan (maju) atau kiri (mundur), opsi masuk berurutan;
+- opsi terangkat saat disorot, mengecil sedikit saat ditekan, huruf terisi dan tanda centang muncul saat dipilih;
+- nomor di grid terangkat saat disorot dan memantul sekali saat baru terjawab;
+- garis kemajuan memanjang sesuai jumlah terjawab;
+- timer merah berdenyut pelan saat sisa ≤ 5 menit; modal dan toast muncul halus; tombol mengecil sedikit saat ditekan.
+- `prefers-reduced-motion` mematikan semua animasi. Jangan menaruh `animation-fill-mode: both` pada induk elemen `position: fixed` (laci, bilah bawah): sisa `transform` akan membuat elemen itu menempel ke induknya.

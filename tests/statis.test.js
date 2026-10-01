@@ -41,11 +41,18 @@ for (const f of html) {
 
 // docs/UI.md "Dilarang": gradien, kaca/blur, huruf kapital semua, panah di tombol, emoji.
 const css = baca('Css.html');
-cek('tanpa gradien', !/gradient/.test(css));
+// Pengecualian halaman ujian (docs/UI.md bagian 9): gradien hanya untuk latar ujian dan avatar.
+let dalamLatar = false;
+for (const baris of css.split('\n')) {
+  if (/--latar-ujian:/.test(baris)) dalamLatar = true;
+  if (/gradient/.test(baris)) cek('gradien hanya latar ujian/avatar', dalamLatar || /--latar-ujian|\.u-avatar/.test(baris), baris.trim());
+  if (dalamLatar && /;\s*$/.test(baris)) dalamLatar = false;
+  if (/box-shadow/.test(baris) || /--bayangan/.test(baris)) cek('bayangan bukan hitam pekat', !/rgba\(\s*0\s*,\s*0\s*,\s*0|#000\b/.test(baris), baris.trim());
+  if (/text-transform:\s*uppercase/.test(baris)) cek('kapital semua hanya nama peserta', /\.u-nama/.test(baris), baris.trim());
+}
 cek('tanpa blur/kaca', !/blur\(|backdrop-filter/.test(css));
-cek('tanpa huruf kapital semua', !/text-transform:\s*uppercase/.test(css));
-const bayangan = css.match(/box-shadow:[^;]+;/g) || [];
-cek('bayangan hanya modal dan fokus', bayangan.length <= 2, bayangan.join(' | '));
+cek('gerak menghormati reduced-motion', /prefers-reduced-motion: reduce[^}]*animation: none/.test(css));
+cek('tidak ada animation-fill-mode both pada panel/main ujian', !/\.ujian > \*[^}]*\bboth\b/.test(css));
 for (const f of [...gs, ...html]) {
   const bad = baca(f).match(/[\u{1F300}-\u{1FAFF}\u{2190}-\u{21FF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}]/u);
   cek('tanpa emoji atau panah di ' + f, !bad, bad && bad[0]);

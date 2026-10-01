@@ -120,6 +120,15 @@ Hasil perapian: kontras `--biru` diperbaiki (4,31 menjadi 4,66 dengan teks putih
 
 Status uji: logika jadwal, duplikat, dan batas tutup lulus uji Node (`node tests/jalankan.js`); formulir, status tabel, duplikat, dan Reset lulus uji browser. Belum dicentang: uji di Apps Script asli.
 
+## Penyempurnaan tampilan halaman ujian (meniru CBT OMI asli)
+
+- [x] Latar pastel, permukaan kaca, bayangan lembut, ikon garis, label Title Case, avatar peserta, menu Ruang Ujian dan Pusat Bantuan (modal bantuan), garis kemajuan di kartu soal.
+- [x] Animasi: panel masuk bertahap, soal bergeser maju/mundur, opsi masuk berurutan dan bereaksi saat disorot, ditekan, dan dipilih, nomor memantul saat baru terjawab, timer berdenyut saat sisa waktu ≤ 5 menit, modal dan toast halus. Mati otomatis bila perangkat meminta `prefers-reduced-motion`.
+- [x] HP: bilah atas menempel (timer dan Daftar Soal), laci geser dari bawah untuk Daftar Soal dan tombol aksi, tombol Sebelumnya/Berikutnya menempel di bawah dengan area aman perangkat, tanpa scroll ke samping di 390 px.
+- [x] `docs/UI.md` bagian 9 dan `CLAUDE.md` memuat pengecualian ini; `tests/statis.test.js` membatasi gradien, bayangan, kapital, dan blur.
+
+Status uji: alur lengkap (jawab pg/pgk/isian, pindah soal, kosongkan, bantuan, Refresh, selesai, laci HP, Escape, ketuk latar, tombol bawah) lulus uji browser desktop 1440 px dan HP 390 px. Belum dicentang: pemeriksaan di perangkat sungguhan (iPad Safari, Chrome Android, Chromebook) dan kecepatan animasi di laptop sekolah.
+
 ## Tahap 2 (belum)
 
 Pembahasan soal, analisis per soal, skor parsial pgk, ganti sandi admin dari web, soal esai, deteksi pindah tab, webcam/mikrofon, optimasi kuota (cache soal, tulis langsung ke Supabase).

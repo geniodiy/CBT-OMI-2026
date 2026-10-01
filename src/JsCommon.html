@@ -200,10 +200,40 @@
     return e;
   };
 
+  var IKON = {
+    jam: [['circle', { cx: 12, cy: 12, r: 9 }], ['path', { d: 'M12 7v5l3 2' }]],
+    segarkan: [['path', { d: 'M20.5 12a8.5 8.5 0 1 1-2.6-6.1' }], ['path', { d: 'M20.5 4v5h-5' }]],
+    silang: [['path', { d: 'M7 7l10 10M17 7L7 17' }]],
+    henti: [['rect', { x: 6, y: 6, width: 12, height: 12, rx: 2.5 }]],
+    buku: [['path', { d: 'M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z' }], ['path', { d: 'M5 17a3 3 0 0 1 3-3h10' }]],
+    bantuan: [['circle', { cx: 12, cy: 12, r: 9 }], ['path', { d: 'M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6' }], ['path', { d: 'M12 16.8h.01' }]],
+    kiri: [['path', { d: 'M14.5 6l-6 6 6 6' }]],
+    kanan: [['path', { d: 'M9.5 6l6 6-6 6' }]],
+    daftar: [['path', { d: 'M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01' }]],
+    centang: [['path', { d: 'M5 12.5l4.5 4.5L19 7.5' }]]
+  };
+
+  /** Ikon garis tipis (SVG) yang mengikuti warna teks. Semua aria-hidden karena selalu disertai teks. */
+  window.ikon = function (nama, ukuran) {
+    var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '1.7');
+    svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('width', ukuran || 18); svg.setAttribute('height', ukuran || 18);
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    (IKON[nama] || []).forEach(function (b) {
+      var e = document.createElementNS(ns, b[0]);
+      Object.keys(b[1]).forEach(function (k) { e.setAttribute(k, b[1][k]); });
+      svg.appendChild(e);
+    });
+    return svg;
+  };
+
   window.showView = function (nama) {
     document.querySelectorAll('[data-view]').forEach(function (s) { s.hidden = s.getAttribute('data-view') !== nama; });
     var btnAdmin = document.getElementById('btnAdmin');
     if (btnAdmin) btnAdmin.hidden = nama === 'ujian';
+    document.body.classList.toggle('mode-ujian', nama === 'ujian');
     window.scrollTo(0, 0);
   };
 

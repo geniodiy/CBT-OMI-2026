@@ -204,7 +204,7 @@
     };
     simpanSesiLokal();
     bangunLayar();
-    tampilSoal();
+    tampilSoal('maju');
     mulaiTimer();
     pengatur.sinkron = setInterval(function () { sinkron(false); }, INTERVAL_SINKRON_MS);
     window.addEventListener('beforeunload', peringatTutup);
@@ -228,6 +228,7 @@
     pengatur.timer = pengatur.sinkron = null;
     window.removeEventListener('beforeunload', peringatTutup);
     document.removeEventListener('visibilitychange', tick);
+    document.removeEventListener('keydown', escLaci);
   }
 
   function adaJawaban(id) {
@@ -245,53 +246,98 @@
     var p = U.peserta, e = U.el;
     window.showView('ujian');
     s.textContent = '';
+    var inisial = (p.nama || '?').trim().split(/\s+/).slice(0, 2).map(function (x) { return x.charAt(0); }).join('').toUpperCase();
 
-    var side = el('aside', { class: 'u-side' },
-      el('div', { class: 'u-avatar', 'aria-hidden': 'true' }, (p.nama || '?').trim().charAt(0).toUpperCase()),
+    var side = el('aside', { class: 'u-side', 'aria-label': 'Data peserta' },
+      el('div', { class: 'u-avatar', 'aria-hidden': 'true' }, inisial),
       el('strong', { class: 'u-nama' }, p.nama),
-      p.nomor ? el('div', { class: 'redup' }, 'No. peserta ' + p.nomor) : null,
+      p.nomor ? el('div', { class: 'redup' }, p.nomor) : null,
       el('div', { class: 'u-lencana' }, el('span', { class: 'lencana' }, U.ujian.jenjang + ' ' + U.ujian.mapel),
-        U.ujian.sesi ? el('span', { class: 'lencana' }, U.ujian.sesi) : null));
+        U.ujian.sesi ? el('span', { class: 'lencana' }, U.ujian.sesi) : null),
+      el('nav', { class: 'u-menu', 'aria-label': 'Menu' },
+        el('button', { type: 'button', class: 'u-menu-item aktif', 'aria-current': 'page' }, window.ikon('buku', 20), 'Ruang Ujian'),
+        el('button', { type: 'button', class: 'u-menu-item', onclick: pusatBantuan }, window.ikon('bantuan', 20), 'Pusat Bantuan')));
 
-    e.kartu = el('div', { class: 'kartu-soal' });
-    e.sebelumnya = el('button', { type: 'button', class: 'btn', onclick: function () { pindah(U.idx - 1); } }, 'Sebelumnya');
-    e.berikutnya = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { pindah(U.idx + 1); } }, 'Berikutnya');
-    var main = el('section', { class: 'u-main' }, e.kartu, el('div', { class: 'u-nav' }, e.sebelumnya, e.berikutnya));
+    e.progres = el('i');
+    e.isi = el('div', { class: 'kartu-isi' });
+    e.kartu = el('div', { class: 'kartu-soal' }, el('div', { class: 'u-progres', 'aria-hidden': 'true' }, e.progres), e.isi);
+    e.sebelumnya = el('button', { type: 'button', class: 'btn', onclick: function () { pindah(U.idx - 1); } }, window.ikon('kiri'), 'Sebelumnya');
+    e.berikutnya = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { pindah(U.idx + 1); } }, 'Berikutnya', window.ikon('kanan'));
+    e.posisi = el('span', { class: 'u-posisi' });
+    var main = el('section', { class: 'u-main', 'aria-label': 'Soal' }, e.kartu, el('div', { class: 'u-nav' }, e.sebelumnya, e.posisi, e.berikutnya));
 
     e.timer = el('div', { class: 'u-timer', role: 'timer' }, '--:--:--');
     e.refresh = el('button', { type: 'button', class: 'btn', onclick: function () {
       e.refresh.disabled = true;
       sinkron(true).then(function () { e.refresh.disabled = false; });
-    } }, 'Refresh');
+    } }, window.ikon('segarkan'), 'Refresh');
     e.hitung = el('span', { class: 'redup' });
     e.grid = el('div', { class: 'u-grid' }, U.soal.map(function (soal, i) {
-      return el('button', { type: 'button', class: 'sel', onclick: function () { pindah(i); } }, (i < 9 ? '0' : '') + (i + 1));
+      return el('button', { type: 'button', class: 'sel', onclick: function () { pindah(i); tutupLaci(); } }, (i < 9 ? '0' : '') + (i + 1));
     }));
-    e.laci = el('div', { class: 'u-laci tutup' }, e.grid);
-    var tombolLaci = el('button', { type: 'button', class: 'btn u-laci-tombol', 'aria-expanded': 'false', onclick: function () {
-      var buka = e.laci.classList.toggle('tutup') === false;
-      tombolLaci.setAttribute('aria-expanded', buka ? 'true' : 'false');
-    } }, 'Daftar soal');
-    var panel = el('aside', { class: 'u-panel' },
-      el('div', { class: 'redup' }, 'Sisa waktu ujian'), e.timer,
+    e.laci = el('div', { class: 'u-laci', id: 'laciSoal' },
       el('div', { class: 'u-aksi' }, e.refresh,
-        el('button', { type: 'button', class: 'btn', onclick: kosongkanJawaban }, 'Kosongkan jawaban'),
-        el('button', { type: 'button', class: 'btn btn-bahaya', onclick: konfirmasiSelesai }, 'Selesaikan ujian')),
-      el('div', { class: 'u-daftar-kepala' }, el('strong', null, 'Daftar soal'), e.hitung),
-      tombolLaci, e.laci);
+        el('button', { type: 'button', class: 'btn', onclick: function () { tutupLaci(); kosongkanJawaban(); } }, window.ikon('silang'), 'Kosongkan Jawaban'),
+        el('button', { type: 'button', class: 'btn btn-bahaya', onclick: function () { tutupLaci(); konfirmasiSelesai(); } }, window.ikon('henti'), 'Selesaikan Ujian')),
+      el('div', { class: 'u-daftar-kepala' }, el('strong', null, 'Daftar Soal'), e.hitung),
+      e.grid);
+    e.lapis = el('div', { class: 'u-lapis', onclick: tutupLaci });
+    e.tombolLaci = el('button', { type: 'button', class: 'btn u-laci-tombol', 'aria-expanded': 'false', 'aria-controls': 'laciSoal', onclick: function () {
+      if (e.laci.classList.contains('buka')) tutupLaci(); else bukaLaci();
+    } }, window.ikon('daftar'), 'Daftar Soal');
+    var panel = el('aside', { class: 'u-panel', 'aria-label': 'Waktu dan daftar soal' },
+      el('div', { class: 'u-waktu' }, el('div', { class: 'u-waktu-label' }, window.ikon('jam'), el('span', null, 'Sisa Waktu', el('span', { class: 'u-sembunyi-hp' }, ' Ujian'))), e.timer),
+      e.tombolLaci, e.laci, e.lapis);
 
     s.appendChild(el('div', { class: 'ujian' }, side, main, panel));
+    document.addEventListener('keydown', escLaci);
+  }
+
+  function bukaLaci() {
+    U.el.laci.classList.add('buka'); U.el.lapis.classList.add('buka');
+    U.el.tombolLaci.setAttribute('aria-expanded', 'true');
+  }
+  function tutupLaci() {
+    if (!U || !U.el.laci) return;
+    U.el.laci.classList.remove('buka'); U.el.lapis.classList.remove('buka');
+    U.el.tombolLaci.setAttribute('aria-expanded', 'false');
+  }
+  function escLaci(e) { if (e.key === 'Escape') tutupLaci(); }
+
+  function pusatBantuan() {
+    var butir = [
+      'Pilih jawaban dengan menekan opsi. Pada soal pilihan ganda kompleks, Anda boleh memilih lebih dari satu.',
+      'Pada soal isian, ketik jawaban singkat Anda pada kolom yang tersedia.',
+      'Gunakan Sebelumnya dan Berikutnya, atau pilih nomor pada Daftar Soal, untuk berpindah soal.',
+      'Kosongkan Jawaban menghapus jawaban pada soal yang sedang dibuka.',
+      'Refresh menyinkronkan jam dan menyimpan jawaban Anda ke server. Jawaban juga tersimpan otomatis di perangkat ini.',
+      'Bila halaman tertutup, buka kembali dan masukkan data yang sama untuk melanjutkan. Waktu tetap berjalan.',
+      'Tekan Selesaikan Ujian bila sudah selesai. Jawaban terkirim otomatis saat waktu habis.',
+      'Bila ada kendala, hubungi pengawas.'
+    ];
+    window.openModal({
+      judul: 'Pusat Bantuan',
+      isi: el('ul', { class: 'daftar-info' }, butir.map(function (b) { return el('li', null, b); })),
+      tombol: [{ teks: 'Tutup', utama: true }]
+    });
   }
 
   function segarkanGrid() {
     var sel = U.el.grid.children;
     for (var i = 0; i < sel.length; i++) {
       var ada = adaJawaban(U.soal[i].id);
-      sel[i].className = 'sel' + (ada ? ' terjawab' : '') + (i === U.idx ? ' aktif' : '');
+      var baru = ada && !sel[i].classList.contains('terjawab') && U.grid_siap;
+      sel[i].className = 'sel' + (ada ? ' terjawab' : '') + (i === U.idx ? ' aktif' : '') + (baru ? ' baru' : '');
+      if (baru) { (function (x) { setTimeout(function () { x.classList.remove('baru'); }, 600); })(sel[i]); }
       sel[i].setAttribute('aria-label', 'Soal ' + (i + 1) + (ada ? ', terjawab' : ', belum dijawab') + (i === U.idx ? ', sedang dibuka' : ''));
       if (i === U.idx) sel[i].setAttribute('aria-current', 'true'); else sel[i].removeAttribute('aria-current');
     }
-    U.el.hitung.textContent = jumlahTerjawab() + '/' + U.soal.length + ' terjawab';
+    U.grid_siap = true;
+    var n = jumlahTerjawab();
+    U.el.hitung.textContent = n + '/' + U.soal.length + ' Terjawab';
+    U.el.tombolLaci.lastChild.textContent = 'Daftar Soal ' + n + '/' + U.soal.length;
+    U.el.progres.style.transform = 'scaleX(' + (U.soal.length ? n / U.soal.length : 0) + ')';
+    U.el.posisi.textContent = (U.idx + 1) + ' / ' + U.soal.length;
   }
 
   // soal
@@ -326,8 +372,9 @@
     var input = el('input', { type: soal.tipe === 'pg' ? 'radio' : 'checkbox', name: 'opsi-' + soal.id, value: op.k, checked: dipilih });
     var teks = el('div', { class: 'opsi-teks' });
     teks.innerHTML = window.clean(op.h);
-    var label = el('label', { class: 'opsi' + (dipilih ? ' terpilih' : '') }, input,
-      el('span', { class: 'opsi-huruf ' + (soal.tipe === 'pg' ? 'bulat' : 'kotak') }, HURUF.charAt(n)), teks);
+    var label = el('label', { class: 'opsi' + (dipilih ? ' terpilih' : ''), style: '--n:' + n }, input,
+      el('span', { class: 'opsi-huruf ' + (soal.tipe === 'pg' ? 'bulat' : 'kotak') }, HURUF.charAt(n)), teks,
+      el('span', { class: 'opsi-centang' }, window.ikon('centang', 20)));
     input.addEventListener('change', function () {
       var skrg = (U.jawaban[soal.id] || []).slice();
       if (soal.tipe === 'pg') skrg = [op.k];
@@ -341,26 +388,29 @@
     return label;
   }
 
-  function tampilSoal() {
-    var soal = U.soal[U.idx], k = U.el.kartu;
-    k.textContent = '';
+  /** arah: 'maju' atau 'mundur' memicu animasi geser; kosong = perbarui di tempat tanpa animasi. */
+  function tampilSoal(arah) {
+    var soal = U.soal[U.idx];
+    var isi = el('div', { class: 'kartu-isi' + (arah ? '' : ' tenang'), 'data-arah': arah || '' });
     var badan = el('div', { class: 'kartu-badan' });
     badan.innerHTML = window.blokHTML(soal.blok);
     pasangGambar(badan);
-    k.appendChild(el('div', { class: 'kartu-kepala' },
+    isi.appendChild(el('div', { class: 'kartu-kepala' },
       el('strong', null, 'Soal ' + (U.idx + 1) + ' dari ' + U.soal.length),
       el('span', { class: 'lencana' }, LABEL_TIPE[soal.tipe])));
-    k.appendChild(badan);
-    k.appendChild(el('p', { class: 'instruksi' }, INSTRUKSI[soal.tipe]));
+    isi.appendChild(badan);
+    isi.appendChild(el('p', { class: 'instruksi' }, INSTRUKSI[soal.tipe]));
     if (soal.tipe === 'isian') {
       var jawab = U.jawaban[soal.id] || [];
       var input = el('input', { type: 'text', class: 'isian-siswa', value: jawab[0] || '', dir: 'auto', autocomplete: 'off', autocapitalize: 'off', spellcheck: false, 'aria-label': 'Jawaban Anda' });
       input.addEventListener('input', function () { ubahJawaban(soal, [input.value]); });
-      k.appendChild(input);
+      isi.appendChild(input);
     } else {
-      soal.opsi.forEach(function (op, n) { k.appendChild(opsiEl(soal, op, n)); });
+      soal.opsi.forEach(function (op, n) { isi.appendChild(opsiEl(soal, op, n)); });
     }
-    window.mathify(k);
+    window.mathify(isi);
+    U.el.isi.replaceWith(isi);
+    U.el.isi = isi;
     U.el.sebelumnya.disabled = U.idx === 0;
     U.el.berikutnya.disabled = U.idx === U.soal.length - 1;
     segarkanGrid();
@@ -368,11 +418,13 @@
 
   function pindah(i) {
     if (!U || i < 0 || i >= U.soal.length || i === U.idx) return;
+    var arah = i > U.idx ? 'maju' : 'mundur';
     U.idx = i;
     simpanSesiLokal();
-    tampilSoal();
-    var atas = U.el.kartu.getBoundingClientRect().top;
-    if (atas < 0) window.scrollTo(0, window.scrollY + atas - 16);
+    tampilSoal(arah);
+    var batas = window.innerWidth <= 900 ? 84 : 16;
+    var atas = U.el.kartu.getBoundingClientRect().top - batas;
+    if (atas < 0) window.scrollTo({ top: window.scrollY + atas, behavior: 'smooth' });
   }
 
   function kosongkanJawaban() {

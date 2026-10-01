@@ -118,3 +118,4 @@ Header: logo Kemenag dan logo OMI (`assets/`), label "Try Out OMI 2026" dan "CBT
 | PDF | Dibuat di browser, tidak disimpan |
 | Kunci di hasil | Opsi per ujian, default mati; hanya huruf pg/pgk di layar; tidak ada di PDF dan cetak; isian tidak pernah |
 | Upload gambar | Supabase Storage |
+| Tampilan halaman ujian | Meniru CBT OMI asli (kaca, bayangan lembut, ikon, animasi halus, laci geser di HP); halaman lain minimalis |
