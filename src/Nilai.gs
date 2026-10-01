@@ -287,3 +287,25 @@ function ringkasImport_(daftar) {
   });
   return out;
 }
+
+var URUTAN_JENJANG_ = ['mi', 'mts', 'ma'];
+
+/** Urut kontainer beranda: MI, MTs, MA dulu, jenjang lain abjad; lalu mapel; lalu nama. Mengembalikan salinan. */
+function urutKontainer_(daftar) {
+  function peringkat(j) {
+    var i = URUTAN_JENJANG_.indexOf(String(j || '').toLowerCase().trim());
+    return i < 0 ? URUTAN_JENJANG_.length : i;
+  }
+  function banding(a, b) { return String(a || '').localeCompare(String(b || ''), 'id', { sensitivity: 'base' }); }
+  return daftar.slice().sort(function (x, y) {
+    return (peringkat(x.jenjang) - peringkat(y.jenjang)) ||
+      (peringkat(x.jenjang) === URUTAN_JENJANG_.length ? banding(x.jenjang, y.jenjang) : 0) ||
+      banding(x.mapel, y.mapel) || banding(x.nama, y.nama);
+  });
+}
+
+/** Token dibandingkan tanpa peka huruf besar/kecil dan tanpa spasi di ujung. */
+function tokenCocok_(a, b) {
+  var x = String(a == null ? '' : a).trim().toLowerCase();
+  return x !== '' && x === String(b == null ? '' : b).trim().toLowerCase();
+}

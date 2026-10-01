@@ -1,0 +1,170 @@
+<script>
+(function () {
+  var KUNCI_SESI = 'cbt_sesi_v1';
+  var ATURAN_NILAI = [
+    'Pilihan ganda: benar jika pilihan sama dengan kunci.',
+    'Pilihan ganda kompleks: benar hanya jika semua pilihan yang Anda centang sama persis dengan kunci.',
+    'Isian singkat: benar jika cocok dengan salah satu jawaban yang diterima. Huruf besar dan kecil dianggap sama, koma dan titik desimal dianggap sama.',
+    'Soal yang tidak dijawab tidak dihitung salah. Jawaban salah tidak mengurangi nilai.',
+    'Nilai = jumlah bobot soal benar dibagi jumlah bobot seluruh soal, dikali 100.'
+  ];
+  var TATA_TERTIB = [
+    'Peserta tidak boleh digantikan orang lain atau menerima bantuan.',
+    'Peserta tidak boleh keluar ruangan tanpa izin pengawas.',
+    'Peserta tidak boleh memakai alat bantu seperti alat komunikasi atau kalkulator, dan tidak boleh membawa buku, kamus, catatan, atau tabel, kecuali pengawas mengizinkan.',
+    'Waktu berjalan di server dan tidak berhenti walau halaman ditutup. Jawaban terkirim otomatis saat waktu habis.',
+    'Setelah jawaban dikirim, jawaban tidak dapat diubah.'
+  ];
+
+  function rincianTipe(u) {
+    var bagian = [];
+    if (u.n_pg) bagian.push(u.n_pg + ' pilihan ganda');
+    if (u.n_pgk) bagian.push(u.n_pgk + ' pilihan ganda kompleks');
+    if (u.n_isian) bagian.push(u.n_isian + ' isian singkat');
+    return bagian.join(', ');
+  }
+
+  // ---------- beranda ----------
+
+  function kartuUjian(u) {
+    return el('button', { type: 'button', class: 'kontainer', onclick: function () { langkah1(u, {}); } },
+      el('span', { class: 'kontainer-atas' }, el('span', { class: 'lencana' }, u.jenjang), u.sesi ? el('span', { class: 'redup' }, u.sesi) : null),
+      el('strong', { class: 'kontainer-mapel' }, u.mapel),
+      el('span', { class: 'kontainer-nama' }, u.nama),
+      el('span', { class: 'redup' }, u.jumlah_soal + ' soal · ' + u.durasi_menit + ' menit'),
+      el('span', { class: 'kontainer-pilih' }, 'Pilih'));
+  }
+
+  function sesiTersimpan() {
+    var d = window.bacaLokal(KUNCI_SESI);
+    if (!d || !d.sesiId || !d.akhirMs) return null;
+    if (d.akhirMs - (Date.now() + (d.offset || 0)) <= 0) return null;
+    return d;
+  }
+
+  function kotakLanjut() {
+    var d = sesiTersimpan();
+    if (!d) return null;
+    return el('div', { class: 'lanjut-kotak' },
+      el('div', null, el('strong', null, 'Lanjutkan ujian'), el('div', { class: 'redup' }, (d.ujianNama || 'Ujian') + ' atas nama ' + (d.peserta && d.peserta.nama || ''))),
+      el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { mulai(d.ujianId, d.token, d.peserta || {}); } }, 'Lanjutkan'));
+  }
+
+  function gambarBeranda(daftar) {
+    var s = document.querySelector('[data-view="beranda"]');
+    s.textContent = '';
+    s.appendChild(el('h1', null, 'Pilih ujian'));
+    s.appendChild(el('p', { class: 'redup' }, 'Pilih kontainer sesuai jenjang dan mata pelajaran Anda.'));
+    var lanjut = kotakLanjut();
+    if (lanjut) s.appendChild(lanjut);
+    if (!daftar.length) {
+      s.appendChild(el('p', { class: 'kosong' }, 'Belum ada ujian yang dibuka. Hubungi pengawas atau admin.'));
+    } else {
+      var kelompok = [], terakhir = null;
+      daftar.forEach(function (u) {
+        if (!terakhir || terakhir.jenjang.toLowerCase() !== u.jenjang.toLowerCase()) { terakhir = { jenjang: u.jenjang, isi: [] }; kelompok.push(terakhir); }
+        terakhir.isi.push(u);
+      });
+      kelompok.forEach(function (k) {
+        s.appendChild(el('h2', { class: 'kelompok' }, k.jenjang));
+        s.appendChild(el('div', { class: 'grid-ujian' }, k.isi.map(kartuUjian)));
+      });
+    }
+    s.appendChild(el('footer', { class: 'footer' }, 'Dibuat oleh Genio Institute Yogyakarta'));
+  }
+
+  function muatBeranda() {
+    var s = document.querySelector('[data-view="beranda"]');
+    window.showView('beranda');
+    s.textContent = '';
+    s.appendChild(el('h1', null, 'Pilih ujian'));
+    s.appendChild(el('div', { class: 'grid-ujian' }, [1, 2, 3].map(function () {
+      return el('div', { class: 'kontainer' }, el('div', { class: 'kerangka' }), el('div', { class: 'kerangka' }), el('div', { class: 'kerangka' }));
+    })));
+    window.call('apiBeranda').then(gambarBeranda).catch(function (e) {
+      s.textContent = '';
+      s.appendChild(el('h1', null, 'Pilih ujian'));
+      s.appendChild(el('p', { class: 'kosong' }, e.message));
+      s.appendChild(el('button', { type: 'button', class: 'btn', onclick: muatBeranda }, 'Coba lagi'));
+    });
+  }
+  window.App.muatBeranda = muatBeranda;
+
+  // ---------- popup langkah 1 dan 2 ----------
+
+  function langkah1(u, isi) {
+    var f = {};
+    function kolom(kunci, label, wajib, extra) {
+      f[kunci] = el('input', Object.assign({ type: 'text', value: isi[kunci] || '', maxLength: kunci === 'nama' ? 100 : 100, autocomplete: 'off' }, extra || {}));
+      return el('label', { class: 'field' }, el('span', null, label + (wajib ? ' *' : '')), f[kunci]);
+    }
+    var galatNama = el('div', { class: 'galat', role: 'alert' });
+    var galatToken = el('div', { class: 'galat', role: 'alert' });
+    var badan = el('div', null,
+      el('p', { class: 'redup' }, u.mapel + ' · ' + u.nama),
+      kolom('nama', 'Nama lengkap', true), galatNama,
+      el('div', { class: 'grid2' }, kolom('nomor', 'Nomor peserta', false), kolom('kelas', 'Kelas', false)),
+      kolom('sekolah', 'Sekolah', false),
+      kolom('token', 'Token', true, { autocapitalize: 'characters', spellcheck: false }), galatToken);
+    f.token.addEventListener('input', function () { f.token.value = f.token.value.toUpperCase(); });
+
+    function ambil() {
+      return { nama: f.nama.value.trim(), nomor: f.nomor.value.trim(), kelas: f.kelas.value.trim(), sekolah: f.sekolah.value.trim(), token: f.token.value.trim() };
+    }
+    function lanjut(modal) {
+      var d = ambil();
+      galatNama.textContent = ''; galatToken.textContent = '';
+      if (!d.nama) { galatNama.textContent = 'Isi nama lengkap Anda.'; f.nama.focus(); return false; }
+      if (!d.token) { galatToken.textContent = 'Isi token dari pengawas.'; f.token.focus(); return false; }
+      tombol.disabled = true;
+      window.call('apiCekToken', u.id, d.token).then(function (h) {
+        modal.close();
+        langkah2(h.ujian, d);
+      }).catch(function (e) {
+        galatToken.textContent = e.message;
+        tombol.disabled = false;
+        f.token.select();
+      });
+      return false;
+    }
+    var modal = window.openModal({
+      judul: 'Data peserta', isi: badan, tutupDiLuar: false,
+      tombol: [{ teks: 'Batal' }, { teks: 'Lanjut', utama: true, aksi: lanjut }]
+    });
+    var tombol = modal.el.querySelector('.btn-utama');
+    modal.el.addEventListener('keydown', function (e) { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); lanjut(modal); } });
+  }
+
+  function langkah2(u, d) {
+    function daftar(judul, butir) {
+      return el('div', null, el('h3', null, judul), el('ul', { class: 'daftar-info' }, butir.map(function (b) { return el('li', null, b); })));
+    }
+    var badan = el('div', null,
+      el('dl', { class: 'info-grid' },
+        el('div', null, el('dt', null, 'Ujian'), el('dd', null, u.nama)),
+        el('div', null, el('dt', null, 'Jenjang dan mata pelajaran'), el('dd', null, u.jenjang + ' · ' + u.mapel + (u.sesi ? ' · ' + u.sesi : ''))),
+        el('div', null, el('dt', null, 'Jumlah soal'), el('dd', null, u.jumlah_soal + ' soal: ' + rincianTipe(u))),
+        el('div', null, el('dt', null, 'Durasi'), el('dd', null, u.durasi_menit + ' menit'))),
+      u.catatan && String(u.catatan).trim() ? el('div', null, el('h3', null, 'Catatan dari pengawas'), el('p', { class: 'catatan' }, String(u.catatan).trim())) : null,
+      daftar('Aturan penilaian', ATURAN_NILAI),
+      daftar('Tata tertib', TATA_TERTIB),
+      el('p', { class: 'redup' }, 'Waktu mulai dihitung saat Anda menekan "Mulai ujian".'));
+    window.openModal({
+      judul: 'Sebelum mulai', isi: badan, lebar: true, tutupDiLuar: false,
+      tombol: [
+        { teks: 'Kembali', aksi: function () { setTimeout(function () { langkah1(u, d); }, 0); } },
+        { teks: 'Mulai ujian', utama: true, aksi: function () { mulai(u.id, d.token, { nama: d.nama, nomor: d.nomor, kelas: d.kelas, sekolah: d.sekolah }); } }
+      ]
+    });
+  }
+
+  // M6 mengisi App.mulaiUjian; sampai itu ada, tombol memberi tahu dengan jelas.
+  function mulai(ujianId, token, peserta) {
+    if (typeof window.App.mulaiUjian === 'function') window.App.mulaiUjian(ujianId, token, peserta);
+    else window.toast('Halaman ujian belum tersedia di versi ini.', true);
+  }
+
+  window.App.tampilAwal = muatBeranda;
+  muatBeranda();
+})();
+</script>

@@ -58,11 +58,15 @@ Status uji: `ringkasImport_` lulus uji Node dengan `contoh/soal-contoh.json` (6 
 ## M5. Beranda, token, info sebelum mulai
 
 Berkas: `src/ApiSiswa.gs`, `src/JsSiswa.html`.
-- [ ] `apiBeranda` (view `ujian_ringkas`, cache 60 detik, tanpa token, hanya aktif), kontainer dikelompokkan per jenjang.
-- [ ] `apiCekToken`; popup langkah 1 (data peserta + token) dan langkah 2 (info sebelum mulai, catatan khusus tersembunyi jika kosong).
-- [ ] Kotak "Lanjutkan ujian" bila ada sesi di `localStorage`.
+- [x] `apiBeranda` (view `ujian_ringkas`, cache 60 detik, tanpa token, hanya aktif), kontainer dikelompokkan per jenjang.
+- [x] `apiCekToken`; popup langkah 1 (data peserta + token) dan langkah 2 (info sebelum mulai, catatan khusus tersembunyi jika kosong).
+- [x] Kotak "Lanjutkan ujian" bila ada sesi di `localStorage`.
 
 Uji: ujian nonaktif tidak tampil; token salah menampilkan pesan di kolom token; langkah 2 menampilkan jumlah soal dan rincian tipe yang benar; tombol Kembali mempertahankan isian.
+
+Catatan: kotak "Lanjutkan ujian" membaca `localStorage` kunci `cbt_sesi_v1` ({sesiId, ujianId, ujianNama, akhirMs, offset, token, peserta}); isinya baru ditulis di M6, jadi kotak ini baru muncul setelah M6. Tombol "Mulai ujian" memanggil `App.mulaiUjian` yang diisi di M6.
+
+Status uji: urutan kontainer, pencocokan token lulus uji Node; beranda, popup, tombol Kembali, galat token, catatan khusus, layar 360 px lulus uji browser dengan server tiruan. Belum dicentang: uji di Apps Script asli.
 
 ## M6. Halaman ujian
 

@@ -13,8 +13,8 @@
   }
 
   function keBeranda() {
-    window.showView('beranda');
     document.getElementById('btnAdmin').textContent = 'Login admin';
+    if (window.App.muatBeranda) window.App.muatBeranda(); else window.showView('beranda');
   }
 
   function sesiHabis(pesan) {
