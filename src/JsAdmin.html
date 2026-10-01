@@ -469,7 +469,7 @@
   function tampilSoalTab() {
     var p = document.getElementById('panelAdmin');
     p.textContent = '';
-    if (daftarUjian.length) { gambarSoalTab(); return; }
+    if (daftarUjian.length) { gambarSoalTab(); segarkanDaftarUjian(); return; }
     p.appendChild(el('div', { class: 'kerangka' }));
     window.call('adminUjianList', tokenAdmin).then(function (d) {
       daftarUjian = d;
@@ -913,10 +913,15 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
 
   var daftarHasil = [];
 
+  /** Menyegarkan daftar ujian (dan angka di menu samping) tanpa menggambar ulang panel. */
+  function segarkanDaftarUjian() {
+    window.call('adminUjianList', tokenAdmin).then(function (d) { daftarUjian = d; segarkanNav(); }).catch(function () { /* angka lama tetap tampil */ });
+  }
+
   function tampilHasilTab() {
     var p = document.getElementById('panelAdmin');
     p.textContent = '';
-    if (daftarUjian.length) { gambarHasilTab(); return; }
+    if (daftarUjian.length) { gambarHasilTab(); segarkanDaftarUjian(); return; }
     p.appendChild(el('div', { class: 'kerangka' }));
     window.call('adminUjianList', tokenAdmin).then(function (d) {
       daftarUjian = d;
@@ -956,6 +961,8 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
       if (untuk !== ujianTerpilih) return;
       daftarHasil = h;
       gambarHasil();
+      var uj = daftarUjian.filter(function (x) { return x.id === untuk; })[0];
+      if (uj && Number(uj.n_selesai) !== h.length) { uj.n_selesai = h.length; segarkanNav(); }
     }).catch(function (e) {
       if (e.message.indexOf('SESI_ADMIN') === 0) return;
       d.textContent = ''; d.appendChild(el('p', { class: 'kosong' }, e.message));

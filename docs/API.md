@@ -67,7 +67,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 - `adminKeluar(tok): true` menghapus token sesi admin.
 
 ### Ujian
-- `adminUjianList(tok): (UjianRow & { jumlah_soal, n_pg, n_pgk, n_isian, n_gambar_kosong, n_selesai, n_berjalan })[]` (termasuk token dan semua kolom).
+- `adminUjianList(tok): (UjianRow & { jumlah_soal, n_pg, n_pgk, n_isian, n_gambar_kosong, n_selesai, n_berjalan })[]` (termasuk token dan semua kolom). Bila view `ujian_ringkas` belum punya kolom `n_selesai`/`n_berjalan` (skema lama), server menghitungnya dari tabel `sesi`.
 - `adminUjianSimpan(tok, u): UjianRow` tanpa `id` = tambah, dengan `id` = ubah. Validasi: nama, jenjang, mapel, token wajib; durasi ≥ 1; `buka_at`/`tutup_at` opsional (ISO), tutup harus setelah buka. Hanya kolom yang diizinkan. Menghapus cache `beranda_v1`.
 - `adminUjianHapus(tok, id): true` menghapus beserta soal dan sesi.
 - `adminUjianDuplikat(tok, id, namaSalinan?): UjianRow` menyalin ujian dan soalnya (hasil siswa tidak disalin); token baru acak, `aktif = false`, tanpa jadwal, nama = `namaSalinan` (maks. 150) atau nama asli + " (salinan)". Bila penyalinan soal gagal, ujian salinan dibatalkan.

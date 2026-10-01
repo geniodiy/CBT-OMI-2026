@@ -4,11 +4,11 @@ const src=f=>fs.readFileSync(require('path').join(__dirname,'..','src',f),'utf8'
 let uuid=0;const DB={ujian:[],soal:[],sesi:[]};
 const clone=x=>x===undefined?x:JSON.parse(JSON.stringify(x));
 function parse(path){const [t,q='']=path.split('?');const p={f:[]};q.split('&').filter(Boolean).forEach(kv=>{const i=kv.indexOf('=');const k=kv.slice(0,i),v=decodeURIComponent(kv.slice(i+1));
- if(k==='select'){if(/ujian\(/.test(v)){p.embed=true;p.select=null}else p.select=v.split(',')}else if(k==='order')p.order=v;else if(k==='limit')p.limit=+v;else{const j=v.indexOf('.');p.f.push([k,v.slice(0,j),v.slice(j+1)])}});return [t,p]}
+ if(k==='select'){if(/ujian\(/.test(v)){p.embed=true;p.select=null}else p.select=v.split(',')}else if(k==='order')p.order=v;else if(k==='limit')p.limit=+v;else if(k==='offset')p.offset=+v;else{const j=v.indexOf('.');p.f.push([k,v.slice(0,j),v.slice(j+1)])}});return [t,p]}
 function match(r,[k,op,v]){const x=r[k];if(op==='eq')return String(x)===v;if(op==='lte')return Number(x)<=Number(v);
  if(op==='ilike'){const re=new RegExp('^'+v.replace(/[.+^${}()|[\]\\]/g,'\\$&').replace(/[*%]/g,'.*')+'$','i');return re.test(String(x))}return false}
 function view(t){if(t!=='ujian_ringkas')return DB[t];return DB.ujian.map(u=>{const s=DB.soal.filter(x=>x.ujian_id===u.id);return {...u,jumlah_soal:s.length,n_pg:s.filter(x=>x.tipe==='pg').length,n_pgk:s.filter(x=>x.tipe==='pgk').length,n_isian:s.filter(x=>x.tipe==='isian').length}})}
-function pick(r,sel){if(!sel)return clone(r);const o={};sel.forEach(c=>o[c]=clone(r[c]));return o}
+function pick(r,sel){if(!sel||sel.indexOf('*')>=0)return clone(r);const o={};sel.forEach(c=>o[c]=clone(r[c]));return o}
 const ctx={Date,Math,JSON,Number,String,Array,Object,parseInt,isNaN,Error,encodeURIComponent,console,
  Logger:{log(){}},Utilities:{sleep(){},getUuid:()=>'u'+(++uuid)},
  CacheService:(function(){const m={};const c={get(k){return m[k]==null?null:m[k]},put(k,v){m[k]=String(v)},remove(k){delete m[k]},putAll(o){Object.keys(o).forEach(k=>{m[k]=String(o[k])})},getAll(ks){const r={};ks.forEach(k=>{if(m[k]!=null)r[k]=m[k]});return r}};return {getScriptCache:()=>c}})(),
@@ -16,7 +16,7 @@ const ctx={Date,Math,JSON,Number,String,Array,Object,parseInt,isNaN,Error,encode
 vm.createContext(ctx);
 ['Nilai.gs','Util.gs','ApiAdmin.gs','ApiSiswa.gs'].forEach(f=>vm.runInContext(src(f),ctx));
 ctx.sb_=function(m,path,body){const [t,p]=parse(path);
- if(m==='GET'){let r=view(t).filter(x=>p.f.every(f=>match(x,f)));if(p.order){const ks=p.order.split(',').map(o=>o.split('.'));r=r.slice().sort((x,y)=>{for(const [c,d] of ks){const v=(x[c]>y[c]?1:x[c]<y[c]?-1:0)*(d==='desc'?-1:1);if(v)return v}return 0})}if(p.limit)r=r.slice(0,p.limit);return r.map(x=>{const o=pick(x,p.select);if(p.embed)o.ujian=clone(DB.ujian.find(u=>u.id===x.ujian_id));return o})}
+ if(m==='GET'){let r=view(t).filter(x=>p.f.every(f=>match(x,f)));if(p.order){const ks=p.order.split(',').map(o=>o.split('.'));r=r.slice().sort((x,y)=>{for(const [c,d] of ks){const v=(x[c]>y[c]?1:x[c]<y[c]?-1:0)*(d==='desc'?-1:1);if(v)return v}return 0})}if(p.offset)r=r.slice(p.offset);if(p.limit)r=r.slice(0,p.limit);return r.map(x=>{const o=pick(x,p.select);if(p.embed)o.ujian=clone(DB.ujian.find(u=>u.id===x.ujian_id));return o})}
  if(m==='POST'){const rows=[].concat(clone(body)).map(x=>({id:'r'+(++uuid),status:'berjalan',jawaban:{},...x}));DB[t].push(...rows);return rows.map(x=>clone(x))}
  if(m==='PATCH'){const r=DB[t].filter(x=>p.f.every(f=>match(x,f)));r.forEach(x=>Object.assign(x,clone(body)));return r.map(x=>pick(x,p.select))}
  if(m==='DELETE'){DB[t]=DB[t].filter(x=>!p.f.every(f=>match(x,f)));return null}};
@@ -83,6 +83,10 @@ const hs=ctx.adminHasil('T','U1');
 a.strictEqual(hs.map(x=>x.nama).join(),'Cici,Dedi,Budi,Fani,Ani','urut: nilai, benar, salah, waktu; tanpa sesi berjalan');
 a(hs.every(x=>!('jawaban' in x)),'tanpa kolom jawaban');
 ctx.adminSesiHapus('T','c');a.strictEqual(ctx.adminHasil('T','U1').length,4);
+// jumlah hasil di daftar ujian dihitung dari sesi bila view belum punya kolomnya
+{const dl=ctx.adminUjianList('T');const u1=dl.find(x=>x.id==='U1');a(u1,'ujian ada di daftar');
+ a.strictEqual(u1.n_selesai,DB.sesi.filter(x=>x.ujian_id==='U1'&&x.status==='selesai').length,'n_selesai dari tabel sesi');
+ a.strictEqual(u1.n_berjalan,DB.sesi.filter(x=>x.ujian_id==='U1'&&x.status!=='selesai').length,'n_berjalan dari tabel sesi');}
 // rincian hasil per soal
 DB.sesi.push({id:'z',ujian_id:'U1',nama:'Zed',nomor_peserta:null,kelas:'9A',sekolah:'MTs X',status:'selesai',skor:12.5,benar:1,salah:1,kosong:6,durasi_detik:300,selesai_at:'2026-01-01T00:00:00Z',jawaban:{S1:['B'],S2:['A']}});
 a.throws(()=>ctx.adminHasilDetail('salah','z'),/SESI_ADMIN/);

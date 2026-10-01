@@ -12,7 +12,7 @@ function adminLogin(password) {
   var tok = Utilities.getUuid();
   CacheService.getScriptCache().put('adm_' + tok, '1', DURASI_SESI_ADMIN_DETIK_);
   // Daftar ujian ikut dikirim agar panel admin langsung terisi tanpa panggilan kedua.
-  return { tok: tok, ujian: sb_('GET', 'ujian_ringkas?select=*&order=created_at.desc') || [] };
+  return { tok: tok, ujian: daftarUjianAdmin_() };
 }
 
 function adminKeluar(tok) {
@@ -23,7 +23,30 @@ function adminKeluar(tok) {
 
 function adminUjianList(tok) {
   guard_(tok);
-  return sb_('GET', 'ujian_ringkas?select=*&order=created_at.desc') || [];
+  return daftarUjianAdmin_();
+}
+
+/**
+ * Daftar ujian untuk admin (view ujian_ringkas). Bila view belum diperbarui (kolom n_selesai/n_berjalan belum ada),
+ * jumlah hasil dihitung dari tabel sesi supaya angka di panel tetap benar.
+ */
+function daftarUjianAdmin_() {
+  var baris = sb_('GET', 'ujian_ringkas?select=*&order=created_at.desc') || [];
+  if (!baris.length || baris[0].n_selesai !== undefined) return baris;
+  var hitung = {};
+  for (var mulai = 0, halaman = 0; halaman < 50; halaman++, mulai += 1000) {
+    var s = sb_('GET', 'sesi?select=ujian_id,status&order=id.asc&limit=1000&offset=' + mulai) || [];
+    s.forEach(function (x) {
+      var h = hitung[x.ujian_id] || (hitung[x.ujian_id] = { selesai: 0, berjalan: 0 });
+      if (x.status === 'selesai') h.selesai++; else h.berjalan++;
+    });
+    if (s.length < 1000) break;
+  }
+  baris.forEach(function (u) {
+    var h = hitung[u.id] || { selesai: 0, berjalan: 0 };
+    u.n_selesai = h.selesai; u.n_berjalan = h.berjalan;
+  });
+  return baris;
 }
 
 function adminUjianSimpan(tok, u) {
