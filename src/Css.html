@@ -465,27 +465,36 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */
-.hasil { max-width: 760px; margin: 0 auto; background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius-kartu); padding: 22px; }
-.hasil h1 { margin-top: 18px; }
-.hasil-kop { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--garis); }
+.hasil { max-width: 860px; margin: 0 auto; background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius-kartu); padding: 22px; }
+.hasil h1 { margin: 2px 0 0; font-size: 1.4rem; }
+.hasil-selesai { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; padding: 10px 14px; border-radius: var(--radius); background: #e6f4ea; color: var(--hijau); font-weight: 600; }
+.hasil-judul { margin: 18px 0 8px; font-size: 1rem; }
+.hasil-kop { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 2px solid var(--biru); }
 .hasil-logo { display: flex; gap: 8px; }
 .hasil-logo img { height: 30px; width: auto; }
 .hasil-logo img:first-child { height: 38px; }
-.hasil-ujian { margin: 0 0 16px; color: var(--teks-redup); }
-.hasil-ujian strong { color: var(--teks); }
+.hasil-ujian { margin: 2px 0 14px; color: var(--teks-redup); }
 .hasil-atas { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
 .hasil-identitas { margin: 0; display: grid; gap: 4px; }
 .hasil-baris { display: grid; grid-template-columns: 112px 1fr; gap: 8px; }
 .hasil-baris dt { color: var(--teks-redup); }
 .hasil-baris dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
 .hasil-nilai { text-align: right; }
-.hasil-skor { font-size: 2.5rem; font-weight: 700; line-height: 1.1; color: var(--biru-tua); font-variant-numeric: tabular-nums; }
-.hasil-angka { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 12px 0; margin-bottom: 16px; border-top: 1px solid var(--garis); border-bottom: 1px solid var(--garis); }
-.hasil-angka strong { font-size: 1.1rem; }
-@media (max-width: 600px) { .hasil { padding: 16px; } .hasil-angka { grid-template-columns: 1fr 1fr; } .hasil-nilai { text-align: left; } }
+.hasil-skor { font-size: 3.2rem; font-weight: 800; line-height: 1.05; letter-spacing: -.03em; color: var(--biru-tua); font-variant-numeric: tabular-nums; }
+.hasil-maks { font-size: 1.3rem; font-weight: 600; letter-spacing: 0; color: var(--teks-redup); margin-left: 2px; }
+.hasil-kotak { text-align: center; border: 2px solid var(--biru); border-radius: 14px; padding: 10px 22px; height: fit-content; }
+.hasil-angka { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--garis); border-radius: var(--radius); overflow: hidden; }
+.hasil-angka > div { padding: 10px 16px; border-left: 1px solid var(--garis); }
+.hasil-angka > div:first-child { border-left: 0; }
+.hasil-angka strong { font-size: 1.3rem; }
+.hasil-kaki { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--garis); font-size: .8rem; color: var(--teks-redup); }
+@media (max-width: 600px) { .hasil { padding: 16px; } .hasil-angka { grid-template-columns: 1fr 1fr; } .hasil-angka > div:nth-child(3) { border-left: 0; } .hasil-angka > div:nth-child(n+3) { border-top: 1px solid var(--garis); } .hasil-nilai { text-align: left; } }
 .tabel-gulir { overflow-x: auto; }
 .hasil-tabel td { overflow-wrap: anywhere; }
 .hasil-tabel tr { page-break-inside: avoid; }
+.hasil-pdf .hasil-tabel { margin-top: 16px; font-size: .92rem; }
+.hasil-pdf .hasil-tabel th, .hasil-pdf .hasil-tabel td { padding: 6px 8px; }
+.hasil-pdf .hasil-tabel .pisah { border-left: 1px solid var(--garis); }
 .status-benar { color: var(--hijau); font-weight: 600; }
 .status-salah { color: var(--merah); font-weight: 600; }
 .status-kosong { color: var(--teks-redup); font-weight: 600; }
@@ -499,6 +508,7 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
   #app { padding: 0; max-width: none; }
   [data-view]:not([data-view="hasil"]) { display: none !important; }
   .hasil { border: 0; padding: 0; max-width: none; }
+  .hasil-selesai { display: none; }
 }
 
 /* ---- panel admin: sidebar kiri, tabel padat. Ukuran dasar 13 px agar banyak data muat di layar. ---- */

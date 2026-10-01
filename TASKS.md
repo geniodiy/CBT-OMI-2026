@@ -94,6 +94,8 @@ Keputusan: PDF dan cetak tidak memuat kolom kunci. Di layar, kunci hanya untuk p
 
 Status uji: server lulus uji Node (kunci isian null, pg/pgk hanya bila tampil_kunci); hasil lulus uji browser (angka, tabel, pemetaan huruf kunci, PDF terunduh bernama `Hasil_<Nama>_<Ujian>.pdf` tanpa kunci, cetak menyembunyikan kunci dan tombol, 360 px). Belum dicentang: uji di Apps Script asli di Chrome desktop, Chrome Android, dan Safari iOS.
 
+Perbaruan desain hasil (opsi 1, rapor ringkas): nilai ditulis per maksimum (84/100), banner selesai, PDF satu halaman dua kolom dari dokumen terpisah `bangunPdf`. Lulus uji Node dan uji browser (layar 1100 px, 390 px, dokumen PDF); unduhan PDF asli belum diuji di Apps Script.
+
 ## M8. Admin: hasil
 
 - [x] `adminHasil` dengan urutan skor, benar, salah (sedikit), waktu (cepat); tab Hasil; ekspor CSV; `adminSesiHapus`.

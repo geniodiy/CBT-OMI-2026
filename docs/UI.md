@@ -101,14 +101,15 @@ Modal lebar maks. 520 px, judul di atas, tombol di kanan bawah. Aksi utama biru 
 
 ## 4. Hasil
 
-Satu kolom lebar maks. 820 px, putih dengan garis. Isi urut:
+Satu kolom lebar maks. 860 px, putih dengan garis (rapor ringkas). Isi urut:
+0. Banner hijau "Jawaban Anda sudah terkirim dan dinilai." (tidak ikut cetak/PDF).
 1. Judul "Hasil ujian", nama ujian, jenjang, mapel, sesi, tanggal.
 2. Identitas: nama, nomor peserta, kelas, sekolah.
-3. Nilai besar di kanan atas blok; di bawahnya baris empat angka: **Benar**, **Salah**, **Kosong**, **Waktu pengerjaan** ("32 menit 15 detik").
+3. Nilai besar ditulis per maksimum, mis. **84/100** ("/100" lebih kecil), di kanan atas blok; di bawahnya baris empat angka: **Benar**, **Salah**, **Kosong**, **Waktu pengerjaan** ("32 menit 15 detik").
 4. Tabel: No, Jawaban Anda, (Kunci jika diaktifkan), Hasil. Status ditulis kata ("Benar", "Salah", "Kosong") dengan warna teks hijau/merah/abu, bukan hanya warna.
 5. Di luar area cetak: tombol "Download PDF" (utama), "Cetak", "Kembali ke beranda".
 
-PDF = isi `#hasilCetak` saja, A4 potret, margin 10 mm, header kecil logo + "Try Out OMI 2026 oleh Genio Institute Yogyakarta".
+PDF dibuat dari dokumen terpisah (`bangunPdf`), bukan salinan layar: A4 potret satu halaman, margin 10 mm, kop logo + "Laporan Hasil Try Out OMI 2026" (garis biru), kotak nilai "84/100", baris empat angka, tabel No/Jawaban Anda/Hasil dalam dua kolom, tanpa kolom kunci, catatan kaki "Dokumen ini dibuat otomatis oleh sistem Try Out OMI 2026." Cetak (`window.print`) memakai tampilan layar tanpa banner.
 
 ## 5. Admin
 

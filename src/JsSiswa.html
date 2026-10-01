@@ -712,45 +712,88 @@
     return el('div', { class: 'hasil-baris' }, el('dt', null, label), el('dd', null, nilai || '-'));
   }
 
-  function bangunHasil(h, sesi) {
-    var daftar = sesi.soal;
+  function barisJawaban(sesi, h) {
     var perId = {};
     h.rincian.forEach(function (r) { perId[r.id] = r; });
-    var adaKunci = h.tampilKunci === true;
-
-    var kop = el('div', { class: 'hasil-kop' },
-      el('div', { class: 'hasil-logo' }, Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
-        return el('img', { src: g.src, alt: g.alt, crossOrigin: 'anonymous' });
-      })),
-      el('div', null, el('strong', null, 'Try Out OMI 2026'), el('div', { class: 'redup' }, 'Dibuat oleh Genio Institute Yogyakarta')));
-
-    var kepalaTabel = el('tr', null, el('th', null, 'No'), el('th', null, 'Jawaban Anda'),
-      adaKunci ? el('th', { class: 'no-pdf' }, 'Kunci') : null, el('th', null, 'Hasil'));
-    var badan = el('tbody');
-    daftar.forEach(function (soal, i) {
+    return sesi.soal.map(function (soal, i) {
       var r = perId[soal.id];
-      var status = r ? r.status : 'kosong';
-      var sel = el('td', null, el('span', { class: 'status-' + status }, LABEL_STATUS[status]));
-      var jawab = el('td', { dir: 'auto' }, teksJawaban(soal, r));
-      var kunci = adaKunci ? el('td', { class: 'no-pdf' }, r && r.kunci && soal.tipe !== 'isian' ? hurufTampil(soal, r.kunci) : '-') : null;
-      badan.appendChild(el('tr', null, el('td', null, String(i + 1)), jawab, kunci, sel));
+      return { no: i + 1, soal: soal, r: r, status: r ? r.status : 'kosong' };
     });
+  }
 
-    var cetak = el('div', { id: 'hasilCetak', class: 'hasil' },
-      kop,
-      el('h1', null, 'Hasil ujian'),
-      el('p', { class: 'hasil-ujian' }, el('strong', null, h.ujian.nama), el('br'),
-        [h.ujian.jenjang, h.ujian.mapel, h.ujian.sesi].filter(Boolean).join(' · '), el('br'), formatTanggal(h.selesaiAt)),
+  function logoKop() {
+    return el('div', { class: 'hasil-logo' }, Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
+      return el('img', { src: g.src, alt: g.alt, crossOrigin: 'anonymous' });
+    }));
+  }
+
+  function skorTampil(skor) {
+    return el('div', { class: 'hasil-skor' }, String(skor), el('span', { class: 'hasil-maks' }, '/100'));
+  }
+
+  function infoUjian(h) {
+    return [h.ujian.jenjang, h.ujian.mapel, h.ujian.sesi].filter(Boolean).join(' \u00b7 ') + ' \u00b7 ' + formatTanggal(h.selesaiAt);
+  }
+
+  function identitas(h) {
+    return el('dl', { class: 'hasil-identitas' }, baris('Nama', h.nama), baris('Nomor peserta', h.nomor), baris('Kelas', h.kelas), baris('Sekolah', h.sekolah));
+  }
+
+  function angkaRingkas(h) {
+    return el('div', { class: 'hasil-angka' },
+      el('div', null, el('div', { class: 'redup' }, 'Benar'), el('strong', { class: 'status-benar' }, String(h.benar))),
+      el('div', null, el('div', { class: 'redup' }, 'Salah'), el('strong', { class: 'status-salah' }, String(h.salah))),
+      el('div', null, el('div', { class: 'redup' }, 'Kosong'), el('strong', null, String(h.kosong))),
+      el('div', null, el('div', { class: 'redup' }, 'Waktu pengerjaan'), el('strong', null, formatDurasi(h.durasi))));
+  }
+
+  function bangunHasil(h, sesi) {
+    var adaKunci = h.tampilKunci === true;
+    var kepalaTabel = el('tr', null, el('th', null, 'No'), el('th', null, 'Jawaban Anda'),
+      adaKunci ? el('th', null, 'Kunci') : null, el('th', null, 'Hasil'));
+    var badan = el('tbody');
+    barisJawaban(sesi, h).forEach(function (x) {
+      var kunci = adaKunci ? el('td', null, x.r && x.r.kunci && x.soal.tipe !== 'isian' ? hurufTampil(x.soal, x.r.kunci) : '-') : null;
+      badan.appendChild(el('tr', null, el('td', null, String(x.no)), el('td', { dir: 'auto' }, teksJawaban(x.soal, x.r)), kunci,
+        el('td', null, el('span', { class: 'status-' + x.status }, LABEL_STATUS[x.status]))));
+    });
+    return el('div', { id: 'hasilCetak', class: 'hasil' },
+      el('div', { class: 'hasil-selesai' }, window.ikon('centang'), 'Jawaban Anda sudah terkirim dan dinilai.'),
       el('div', { class: 'hasil-atas' },
-        el('dl', { class: 'hasil-identitas' }, baris('Nama', h.nama), baris('Nomor peserta', h.nomor), baris('Kelas', h.kelas), baris('Sekolah', h.sekolah)),
-        el('div', { class: 'hasil-nilai' }, el('div', { class: 'redup' }, 'Nilai'), el('div', { class: 'hasil-skor' }, String(h.skor)))),
-      el('div', { class: 'hasil-angka' },
-        el('div', null, el('div', { class: 'redup' }, 'Benar'), el('strong', null, String(h.benar))),
-        el('div', null, el('div', { class: 'redup' }, 'Salah'), el('strong', null, String(h.salah))),
-        el('div', null, el('div', { class: 'redup' }, 'Kosong'), el('strong', null, String(h.kosong))),
-        el('div', null, el('div', { class: 'redup' }, 'Waktu pengerjaan'), el('strong', null, formatDurasi(h.durasi)))),
+        el('div', null, el('div', { class: 'redup' }, 'Hasil ujian'), el('h1', null, h.ujian.nama),
+          el('p', { class: 'hasil-ujian' }, infoUjian(h)), identitas(h)),
+        el('div', { class: 'hasil-nilai' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h.skor))),
+      angkaRingkas(h),
+      el('h2', { class: 'hasil-judul' }, 'Jawaban per soal'),
       el('div', { class: 'tabel-gulir' }, el('table', { class: 'tabel hasil-tabel' }, el('thead', null, kepalaTabel), badan)));
-    return cetak;
+  }
+
+  // Dokumen PDF terpisah dari tampilan layar: satu halaman, tabel dua kolom, tanpa kunci.
+  function bangunPdf(h, sesi) {
+    var semua = barisJawaban(sesi, h);
+    var separuh = Math.ceil(semua.length / 2);
+    var kepala = function () { return [el('th', null, 'No'), el('th', null, 'Jawaban Anda'), el('th', null, 'Hasil')]; };
+    var sel = function (x) {
+      return [el('td', null, String(x.no)), el('td', { dir: 'auto' }, teksJawaban(x.soal, x.r)), el('td', null, LABEL_STATUS[x.status])];
+    };
+    var badan = el('tbody');
+    for (var i = 0; i < separuh; i++) {
+      var kiri = sel(semua[i]);
+      var kanan = semua[i + separuh] ? sel(semua[i + separuh]) : [el('td'), el('td'), el('td')];
+      kanan[0].classList.add('pisah');
+      badan.appendChild(el('tr', null, kiri, kanan));
+    }
+    var kepalaBaris = el('tr', null, kepala(), kepala());
+    kepalaBaris.children[3].classList.add('pisah');
+    return el('div', { class: 'hasil hasil-pdf' },
+      el('div', { class: 'hasil-kop' }, logoKop(),
+        el('div', null, el('strong', null, 'Laporan Hasil Try Out OMI 2026'), el('div', { class: 'redup' }, 'Dibuat oleh Genio Institute Yogyakarta'))),
+      el('div', { class: 'hasil-atas' },
+        el('div', null, el('h1', null, h.ujian.nama), el('p', { class: 'hasil-ujian' }, infoUjian(h)), identitas(h)),
+        el('div', { class: 'hasil-kotak' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h.skor))),
+      angkaRingkas(h),
+      el('table', { class: 'tabel hasil-tabel' }, el('thead', null, kepalaBaris), badan),
+      el('div', { class: 'hasil-kaki' }, 'Dokumen ini dibuat otomatis oleh sistem Try Out OMI 2026.'));
   }
 
   function namaBerkas(h) {
@@ -758,18 +801,17 @@
     return 'Hasil_' + (aman(h.nama) || 'Peserta') + '_' + (aman(h.ujian.nama) || 'Ujian') + '.pdf';
   }
 
-  function unduhPdf(h, cetak, tombol) {
+  function unduhPdf(h, sesi, tombol) {
     tombol.disabled = true; tombol.classList.add('sibuk');
-    window.pastikanPdf().then(function () { buatPdf(h, cetak, tombol); }).catch(function () {
+    window.pastikanPdf().then(function () { buatPdf(h, sesi, tombol); }).catch(function () {
       window.toast('Pustaka PDF tidak termuat. Gunakan tombol Cetak.', true);
       tombol.disabled = false; tombol.classList.remove('sibuk');
     });
   }
 
-  function buatPdf(h, cetak, tombol) {
+  function buatPdf(h, sesi, tombol) {
     var gudang = el('div', { class: 'pdf-gudang' });
-    var salinan = cetak.cloneNode(true);
-    salinan.querySelectorAll('.no-pdf').forEach(function (x) { x.remove(); });
+    var salinan = bangunPdf(h, sesi);
     gudang.appendChild(salinan);
     document.body.appendChild(gudang);
     var pilihan = {
@@ -788,7 +830,7 @@
     window.showView('hasil');
     s.textContent = '';
     var cetak = bangunHasil(h, sesi);
-    var tbPdf = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { unduhPdf(h, cetak, tbPdf); } }, 'Download PDF');
+    var tbPdf = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { unduhPdf(h, sesi, tbPdf); } }, 'Download PDF');
     window.siapkanPdfNanti();
     s.appendChild(cetak);
     s.appendChild(el('div', { class: 'hasil-aksi no-print' }, tbPdf,
