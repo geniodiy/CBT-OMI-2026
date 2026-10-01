@@ -260,25 +260,26 @@
     }
     var galatNama = el('div', { class: 'galat', role: 'alert' });
     var galatToken = el('div', { class: 'galat', role: 'alert' });
+    var galatSekolah = el('div', { class: 'galat', role: 'alert' });
     f.token = null;
     var badan = el('div', { class: 'form-peserta' },
       el('div', { class: 'ringkas-ujian' },
         el('span', { class: 'kontainer-ikon' }, window.ikon(ikonMapel(u.mapel), 20)),
         el('div', null, el('strong', null, u.nama), el('span', null, [u.jenjang, u.mapel, u.sesi].filter(Boolean).join(' \u00b7 ')))),
       kolom('nama', 'Nama lengkap', true), galatNama,
-      el('div', { class: 'grid2' }, kolom('nomor', 'Nomor peserta', false), kolom('kelas', 'Kelas', false)),
-      kolom('sekolah', 'Sekolah', false),
+      kolom('sekolah', 'Sekolah', true), galatSekolah,
       kolom('token', 'Token ujian', true, { autocapitalize: 'characters', spellcheck: false, class: 'input-token', placeholder: 'Contoh: MTK7R2' }), galatToken,
       el('p', { class: 'bantu' }, 'Token dibagikan oleh pengawas sebelum ujian dimulai.'));
     f.token.addEventListener('input', function () { f.token.value = f.token.value.toUpperCase(); });
 
     function ambil() {
-      return { nama: f.nama.value.trim(), nomor: f.nomor.value.trim(), kelas: f.kelas.value.trim(), sekolah: f.sekolah.value.trim(), token: f.token.value.trim() };
+      return { nama: f.nama.value.trim(), nomor: '', kelas: '', sekolah: f.sekolah.value.trim(), token: f.token.value.trim() };
     }
     function lanjut(modal) {
       var d = ambil();
-      galatNama.textContent = ''; galatToken.textContent = '';
+      galatNama.textContent = ''; galatToken.textContent = ''; galatSekolah.textContent = '';
       if (!d.nama) { galatNama.textContent = 'Isi nama lengkap Anda.'; f.nama.focus(); return false; }
+      if (!d.sekolah) { galatSekolah.textContent = 'Isi nama sekolah Anda.'; f.sekolah.focus(); return false; }
       if (!d.token) { galatToken.textContent = 'Isi token dari pengawas.'; f.token.focus(); return false; }
       window.sibuk(tombol, window.call('apiCekToken', u.id, d.token).then(function (h) {
         modal.close();
@@ -309,7 +310,7 @@
       el('div', { class: 'ringkas-ujian' },
         el('span', { class: 'kontainer-ikon' }, window.ikon(ikonMapel(u.mapel), 20)),
         el('div', null, el('strong', null, u.nama), el('span', null, [u.jenjang, u.mapel, u.sesi].filter(Boolean).join(' \u00b7 ')))),
-      el('div', { class: 'ubin-baris' }, ubin('Jumlah soal', String(u.jumlah_soal), rincianTipe(u)), ubin('Durasi', u.durasi_menit + ' menit'), ubin('Peserta', d.nama, d.kelas || '')),
+      el('div', { class: 'ubin-baris' }, ubin('Jumlah soal', String(u.jumlah_soal), rincianTipe(u)), ubin('Durasi', u.durasi_menit + ' menit'), ubin('Peserta', d.nama, d.sekolah || '')),
       u.catatan && String(u.catatan).trim() ? el('div', { class: 'catatan-pengawas' }, el('strong', null, 'Catatan dari pengawas'), el('p', null, String(u.catatan).trim())) : null,
       el('div', { class: 'info-dua' }, daftar('Aturan penilaian', ATURAN_NILAI), daftar('Tata tertib', TATA_TERTIB)),
       el('p', { class: 'bantu' }, 'Waktu mulai dihitung saat Anda menekan "Mulai ujian".'));
@@ -748,7 +749,8 @@
   }
 
   function identitas(h) {
-    return el('dl', { class: 'hasil-identitas' }, baris('Nama', h.nama), baris('Nomor peserta', h.nomor), baris('Kelas', h.kelas), baris('Sekolah', h.sekolah));
+    var baru = [['Nama', h.nama], ['Nomor peserta', h.nomor], ['Kelas', h.kelas], ['Sekolah', h.sekolah]].filter(function (r) { return r[0] === 'Nama' || r[1]; });
+    return el('dl', { class: 'hasil-identitas' }, baru.map(function (r) { return baris(r[0], r[1]); }));
   }
 
   function angkaRingkas(h) {

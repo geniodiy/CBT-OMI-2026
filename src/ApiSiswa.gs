@@ -94,13 +94,13 @@ function pathSesiBerjalan_(ujianId, nama) {
     '&status=eq.berjalan&nama=ilike.' + enc_(nama) + '&order=mulai_at.desc&limit=20';
 }
 
-/** Sesi berjalan milik peserta yang sama (nama tanpa peka huruf + nomor sama) dan belum habis waktunya. */
+/** Sesi berjalan milik peserta yang sama (nama dan sekolah sama, tanpa peka huruf) dan belum habis waktunya. */
 function pilihSesiBerjalan_(baris, durasiMenit, p, sekarang) {
-  var nama = p.nama.toLowerCase(), nomor = p.nomor.toLowerCase();
+  var nama = p.nama.toLowerCase(), sekolah = p.sekolah.toLowerCase();
   for (var i = 0; i < (baris || []).length; i++) {
     var r = baris[i];
     if (String(r.nama).trim().toLowerCase() !== nama) continue;
-    if (String(r.nomor_peserta || '').trim().toLowerCase() !== nomor) continue;
+    if (String(r.sekolah || '').trim().toLowerCase() !== sekolah) continue;
     if (Date.parse(r.mulai_at) + durasiMenit * 60000 <= sekarang) continue;
     return r;
   }

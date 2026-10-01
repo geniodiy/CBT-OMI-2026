@@ -27,8 +27,8 @@ Ujian dengan `aktif = true` dan jadwal terbuka (di antara `buka_at` dan `tutup_a
 Langkah 1 popup. Mengecek `aktif` dan token (trim, tidak peka huruf). Galat: "Ujian tidak ditemukan atau belum dibuka.", "Ujian ini belum dibuka. Dibuka pada 1 Oktober 2026, 08.00 WIB.", "Ujian ini sudah ditutup pada ...", "Token tidak cocok. Periksa kembali token dari pengawas.", "Ujian ini belum memiliki soal."
 
 ### `apiMulai(ujianId, token, peserta): SesiMulai`
-`peserta = { nama, nomor, kelas, sekolah }` (nama wajib, maks. 100 karakter; lainnya opsional).
-Memeriksa token lagi. Jika ada sesi `berjalan` dengan ujian sama + nama (tanpa peka huruf) + nomor sama dan waktunya belum habis, **mengembalikan sesi itu** (lanjut). Jika tidak, membuat sesi baru.
+`peserta = { nama, nomor, kelas, sekolah }` (nama wajib, maks. 100 karakter; lainnya opsional; form siswa kini hanya mengisi nama dan sekolah, `nomor` dan `kelas` dikirim kosong).
+Memeriksa token lagi. Jika ada sesi `berjalan` dengan ujian sama + nama dan sekolah sama (tanpa peka huruf) dan waktunya belum habis, **mengembalikan sesi itu** (lanjut). Jika tidak, membuat sesi baru.
 ```ts
 type SesiMulai = {
   sesiId: string; serverNow: number; akhirMs: number;

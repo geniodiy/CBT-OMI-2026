@@ -38,13 +38,13 @@ a(!JSON.stringify(m1).includes('kunci'),'tidak ada kunci di respons');a(!JSON.st
 a(m1.akhirMs-m1.serverNow<=60*60000&&m1.akhirMs-m1.serverNow>59*60000);
 // 3 lanjut: sesi sama, urutan acak sama
 ctx.apiSinkron(m1.sesiId,{S1:['B'],S2:[],S3:['A','X']});
-const m2=ctx.apiMulai('U1','TOK1',{nama:'  siti aminah ',nomor:'123'});
+const m2=ctx.apiMulai('U1','TOK1',{nama:'  siti aminah ',sekolah:'MTs'});
 a.strictEqual(m2.lanjut,true);a.strictEqual(m2.sesiId,m1.sesiId);
 a.strictEqual(JSON.stringify(m2.soal),JSON.stringify(m1.soal),'acak konsisten saat dilanjutkan');
 a.strictEqual(JSON.stringify(m2.jawaban),JSON.stringify({S1:['B'],S3:['A','X']}),'jawaban kosong dibuang');
 const urutan=m1.soal.map(s=>s.id).join();a(urutan!=='S1,S2,S3,S4,S5,S6,S7,S8','soal teracak (kemungkinan sangat kecil sama)');
 // 4 nomor beda = sesi baru
-const m3=ctx.apiMulai('U1','tok1',{nama:'Siti Aminah',nomor:'999'});a.strictEqual(m3.lanjut,false);a.notStrictEqual(m3.sesiId,m1.sesiId);
+const m3=ctx.apiMulai('U1','tok1',{nama:'Siti Aminah',sekolah:'MTs B'});a.strictEqual(m3.lanjut,false);a.notStrictEqual(m3.sesiId,m1.sesiId);
 // 5 selesai
 const jw={};m1.soal.forEach(s=>{if(s.id==='S7')jw[s.id]=['C','A'];else if(s.id==='S8')jw[s.id]=['12.50'];else if(s.id==='S1')jw[s.id]=['B'];else if(s.id==='S2')jw[s.id]=['D'];});
 const h=ctx.apiSelesai(m1.sesiId,jw);
@@ -56,7 +56,7 @@ a.strictEqual(JSON.stringify(h2),JSON.stringify(h),'idempoten');
 // 7 sinkron ditolak setelah selesai
 a.throws(()=>ctx.apiSinkron(m1.sesiId,{}),/sudah selesai/);
 // 8 setelah selesai, mulai baru = sesi baru
-a.strictEqual(ctx.apiMulai('U1','tok1',{nama:'Siti Aminah',nomor:'123'}).lanjut,false);
+a.strictEqual(ctx.apiMulai('U1','tok1',{nama:'Siti Aminah',sekolah:'MTs'}).lanjut,false);
 // 9 tampil_kunci
 DB.ujian[0].tampil_kunci=true;const m4=ctx.apiMulai('U1','tok1',{nama:'Budi'});const h4=ctx.apiSelesai(m4.sesiId,{});
 a.strictEqual(h4.benar,0);a.strictEqual(h4.kosong,8);a(h4.rincian.filter(r=>r.id!=='S8').every(r=>Array.isArray(r.kunci)));a.strictEqual(h4.rincian.find(r=>r.id==='S8').kunci,null,'kunci isian tidak dikirim');
@@ -111,11 +111,11 @@ a.strictEqual((resetBeranda(),ctx.apiBeranda()).length,0,'belum dibuka tidak tam
 DB.ujian[0].buka_at=jam(-2);DB.ujian[0].tutup_at=jam(2);
 a.strictEqual((resetBeranda(),ctx.apiBeranda()).length,1);a(!('buka_at' in (resetBeranda(),ctx.apiBeranda())[0])&&!('tutup_at' in (resetBeranda(),ctx.apiBeranda())[0]));
 a(ctx.apiCekToken('U1','tok1').ujian.id==='U1');
-const sdhMulai=ctx.apiMulai('U1','tok1',{nama:'Wati',nomor:'7'});
+const sdhMulai=ctx.apiMulai('U1','tok1',{nama:'Wati',sekolah:'SD 7'});
 DB.ujian[0].tutup_at=jam(-1);
 a.throws(()=>ctx.apiCekToken('U1','tok1'),/sudah ditutup pada/);
 a.throws(()=>ctx.apiMulai('U1','tok1',{nama:'Baru'}),/sudah ditutup/);
-a.strictEqual(ctx.apiMulai('U1','tok1',{nama:'Wati',nomor:'7'}).lanjut,true,'sesi berjalan boleh dilanjutkan setelah ditutup');
+a.strictEqual(ctx.apiMulai('U1','tok1',{nama:'Wati',sekolah:'SD 7'}).lanjut,true,'sesi berjalan boleh dilanjutkan setelah ditutup');
 a.doesNotThrow(()=>ctx.apiSelesai(sdhMulai.sesiId,{}),'sesi berjalan boleh diselesaikan setelah ditutup');
 a.strictEqual((resetBeranda(),ctx.apiBeranda()).length,0,'ditutup tidak tampil');
 DB.ujian[0].buka_at=null;DB.ujian[0].tutup_at=null;
