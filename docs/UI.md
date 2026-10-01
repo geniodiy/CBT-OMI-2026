@@ -67,6 +67,15 @@ MTs
 - Keadaan kosong: "Belum ada ujian yang dibuka. Hubungi pengawas atau admin."
 - Keadaan memuat: baris kerangka abu-abu sederhana, bukan spinner besar.
 
+**Desain beranda terbaru (selaras redesign admin, hijau lembut)**. Berlaku di `body[data-halaman="beranda"]` (token warna hijau `--biru: #1f8a4c`, `--latar: #f3f7f3`, radius kartu 16 px):
+1. Header putih datar (tidak melayang, tanpa blur) dengan menu Beranda / Pilih ujian / Tentang OMI / Jadwal dan penilaian yang menggulir ke bagian terkait (disembunyikan di bawah 960 px).
+2. Hero berfoto: foto dibaca dari `hero.jpg` di bucket Storage `aset` (sama dengan logo OMI); bila berkas tidak ada, tampil hijau polos. Lapisan hijau tua rata (bukan gradien) menutup foto agar teks terbaca. Kuning hanya titik kecil di label "Try Out OMI 2026".
+3. Kartu tiga langkah (Pilih ujian, Isi data dan token, Kerjakan dan lihat hasil) menempel di perbatasan hero.
+4. Pilih ujian: filter jenjang berbentuk segmen; kartu paket berisi ikon mapel, nama, jenjang, mapel, sesi, chip jumlah soal per tipe, durasi, dan "Mulai ujian".
+5. Apa itu OMI, kartu jenjang, bentuk tes dan jadwal, penilaian, hal yang disiapkan dan larangan, semuanya kartu putih bergaris tipis.
+6. Footer: kotak putih berisi logo dan catatan simulasi, dengan aksen kuning kecil di tepi atas dan garis bawah tautan resmi.
+Info "120 menit" tidak lagi tampil di hero.
+
 ## 2. Popup langkah 1 dan 2
 
 Modal lebar maks. 520 px, judul di atas, tombol di kanan bawah. Aksi utama biru di kanan; "Batal"/"Kembali" teks biasa di kiri tombol utama.

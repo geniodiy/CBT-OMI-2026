@@ -96,6 +96,8 @@ Status uji: server lulus uji Node (kunci isian null, pg/pgk hanya bila tampil_ku
 
 Perbaruan desain hasil (opsi 1, rapor ringkas): nilai ditulis per maksimum (84/100), banner selesai, PDF satu halaman dua kolom dari dokumen terpisah `bangunPdf`. Lulus uji Node dan uji browser (layar 1100 px, 390 px, dokumen PDF); unduhan PDF asli belum diuji di Apps Script.
 
+Perbaruan desain beranda (opsi 2, header datar): hero berfoto `hero.jpg` (opsional), langkah, kartu paket dengan ikon mapel, bagian OMI berupa kartu, footer putih beraksen kuning, menu header menggulir. Lulus uji Node dan uji browser (1280 px, 390 px).
+
 ## M8. Admin: hasil
 
 - [x] `adminHasil` dengan urutan skor, benar, salah (sedikit), waktu (cepat); tab Hasil; ekspor CSV; `adminSesiHapus`.

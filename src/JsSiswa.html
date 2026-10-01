@@ -36,14 +36,32 @@
     return el('span', null, window.ikon(nama, 15), teks);
   }
 
+  function ikonMapel(mapel) {
+    var m = String(mapel || '').toLowerCase();
+    if (m.indexOf('matemat') >= 0) return 'hitung';
+    if (m.indexOf('biolog') >= 0 || m.indexOf('ipa') >= 0) return 'daun';
+    if (m.indexOf('kimia') >= 0) return 'labu';
+    if (m.indexOf('fisika') >= 0) return 'atom';
+    if (m.indexOf('ips') >= 0 || m.indexOf('geograf') >= 0 || m.indexOf('ekonomi') >= 0) return 'bumi';
+    return 'buku';
+  }
+
   function kartuUjian(u, n) {
+    var chip = function (t) { return el('span', { class: 'chip-info' }, t); };
+    var rincian = [chip(u.jumlah_soal + ' soal')];
+    if (u.n_pg) rincian.push(chip(u.n_pg + ' PG'));
+    if (u.n_pgk) rincian.push(chip(u.n_pgk + ' PG kompleks'));
+    if (u.n_isian) rincian.push(chip(u.n_isian + ' isian'));
     return el('button', { type: 'button', class: 'kontainer', style: '--n:' + Math.min(n, 8), onclick: function () { langkah1(u, {}); } },
-      el('span', { class: 'kontainer-atas' }, el('span', { class: 'lencana' }, u.jenjang), u.sesi ? el('span', null, u.sesi) : null),
-      el('strong', { class: 'kontainer-mapel' }, u.mapel),
-      el('span', { class: 'kontainer-nama' }, u.nama),
+      el('span', { class: 'kontainer-kepala' },
+        el('span', { class: 'kontainer-ikon' }, window.ikon(ikonMapel(u.mapel), 22)),
+        el('span', { class: 'kontainer-judul' },
+          el('strong', { class: 'kontainer-nama' }, u.nama),
+          el('span', { class: 'kontainer-sub' }, [u.jenjang, u.mapel, u.sesi].filter(Boolean).join(' \u00b7 ')))),
+      el('span', { class: 'kontainer-chip' }, rincian),
       el('span', { class: 'kontainer-meta' },
-        ikonTeks('dokumen', u.jumlah_soal + ' soal'), ikonTeks('jam', u.durasi_menit + ' menit'),
-        el('span', { class: 'kontainer-pilih' }, 'Mulai', window.ikon('kanan', 16))));
+        ikonTeks('jam', u.durasi_menit + ' menit'),
+        el('span', { class: 'kontainer-pilih' }, 'Mulai ujian')));
   }
 
   function kerangkaKartu() {
@@ -71,6 +89,10 @@
     var e = document.getElementById(id);
     if (e) e.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.header-menu [data-tuju]'), function (b) {
+    b.addEventListener('click', function () { gulirKe(b.getAttribute('data-tuju')); });
+  });
 
   function amatiMuncul(akar) {
     var daftar = akar.querySelectorAll('.muncul:not(.terlihat)');
@@ -127,23 +149,21 @@
     document.documentElement.classList.add('js');
     s.textContent = '';
 
-    // hero
+    // hero: foto latar opsional (hero.jpg di bucket aset); bila tidak ada, tampil hijau polos
     var aksi = el('div', { class: 'hero-aksi' },
-      el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { gulirKe('ujian'); } }, 'Pilih ujian'),
-      el('button', { type: 'button', class: 'btn', onclick: function () { gulirKe('tentang'); } }, 'Pelajari OMI'));
-    var ringkas = el('aside', { class: 'hero-ringkas', 'aria-label': 'Ringkasan simulasi' },
-      el('p', { class: 'angka-besar' }, el('strong', null, '120'), el('span', null, 'menit untuk semua jenjang')),
-      el('dl', { class: 'ringkas-daftar' },
-        [['Jenjang', 'MI, MTs, MA'], ['Bentuk soal', 'Pilihan ganda, pilihan ganda kompleks, isian singkat'], ['Penilaian', 'Benar, salah, dan kosong dihitung terpisah'], ['Peringkat', 'Nilai, benar, salah, lalu waktu']].map(function (r) {
-          return el('div', { class: 'ringkas-baris' }, el('dt', null, r[0]), el('dd', null, r[1]));
-        })));
-    var hero = el('section', { class: 'hero' }, el('div', { class: 'isi' },
-      el('div', null,
-        el('p', { class: 'eyebrow' }, 'Try Out OMI 2026'),
-        el('h1', null, 'Berlatih untuk Olimpiade Madrasah Indonesia'),
-        el('p', { class: 'hero-sub' }, 'OMI adalah ajang sains madrasah dari Kemenag. Kerjakan simulasinya dengan tampilan dan aturan seperti ujian sesungguhnya.'),
-        aksi),
-      ringkas));
+      el('button', { type: 'button', class: 'btn btn-hero', onclick: function () { gulirKe('ujian'); } }, 'Pilih ujian'),
+      el('button', { type: 'button', class: 'btn btn-hero-garis', onclick: function () { gulirKe('tentang'); } }, 'Pelajari OMI'));
+    var hero = el('section', { class: 'hero', id: 'atas' }, el('div', { class: 'isi' },
+      el('p', { class: 'eyebrow' }, 'Try Out OMI 2026'),
+      el('h1', null, 'Berlatih untuk Olimpiade Madrasah Indonesia'),
+      el('p', { class: 'hero-sub' }, 'OMI adalah ajang sains madrasah dari Kemenag. Kerjakan simulasinya dengan tampilan dan aturan seperti ujian sesungguhnya.'),
+      aksi));
+    var logoOmi = document.querySelector('.header-logo img[alt^="Olimpiade"]');
+    if (logoOmi && /logo-omi\.png/.test(logoOmi.src)) hero.style.setProperty('--foto', 'url("' + logoOmi.src.replace('logo-omi.png', 'hero.jpg') + '")');
+    var langkahData = [['daftar', 'Pilih ujian', 'Sesuai jenjang dan mapel'], ['kunciToken', 'Isi data dan token', 'Token dari pengawas'], ['selesai', 'Kerjakan dan lihat hasil', 'Nilai langsung keluar']];
+    var langkahKartu = el('div', { class: 'isi langkah-bungkus' }, el('div', { class: 'langkah' }, langkahData.map(function (l) {
+      return el('div', { class: 'langkah-item' }, el('span', { class: 'langkah-ikon' }, window.ikon(l[0], 20)), el('div', null, el('strong', null, l[1]), el('span', null, l[2])));
+    })));
 
     // daftar ujian
     halaman = { lanjut: el('div'), filter: el('div', { class: 'filter', role: 'tablist', 'aria-label': 'Jenjang' }),
@@ -153,7 +173,7 @@
       halaman.lanjut, halaman.filter, halaman.daftar));
 
     // tentang OMI
-    var tentang = el('section', { class: 'pita pita-putih muncul', id: 'tentang' }, el('div', { class: 'isi' },
+    var tentang = el('section', { class: 'pita muncul', id: 'tentang' }, el('div', { class: 'isi' },
       el('div', { class: 'tentang' },
         el('div', null,
           el('div', { class: 'judul-bagian' }, el('h2', null, 'Apa itu OMI?')),
@@ -209,7 +229,7 @@
         el('p', null, 'Situs ini adalah simulasi (try out) untuk berlatih dan bukan sistem resmi panitia OMI. Rujukan: Keputusan Direktur Jenderal Pendidikan Islam Nomor 6843 Tahun 2026 tentang Petunjuk Teknis Pelaksanaan OMI Tahun 2026.'),
         el('p', null, 'Informasi resmi: ', el('a', { href: 'https://omi.kemenag.go.id', target: '_blank', rel: 'noopener noreferrer' }, 'omi.kemenag.go.id')))));
 
-    [hero, ujian, tentang, aturan, footer].forEach(function (b) { s.appendChild(b); });
+    [hero, langkahKartu, ujian, tentang, aturan, footer].forEach(function (b) { s.appendChild(b); });
     amatiMuncul(s);
   }
 
