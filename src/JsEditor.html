@@ -260,7 +260,6 @@
   function soalSiswaEl(soal, nomor, total) {
     var badan = el('div', { class: 'kartu-badan' });
     badan.innerHTML = window.blokHTML(soal.blok);
-    window.tandaiPertanyaan(badan);
     var kartu = el('div', { class: 'kartu-soal' },
       el('div', { class: 'kartu-kepala' }, el('strong', null, 'Soal ' + nomor + ' dari ' + total), el('span', { class: 'lencana' }, TIPE_LABEL[soal.tipe])),
       badan,

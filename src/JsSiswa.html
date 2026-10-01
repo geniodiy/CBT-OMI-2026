@@ -555,7 +555,6 @@
     var isi = el('div', { class: 'kartu-isi' + (arah ? '' : ' tenang'), 'data-arah': arah || '' });
     var badan = el('div', { class: 'kartu-badan' });
     badan.innerHTML = window.blokHTML(soal.blok);
-    window.tandaiPertanyaan(badan);
     pasangGambar(badan);
     isi.appendChild(el('div', { class: 'kartu-kepala' },
       el('strong', null, 'Soal ' + (U.idx + 1) + ' dari ' + U.soal.length),
