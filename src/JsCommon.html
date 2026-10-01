@@ -1,0 +1,186 @@
+<script>
+(function () {
+  var TAG_BOLEH = ['b', 'strong', 'i', 'em', 'u', 'sub', 'sup', 'br', 'p', 'div', 'span', 'ul', 'ol', 'li'];
+  var ARAB = '[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]';
+  var RE_ARAB = new RegExp(ARAB + '+(?:[\\s\\u200C\\u200D]+' + ARAB + '+)*', 'g');
+  var RE_ARAB_ADA = new RegExp(ARAB);
+
+  var App = window.App = { onSesiAdminHabis: null };
+
+  /** Panggil fungsi server. Menolak dengan Error berpesan Indonesia. */
+  window.call = function (fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return new Promise(function (ok, gagal) {
+      google.script.run
+        .withSuccessHandler(ok)
+        .withFailureHandler(function (e) {
+          var pesan = String((e && e.message) || e || 'Terjadi kesalahan. Coba lagi.').replace(/^Error:\s*/, '');
+          if (pesan.indexOf('SESI_ADMIN') === 0 && App.onSesiAdminHabis) App.onSesiAdminHabis(pesan);
+          gagal(new Error(pesan));
+        })[fn].apply(null, args);
+    });
+  };
+
+  window.toast = function (pesan, galat) {
+    var el = document.createElement('div');
+    el.className = 'toast' + (galat ? ' toast-galat' : '');
+    el.textContent = pesan;
+    document.getElementById('toastRoot').appendChild(el);
+    setTimeout(function () { el.remove(); }, galat ? 6000 : 3500);
+  };
+
+  /**
+   * opt: { judul, isi (string teks, atau Node), tombol: [{teks, utama, bahaya, aksi}], lebar, tutupDiLuar }
+   * aksi(modal) boleh mengembalikan false agar modal tidak tertutup.
+   */
+  window.openModal = function (opt) {
+    var terakhirFokus = document.activeElement;
+    var latar = document.createElement('div');
+    latar.className = 'modal-latar';
+    var kotak = document.createElement('div');
+    kotak.className = 'modal' + (opt.lebar ? ' modal-lebar' : '');
+    kotak.setAttribute('role', 'dialog');
+    kotak.setAttribute('aria-modal', 'true');
+
+    var kepala = document.createElement('div'); kepala.className = 'modal-kepala';
+    var h = document.createElement('h2'); h.textContent = opt.judul || ''; kepala.appendChild(h);
+    var badan = document.createElement('div'); badan.className = 'modal-badan';
+    if (opt.isi instanceof Node) badan.appendChild(opt.isi);
+    else badan.textContent = opt.isi || '';
+    var kaki = document.createElement('div'); kaki.className = 'modal-kaki';
+    kotak.appendChild(kepala); kotak.appendChild(badan); kotak.appendChild(kaki);
+    latar.appendChild(kotak);
+
+    var modal = {
+      el: kotak, badan: badan,
+      close: function () {
+        document.removeEventListener('keydown', onKey, true);
+        latar.remove();
+        if (terakhirFokus && terakhirFokus.focus) terakhirFokus.focus();
+      }
+    };
+    (opt.tombol || []).forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn' + (t.utama ? ' btn-utama' : t.bahaya ? ' btn-bahaya' : ' btn-teks');
+      b.textContent = t.teks;
+      b.addEventListener('click', function () {
+        if (!t.aksi || t.aksi(modal) !== false) modal.close();
+      });
+      kaki.appendChild(b);
+    });
+    if (!kaki.children.length) kaki.hidden = true;
+
+    function onKey(e) {
+      if (e.key === 'Escape' && opt.tutupDiLuar !== false) { e.stopPropagation(); modal.close(); }
+      if (e.key === 'Tab') {
+        var f = kotak.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!f.length) return;
+        var awal = f[0], akhir = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === awal) { e.preventDefault(); akhir.focus(); }
+        else if (!e.shiftKey && document.activeElement === akhir) { e.preventDefault(); awal.focus(); }
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+    if (opt.tutupDiLuar !== false) {
+      latar.addEventListener('mousedown', function (e) { if (e.target === latar) modal.close(); });
+    }
+    document.getElementById('modalRoot').appendChild(latar);
+    var fokus = kotak.querySelector('input, select, textarea') || kaki.querySelector('.btn-utama, .btn-bahaya') || kotak.querySelector('button');
+    if (fokus) fokus.focus();
+    return modal;
+  };
+
+  /** Sanitasi HTML dari admin atau JSON. Dipanggil setiap kali dirender. */
+  window.clean = function (html) {
+    return DOMPurify.sanitize(String(html == null ? '' : html), { ALLOWED_TAGS: TAG_BOLEH, ALLOWED_ATTR: [] });
+  };
+
+  /** Sama dengan normArab_ di Nilai.gs (jaga keduanya tetap seragam). Dipakai saat tempel. */
+  window.normArab = function (teks) {
+    var s = String(teks == null ? '' : teks).replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+    return s.replace(/[\uFB50-\uFDFF\uFE70-\uFEFF]+/g, function (m) { return m.normalize('NFKC'); });
+  };
+
+  /** HTML aman untuk daftar bagian soal. Bagian gambar kosong atau bukan https dilewati. */
+  window.blokHTML = function (bloks) {
+    return (bloks || []).map(function (b) {
+      if (b.tipe === 'gambar') {
+        var url = String(b.isi || '').trim();
+        if (!/^https:\/\//i.test(url)) return '';
+        var img = document.createElement('img');
+        img.className = 'blok-gambar';
+        img.alt = 'Gambar soal';
+        img.referrerPolicy = 'no-referrer';
+        img.src = url;
+        return img.outerHTML;
+      }
+      return '<div class="blok-teks">' + window.clean(b.isi) + '</div>';
+    }).join('');
+  };
+
+  function bungkusArab(akar) {
+    var jalan = document.createTreeWalker(akar, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (n) {
+        if (!RE_ARAB_ADA.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+        for (var p = n.parentNode; p && p !== akar; p = p.parentNode) {
+          if (p.classList && (p.classList.contains('katex') || p.classList.contains('ar'))) return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var daftar = [];
+    while (jalan.nextNode()) daftar.push(jalan.currentNode);
+    daftar.forEach(function (n) {
+      var teks = n.nodeValue, frag = document.createDocumentFragment(), akhir = 0, m;
+      RE_ARAB.lastIndex = 0;
+      while ((m = RE_ARAB.exec(teks))) {
+        if (m.index > akhir) frag.appendChild(document.createTextNode(teks.slice(akhir, m.index)));
+        var s = document.createElement('span');
+        s.className = 'ar'; s.setAttribute('dir', 'rtl'); s.setAttribute('lang', 'ar');
+        s.textContent = m[0];
+        frag.appendChild(s);
+        akhir = m.index + m[0].length;
+      }
+      if (akhir < teks.length) frag.appendChild(document.createTextNode(teks.slice(akhir)));
+      n.parentNode.replaceChild(frag, n);
+    });
+    // Bagian teks yang seluruhnya Arab dibuat rata kanan.
+    akar.querySelectorAll('.blok-teks').forEach(function (b) {
+      var sisa = b.textContent.replace(new RegExp(ARAB, 'g'), '').replace(/[\s\d.,:;()\-\u200C\u200D]/g, '');
+      if (!sisa && b.querySelector('.ar')) b.classList.add('ar-blok');
+    });
+  }
+
+  /** Render rumus (KaTeX + mhchem) lalu bungkus teks Arab. Panggil setelah innerHTML diisi. */
+  window.mathify = function (el) {
+    if (window.renderMathInElement) {
+      try {
+        window.renderMathInElement(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true },
+            { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      } catch (e) { /* rumus rusak dibiarkan sebagai teks */ }
+    }
+    bungkusArab(el);
+  };
+
+  window.showView = function (nama) {
+    document.querySelectorAll('[data-view]').forEach(function (s) { s.hidden = s.getAttribute('data-view') !== nama; });
+    window.scrollTo(0, 0);
+  };
+
+  window.simpanLokal = function (kunci, nilai) {
+    try { localStorage.setItem(kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; }
+  };
+  window.bacaLokal = function (kunci) {
+    try { var v = localStorage.getItem(kunci); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  };
+  window.hapusLokal = function (kunci) {
+    try { localStorage.removeItem(kunci); } catch (e) { /* abaikan */ }
+  };
+})();
+</script>

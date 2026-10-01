@@ -12,11 +12,13 @@ Kerjakan berurutan, satu milestone per sesi. Centang saat uji manual lulus. Ruju
 ## M1. Fondasi server
 
 Berkas: `src/Code.gs`, `src/Util.gs`, `src/Nilai.gs`, `src/Index.html` (kerangka kosong), `src/Css.html`, `src/JsCommon.html`.
-- [ ] `doGet`, `include`, `sb_`, `enc_`, `guard_`, `shuffle_`, `seedShuffle_`.
-- [ ] `Nilai.gs`: `norm_`, `cek_`, `hitung_`, `normSoal_` sesuai `API.md` dan `FORMAT-SOAL.md`.
-- [ ] Token CSS (variabel warna, tipografi) dari `UI.md`; header dengan logo; helper klien (`call`, `toast`, `openModal`, `clean`, `blokHTML`, `mathify`, `showView`).
+- [x] `doGet`, `include`, `sb_`, `enc_`, `guard_`, `shuffle_`, `seedShuffle_`.
+- [x] `Nilai.gs`: `norm_`, `cek_`, `hitung_`, `normSoal_` sesuai `API.md` dan `FORMAT-SOAL.md`.
+- [x] Token CSS (variabel warna, tipografi) dari `UI.md`; header dengan logo; helper klien (`call`, `toast`, `openModal`, `clean`, `blokHTML`, `mathify`, `showView`).
 
 Uji: halaman terbuka dengan header; fungsi uji sementara memanggil `sb_('GET','ujian?select=id&limit=1')` tanpa galat; contoh pemanggilan `hitung_` dengan data tiruan menghasilkan benar/salah/kosong yang tepat (cek pg, pgk, isian koma-titik, kosong).
+
+Status uji: logika `Nilai.gs` lulus uji Node (pg, pgk, isian koma/titik, kosong, Arab, validasi) dan helper klien lulus uji browser (sanitasi, KaTeX, mhchem, pembungkus Arab). Belum dicentang: uji di Apps Script asli (header + logo, `ujiM1Sb`, `ujiM1Hitung`), menunggu M0 dari pemilik. Fungsi `uji*` di `Code.gs` dihapus setelah lulus.
 
 ## M2. Admin: ujian
 

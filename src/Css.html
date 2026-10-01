@@ -1,0 +1,90 @@
+<style>
+:root {
+  --biru: #1a7fc4; --biru-tua: #125d93; --biru-muda: #e8f3fb;
+  --merah: #d3202b; --hijau: #17803d; --emas: #e3b505;
+  --teks: #1c2733; --teks-redup: #5b6773;
+  --garis: #dde3ea; --latar: #f4f6f8; --putih: #ffffff;
+  --radius: 8px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--latar); color: var(--teks);
+  font: 400 16px/1.55 "Plus Jakarta Sans", system-ui, "Segoe UI", Roboto, sans-serif;
+}
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .5em; }
+h1 { font-size: 1.5rem; } h2 { font-size: 1.25rem; } h3 { font-size: 1.05rem; }
+p { margin: 0 0 .75em; }
+.redup { color: var(--teks-redup); font-weight: 400; }
+:focus-visible { outline: 2px solid var(--biru); outline-offset: 2px; }
+
+/* header */
+.header {
+  display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 0 20px;
+  background: var(--putih); border-bottom: 1px solid var(--garis);
+}
+.header-logo { display: flex; align-items: center; gap: 10px; }
+.header-logo img { height: 40px; width: auto; display: block; }
+.header-judul { flex: 1; font-size: 1.05rem; }
+@media (max-width: 600px) { .header { padding: 0 12px; gap: 10px; } .header-judul { font-size: .95rem; } }
+
+#app { padding: 24px 20px; max-width: 1200px; margin: 0 auto; }
+@media (max-width: 600px) { #app { padding: 16px 12px; } }
+
+/* tombol */
+.btn {
+  font: inherit; font-weight: 600; min-height: 44px; padding: 0 18px; cursor: pointer;
+  border-radius: var(--radius); border: 1px solid var(--garis); background: var(--putih); color: var(--teks);
+}
+.btn:hover { border-color: var(--biru); }
+.btn-utama { background: var(--biru); border-color: var(--biru); color: var(--putih); }
+.btn-utama:hover { background: var(--biru-tua); border-color: var(--biru-tua); }
+.btn-bahaya { background: var(--merah); border-color: var(--merah); color: var(--putih); }
+.btn-bahaya:hover { background: #b01a24; border-color: #b01a24; }
+.btn-teks { border-color: transparent; background: transparent; color: var(--biru-tua); }
+.btn-teks:hover { background: var(--biru-muda); border-color: transparent; }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+
+/* formulir */
+.field { display: block; margin-bottom: 14px; }
+.field > span { display: block; font-weight: 600; margin-bottom: 4px; }
+.field input, .field select, .field textarea {
+  width: 100%; min-height: 44px; padding: 8px 12px; font: inherit; color: inherit;
+  background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius);
+}
+.field .galat { color: var(--merah); font-size: .9rem; margin-top: 4px; }
+
+/* modal */
+.modal-latar {
+  position: fixed; inset: 0; z-index: 50; background: rgba(28, 39, 51, .45);
+  display: flex; align-items: flex-start; justify-content: center; padding: 5vh 12px; overflow-y: auto;
+}
+.modal {
+  width: 100%; max-width: 520px; background: var(--putih); border-radius: var(--radius);
+  border: 1px solid var(--garis); box-shadow: 0 8px 24px rgba(28, 39, 51, .18);
+}
+.modal-lebar { max-width: 900px; }
+.modal-kepala { padding: 18px 20px 0; }
+.modal-kepala h2 { margin: 0; }
+.modal-badan { padding: 14px 20px; }
+.modal-kaki { display: flex; justify-content: flex-end; align-items: center; gap: 10px; padding: 0 20px 18px; }
+
+/* toast */
+#toastRoot { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 8px; align-items: center; width: calc(100% - 24px); max-width: 420px; pointer-events: none; }
+.toast { pointer-events: auto; padding: 10px 16px; border-radius: var(--radius); background: var(--teks); color: var(--putih); font-size: .95rem; }
+.toast-galat { background: var(--merah); }
+
+/* lencana dan kerangka memuat */
+.lencana { display: inline-block; padding: 2px 8px; border-radius: 6px; background: var(--biru-muda); color: var(--biru-tua); font-size: .8rem; font-weight: 600; }
+.kerangka { height: 16px; border-radius: 6px; background: var(--garis); margin-bottom: 10px; }
+
+/* isi soal */
+.blok-teks { margin-bottom: .75em; overflow-wrap: anywhere; }
+.blok-gambar { display: block; max-width: 100%; height: auto; object-fit: contain; margin: 0 0 .75em; }
+.ar { font-family: "Noto Naskh Arabic", "Traditional Arabic", "Geeza Pro", serif; font-size: 1.25em; line-height: 2; direction: rtl; unicode-bidi: isolate; }
+.ar-blok { text-align: right; direction: rtl; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media print { .header-aksi, #toastRoot { display: none !important; } }
+</style>

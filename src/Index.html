@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>Try Out OMI 2026 CBT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <?!= include('Css') ?>
+</head>
+<body>
+  <header class="header">
+    <div class="header-logo">
+      <img src="<?= logoBase ?>logo-kemenag.png" alt="Kementerian Agama">
+      <img src="<?= logoBase ?>logo-omi.png" alt="Olimpiade Madrasah Indonesia">
+    </div>
+    <div class="header-judul"><strong>Try Out OMI 2026</strong> <span class="redup">CBT</span></div>
+    <div class="header-aksi">
+      <button type="button" class="btn btn-teks" id="btnAdmin" hidden>Login admin</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <section data-view="beranda" hidden></section>
+    <section data-view="ujian" hidden></section>
+    <section data-view="hasil" hidden></section>
+    <section data-view="admin" hidden></section>
+  </main>
+
+  <div id="modalRoot"></div>
+  <div id="toastRoot" role="status" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/mhchem.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <?!= include('JsCommon') ?>
+</body>
+</html>

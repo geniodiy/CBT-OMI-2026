@@ -1,0 +1,214 @@
+/**
+ * Logika murni penilaian dan normalisasi soal.
+ * Tanpa ketergantungan Apps Script supaya bisa diuji dengan Node.
+ */
+
+var TIPE_ALIAS_ = {
+  'pg': 'pg', 'pilihan ganda': 'pg',
+  'pgk': 'pgk', 'pg kompleks': 'pgk',
+  'isian': 'isian', 'isian singkat': 'isian'
+};
+var HURUF_OPSI_ = 'ABCDEFGH';
+var KATA_LATEX_ = ['sqrt', 'frac', 'alpha', 'beta', 'gamma', 'theta', 'times', 'leq', 'geq', 'neq', 'cdot', 'infty', 'pm'];
+
+/** Hapus karakter kendali arah tersembunyi dan ubah bentuk presentasi Arab (hasil salin PDF) ke huruf dasar. */
+function normArab_(teks) {
+  var s = String(teks == null ? '' : teks);
+  s = s.replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+  if (typeof s.normalize === 'function') {
+    s = s.replace(/[\uFB50-\uFDFF\uFE70-\uFEFF]+/g, function (m) { return m.normalize('NFKC'); });
+  }
+  return s;
+}
+
+/** Bentuk pembanding jawaban isian: huruf kecil, spasi tunggal, koma jadi titik, Arab tanpa harakat dan tatwil. */
+function norm_(teks) {
+  var s = normArab_(teks);
+  s = s.replace(/[\u0660-\u0669]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); });
+  s = s.replace(/[\u064B-\u065F\u0670\u0640]/g, '');
+  s = s.replace(/[\u0623\u0625\u0622\u0671]/g, '\u0627')
+       .replace(/\u0649/g, '\u064A')
+       .replace(/\u0629/g, '\u0647');
+  return s.trim().toLowerCase().replace(/\s+/g, ' ').replace(/,/g, '.');
+}
+
+function isNumber_(s) {
+  return /^-?\d+(\.\d+)?$/.test(s);
+}
+
+/** Apakah jawaban (array string) benar untuk satu soal. */
+function cek_(soal, jawaban) {
+  var j = Array.isArray(jawaban) ? jawaban : [];
+  var kunci = Array.isArray(soal.kunci) ? soal.kunci : [];
+  if (soal.tipe === 'pg') {
+    return j.length === 1 && j[0] === kunci[0];
+  }
+  if (soal.tipe === 'pgk') {
+    if (!j.length) return false;
+    var a = uniq_(j), b = uniq_(kunci);
+    return a.length === b.length && a.every(function (x) { return b.indexOf(x) >= 0; });
+  }
+  var n = norm_(j[0]);
+  if (!n) return false;
+  return kunci.some(function (k) {
+    var nk = norm_(k);
+    return nk === n || (isNumber_(n) && isNumber_(nk) && Number(n) === Number(nk));
+  });
+}
+
+function uniq_(arr) {
+  return arr.filter(function (x, i) { return arr.indexOf(x) === i; });
+}
+
+function kosong_(jawaban) {
+  if (!Array.isArray(jawaban) || !jawaban.length) return true;
+  return jawaban.every(function (x) { return String(x == null ? '' : x).trim() === ''; });
+}
+
+/**
+ * Menilai semua soal. Skor = bobot soal benar / bobot seluruh soal x 100 (dua desimal).
+ * rincian.kunci selalu terisi di sini; pemanggil membuangnya bila tampil_kunci = false.
+ */
+function hitung_(daftarSoal, jawaban) {
+  var semua = jawaban || {};
+  var benar = 0, salah = 0, kosong = 0, bobotBenar = 0, bobotTotal = 0;
+  var rincian = daftarSoal.map(function (soal) {
+    var bobot = Number(soal.bobot) > 0 ? Number(soal.bobot) : 1;
+    var j = semua[soal.id];
+    var status;
+    bobotTotal += bobot;
+    if (kosong_(j)) { status = 'kosong'; kosong++; }
+    else if (cek_(soal, j)) { status = 'benar'; benar++; bobotBenar += bobot; }
+    else { status = 'salah'; salah++; }
+    return { id: soal.id, status: status, jawaban: Array.isArray(j) ? j : [], kunci: soal.kunci || [] };
+  });
+  var skor = bobotTotal ? Math.round(bobotBenar / bobotTotal * 10000) / 100 : 0;
+  return { benar: benar, salah: salah, kosong: kosong, skor: skor, rincian: rincian };
+}
+
+function galatSoal_(i, pesan) {
+  return new Error('Soal #' + i + ': ' + pesan);
+}
+
+function bagianBlok_(x, i) {
+  var blok = [];
+  if (Array.isArray(x.blok)) {
+    x.blok.forEach(function (b) {
+      var t = b && String(b.tipe || '').toLowerCase().trim();
+      if (t !== 'teks' && t !== 'gambar') throw galatSoal_(i, 'tipe bagian harus "teks" atau "gambar".');
+      blok.push({ tipe: t, isi: t === 'teks' ? normArab_(b.isi) : String(b.isi == null ? '' : b.isi).trim() });
+    });
+  } else {
+    blok.push({ tipe: 'teks', isi: normArab_(x.teks) });
+    if (x.gambar != null) blok.push({ tipe: 'gambar', isi: String(x.gambar).trim() });
+  }
+  var adaTeks = blok.some(function (b) { return b.tipe === 'teks' && b.isi.trim() !== ''; });
+  if (!adaTeks) throw galatSoal_(i, 'teks soal kosong.');
+  return blok;
+}
+
+function bagianOpsi_(x, i) {
+  var daftar = [];
+  if (Array.isArray(x.opsi)) {
+    x.opsi.forEach(function (h, n) { daftar.push({ k: HURUF_OPSI_.charAt(n), h: normArab_(h) }); });
+  } else if (x.opsi && typeof x.opsi === 'object') {
+    Object.keys(x.opsi).sort().forEach(function (k) { daftar.push({ k: k.toUpperCase().trim(), h: normArab_(x.opsi[k]) }); });
+  }
+  if (daftar.length < 2) throw galatSoal_(i, 'opsi kurang dari 2.');
+  if (daftar.length > 8) throw galatSoal_(i, 'opsi lebih dari 8.');
+  daftar.forEach(function (o, n) {
+    if (HURUF_OPSI_.indexOf(o.k) < 0 || o.k.length !== 1) throw galatSoal_(i, 'huruf opsi "' + o.k + '" tidak valid (A sampai H).');
+    if (daftar.findIndex(function (p) { return p.k === o.k; }) !== n) throw galatSoal_(i, 'huruf opsi ' + o.k + ' dipakai dua kali.');
+  });
+  return daftar;
+}
+
+function bagianKunci_(x, tipe, opsi, i) {
+  var mentah = Array.isArray(x.kunci) ? x.kunci : (x.kunci == null ? [] : [x.kunci]);
+  var kunci;
+  if (tipe === 'isian') {
+    kunci = [];
+    mentah.forEach(function (k) {
+      String(k == null ? '' : k).split('|').forEach(function (p) {
+        p = normArab_(p).trim();
+        if (p) kunci.push(p);
+      });
+    });
+  } else {
+    kunci = [];
+    mentah.forEach(function (k) {
+      String(k == null ? '' : k).split(/[,|]/).forEach(function (p) {
+        p = p.trim().toUpperCase();
+        if (p) kunci.push(p);
+      });
+    });
+    kunci = uniq_(kunci);
+  }
+  if (!kunci.length) throw galatSoal_(i, 'kunci kosong.');
+  if (tipe !== 'isian') {
+    kunci.forEach(function (k) {
+      if (!opsi.some(function (o) { return o.k === k; })) throw galatSoal_(i, 'kunci ' + k + ' tidak ada di daftar opsi.');
+    });
+    if (tipe === 'pg' && kunci.length !== 1) throw galatSoal_(i, 'pilihan ganda harus punya tepat satu kunci.');
+  }
+  return kunci;
+}
+
+/** Potong bagian rumus ($..$, $$..$$, \(..\), \[..\]) supaya sisanya bisa diperiksa sebagai teks biasa. */
+function tanpaRumus_(teks) {
+  return String(teks)
+    .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+    .replace(/\\\[[\s\S]*?\\\]/g, ' ')
+    .replace(/\\\([\s\S]*?\\\)/g, ' ')
+    .replace(/\$(?:\\.|[^$\\])*\$/g, ' ');
+}
+
+function peringatanTeks_(teks, i) {
+  var out = [];
+  var tanpaEscape = String(teks).replace(/\\\$/g, '');
+  if ((tanpaEscape.match(/\$/g) || []).length % 2 === 1) {
+    out.push('Soal #' + i + ': tanda $ tidak berpasangan.');
+  }
+  var luar = tanpaRumus_(tanpaEscape).replace(/<[^>]*>/g, ' ');
+  KATA_LATEX_.forEach(function (kata) {
+    if (new RegExp('(^|[^A-Za-z])\\\\?' + kata + '(?![A-Za-z])').test(luar)) {
+      out.push('Soal #' + i + ': ada "' + kata + '" di luar rumus. Tulis dengan garis miring dan tanda $, contoh $\\' + kata + '{...}$.');
+    }
+  });
+  return out;
+}
+
+/**
+ * Normalisasi dan validasi satu soal. i = nomor 1-based untuk pesan galat.
+ * Mengembalikan { soal: {tipe, blok, opsi, kunci, bobot}, peringatan: [] }.
+ */
+function normSoal_(x, i) {
+  if (!x || typeof x !== 'object') throw galatSoal_(i, 'bukan objek soal.');
+  var tipe = TIPE_ALIAS_[String(x.tipe == null ? '' : x.tipe).toLowerCase().trim().replace(/\s+/g, ' ')];
+  if (!tipe) throw galatSoal_(i, 'tipe tidak dikenal. Gunakan pg, pgk, atau isian.');
+  var peringatan = [];
+
+  var blok = bagianBlok_(x, i);
+  var opsi = tipe === 'isian' ? [] : bagianOpsi_(x, i);
+  var kunci = bagianKunci_(x, tipe, opsi, i);
+
+  var bobot = Number(x.bobot);
+  if (x.bobot == null || x.bobot === '') bobot = 1;
+  else if (!(bobot > 0)) { peringatan.push('Soal #' + i + ': bobot tidak valid, dipakai 1.'); bobot = 1; }
+
+  var teksSemua = blok.filter(function (b) { return b.tipe === 'teks'; }).map(function (b) { return b.isi; });
+  opsi.forEach(function (o) { teksSemua.push(o.h); });
+  teksSemua.forEach(function (t) { peringatan = peringatan.concat(peringatanTeks_(t, i)); });
+
+  var panjang = blok.filter(function (b) { return b.tipe === 'teks'; })
+    .map(function (b) { return b.isi.replace(/<[^>]*>/g, '').trim(); }).join('').length;
+  if (panjang < 5) peringatan.push('Soal #' + i + ': teks soal sangat pendek.');
+
+  blok.forEach(function (b) {
+    if (b.tipe === 'gambar' && b.isi && !/^https:\/\//i.test(b.isi)) {
+      peringatan.push('Soal #' + i + ': URL gambar harus diawali https://.');
+    }
+  });
+
+  return { soal: { tipe: tipe, blok: blok, opsi: opsi, kunci: kunci, bobot: bobot }, peringatan: uniq_(peringatan) };
+}
