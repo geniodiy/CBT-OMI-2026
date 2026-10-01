@@ -488,7 +488,20 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
 .hasil-angka > div:first-child { border-left: 0; }
 .hasil-angka strong { font-size: 1.3rem; }
 .hasil-kaki { margin-top: 14px; padding-top: 8px; border-top: 1px solid var(--garis); font-size: .8rem; color: var(--teks-redup); }
-@media (max-width: 600px) { .hasil { padding: 16px; } .hasil-angka { grid-template-columns: 1fr 1fr; } .hasil-angka > div:nth-child(3) { border-left: 0; } .hasil-angka > div:nth-child(n+3) { border-top: 1px solid var(--garis); } .hasil-nilai { text-align: left; } }
+/* HP: susunan sama dengan desktop, hanya diperkecil (nilai tetap di kanan, empat angka tetap sebaris). */
+@media (max-width: 600px) {
+  .hasil { padding: 12px; font-size: .78rem; }
+  .hasil h1 { font-size: 1rem; }
+  .hasil-atas { flex-wrap: nowrap; gap: 10px; }
+  .hasil-baris { grid-template-columns: 84px 1fr; gap: 6px; }
+  .hasil-skor { font-size: 2.1rem; }
+  .hasil-maks { font-size: .9rem; }
+  .hasil-angka > div { padding: 8px 8px; }
+  .hasil-angka strong { font-size: .95rem; }
+  .hasil-judul { font-size: .85rem; }
+  .hasil-tabel th, .hasil-tabel td { padding: 6px 6px; font-size: .78rem; }
+  .hasil-selesai { padding: 8px 10px; }
+}
 .tabel-gulir { overflow-x: auto; }
 .hasil-tabel td { overflow-wrap: anywhere; }
 .hasil-tabel tr { page-break-inside: avoid; }
