@@ -408,7 +408,8 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
 #bilahMuat i { display: block; height: 100%; width: 38%; border-radius: 3px; background: var(--biru); animation: geserBilah 1.15s var(--ease-pegas) infinite; }
 .muat { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; padding: 14vh 16px; animation: pudar .3s ease-out both; }
 .muat-cincin { position: relative; width: 84px; height: 84px; display: grid; place-items: center; margin-bottom: 14px; }
-.muat-cincin img { width: 34px; height: auto; animation: napas 2s ease-in-out infinite; }
+.muat-cincin b { width: 14px; height: 14px; border-radius: 50%; background: var(--biru); animation: titik 1.4s ease-in-out infinite; }
+@keyframes titik { 50% { transform: scale(1.6); opacity: .6; } }
 .muat-cincin i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; border-top-color: var(--biru); animation: putar 1.1s linear infinite; }
 .muat-cincin i + i { inset: 10px; border-top-color: transparent; border-bottom-color: rgba(24, 121, 189, .5); animation-duration: 1.7s; animation-direction: reverse; }
 .muat-cincin::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(24, 121, 189, .25); animation: riak 2s ease-out infinite; }
@@ -431,7 +432,6 @@ body.mode-ujian #app { max-width: 1240px; padding-top: 16px; }
 @media (max-width: 600px) { .popover { left: 12px; right: 12px; width: auto; } }
 
 @keyframes putar { to { transform: rotate(360deg); } }
-@keyframes napas { 50% { transform: scale(1.1); opacity: .85; } }
 @keyframes riak { from { transform: scale(.7); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }
 @keyframes geserBilah { from { transform: translateX(-110%); } to { transform: translateX(280%); } }
 @keyframes denyut { 50% { opacity: .5; } }

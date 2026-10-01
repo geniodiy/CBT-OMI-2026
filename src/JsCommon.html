@@ -56,14 +56,12 @@
   };
 
   /**
-   * Layar muat bermerek: logo di tengah cincin berputar dan teks langkah yang berganti.
+   * Layar muat: dua cincin berputar dengan titik berdenyut di tengah dan teks langkah yang berganti.
    * langkah: daftar kalimat singkat, misalnya ['Memeriksa token', 'Menyiapkan soal'].
    */
   window.muatan = function (judul, langkah) {
-    var logo = document.querySelector('.header-logo img');
     var cincin = window.el('div', { class: 'muat-cincin', 'aria-hidden': 'true' },
-      window.el('i'), window.el('i'),
-      logo ? window.el('img', { src: logo.src, alt: '' }) : null);
+      window.el('i'), window.el('i'), window.el('b'));
     var teks = window.el('p', { class: 'muat-langkah', 'aria-live': 'polite' }, (langkah && langkah[0]) || '');
     var kotak = window.el('div', { class: 'muat', role: 'status' }, cincin, window.el('h2', null, judul), teks);
     if (langkah && langkah.length > 1) {
