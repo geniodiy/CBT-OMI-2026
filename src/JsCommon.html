@@ -755,7 +755,11 @@
       // Ukuran popup dikunci sebelum ruang kosong ditambahkan: popup tidak membesar, mengecil, atau bergeser.
       var m = aktif && document.activeElement && document.activeElement.closest ? document.activeElement.closest('.modal') : null;
       if (m && popupTetap !== m) { if (popupTetap) popupTetap.style.height = ''; m.style.height = m.offsetHeight + 'px'; popupTetap = m; }
-      if (!aktif && popupTetap) { popupTetap.style.height = ''; popupTetap = null; }
+      if (!aktif && popupTetap) {
+        popupTetap.style.height = '';
+        var bd = popupTetap.querySelector('.modal-badan'); if (bd) bd.style.removeProperty('--ekstra');
+        popupTetap = null;
+      }
       root.style.setProperty('--kb', k.px + 'px');
       document.body.classList.toggle('kbd-fokus', aktif);
     }
@@ -766,9 +770,15 @@
       var dasar = (vv && k.terukur ? vv.offsetTop + vv.height : window.innerHeight - k.px) - 14;
       var wadah = el.closest ? el.closest('.modal-badan') : null;
       if (wadah) {
+        // Ruang kosong di bawah isi popup hanya ditambah sebesar yang dibutuhkan agar baris ini bisa digulir ke atas keyboard.
+        wadah.style.setProperty('--ekstra', '0px');
+        r = caret || el.getBoundingClientRect();
         var wr = wadah.getBoundingClientRect(), bawah = Math.min(wr.bottom - 8, dasar), atas = Math.max(wr.top, 0) + 8;
-        if (r.bottom > bawah) wadah.scrollTo({ top: wadah.scrollTop + (r.bottom - bawah), behavior: 'smooth' });
-        else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
+        if (r.bottom > bawah) {
+          var perlu = r.bottom - bawah, sisa = wadah.scrollHeight - wadah.clientHeight - wadah.scrollTop;
+          if (perlu > sisa) wadah.style.setProperty('--ekstra', Math.ceil(perlu - sisa) + 'px');
+          wadah.scrollTo({ top: wadah.scrollTop + perlu, behavior: 'smooth' });
+        } else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
         return;
       }
       if (r.bottom > dasar) window.scrollBy({ top: r.bottom - dasar, left: 0, behavior: 'smooth' });
@@ -801,6 +811,13 @@
     document.addEventListener('focusout', function () {
       clearTimeout(lepas);
       lepas = setTimeout(function () { if (!dapatDiketik(document.activeElement)) pasangKb(false); }, 250);
+    });
+    // Keyboard layar Android dapat ditutup (tombol kembali) tanpa melepas fokus kolom. Mengetuk bagian lain (bukan kolom isian) mengembalikan tata letak.
+    document.addEventListener('click', function (e) {
+      if (!document.body.classList.contains('kbd-fokus')) return;
+      var t = e.target, label = t.closest ? t.closest('label') : null;
+      if (dapatDiketik(t) || (label && label.querySelector('input,textarea,select'))) return;
+      pasangKb(false);
     });
     // Saat mengetik di editor atau kolom panjang, kursor dijaga tetap di atas keyboard.
     document.addEventListener('input', function (e) {

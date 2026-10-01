@@ -706,8 +706,8 @@ input, select, textarea, [contenteditable="true"] { scroll-margin-block: 96px; }
 /* keyboard layar: tata letak tidak diubah. Halaman diberi ruang kosong seukuran keyboard di bawahnya, dan badan popup diberi ruang kosong yang sama
    (ukuran dan posisi popup tetap), sehingga baris yang sedang diisi dapat digulir tepat di atas keyboard dan baris lain tetap ada. */
 body.kbd-fokus { padding-bottom: var(--kb, 0px); }
-/* ruang kosong berupa isi yang dapat digulir (bukan padding): padding tidak bisa menyusut sehingga mendorong footer keluar dari popup */
-body.kbd-fokus .modal-badan::after { content: ""; display: block; height: calc(var(--kb, 0px) + 12px); flex: none; }
+/* ruang kosong berupa isi yang dapat digulir (bukan padding, karena padding tidak bisa menyusut dan mendorong footer keluar dari popup); tingginya hanya sebesar yang dibutuhkan agar baris yang diisi bisa digulir ke atas keyboard (--ekstra, diatur skrip) */
+body.kbd-fokus .modal-badan::after { content: ""; display: block; height: var(--ekstra, 0px); flex: none; }
 
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 /* hasil */
