@@ -86,8 +86,13 @@ function hitung_(daftarSoal, jawaban) {
   return { benar: benar, salah: salah, kosong: kosong, skor: skor, rincian: rincian };
 }
 
+/** Awali pesan dengan "Soal #N: " bila i diberikan (import); tanpa i (editor manual) kalimat dimulai huruf besar. */
+function pesan_(i, teks) {
+  return i ? 'Soal #' + i + ': ' + teks : teks.charAt(0).toUpperCase() + teks.slice(1);
+}
+
 function galatSoal_(i, pesan) {
-  return new Error('Soal #' + i + ': ' + pesan);
+  return new Error(pesan_(i, pesan));
 }
 
 function bagianBlok_(x, i) {
@@ -167,12 +172,12 @@ function peringatanTeks_(teks, i) {
   var out = [];
   var tanpaEscape = String(teks).replace(/\\\$/g, '');
   if ((tanpaEscape.match(/\$/g) || []).length % 2 === 1) {
-    out.push('Soal #' + i + ': tanda $ tidak berpasangan.');
+    out.push(pesan_(i, 'tanda $ tidak berpasangan.'));
   }
   var luar = tanpaRumus_(tanpaEscape).replace(/<[^>]*>/g, ' ');
   KATA_LATEX_.forEach(function (kata) {
     if (new RegExp('(^|[^A-Za-z])\\\\?' + kata + '(?![A-Za-z])').test(luar)) {
-      out.push('Soal #' + i + ': ada "' + kata + '" di luar rumus. Tulis dengan garis miring dan tanda $, contoh $\\' + kata + '{...}$.');
+      out.push(pesan_(i, 'ada "' + kata + '" di luar rumus. Tulis dengan garis miring dan tanda $, contoh $\\' + kata + '{...}$.'));
     }
   });
   return out;
@@ -194,7 +199,7 @@ function normSoal_(x, i) {
 
   var bobot = Number(x.bobot);
   if (x.bobot == null || x.bobot === '') bobot = 1;
-  else if (!(bobot > 0)) { peringatan.push('Soal #' + i + ': bobot tidak valid, dipakai 1.'); bobot = 1; }
+  else if (!(bobot > 0)) { peringatan.push(pesan_(i, 'bobot tidak valid, dipakai 1.')); bobot = 1; }
 
   var teksSemua = blok.filter(function (b) { return b.tipe === 'teks'; }).map(function (b) { return b.isi; });
   opsi.forEach(function (o) { teksSemua.push(o.h); });
@@ -202,11 +207,11 @@ function normSoal_(x, i) {
 
   var panjang = blok.filter(function (b) { return b.tipe === 'teks'; })
     .map(function (b) { return b.isi.replace(/<[^>]*>/g, '').trim(); }).join('').length;
-  if (panjang < 5) peringatan.push('Soal #' + i + ': teks soal sangat pendek.');
+  if (panjang < 5) peringatan.push(pesan_(i, 'teks soal sangat pendek.'));
 
   blok.forEach(function (b) {
     if (b.tipe === 'gambar' && b.isi && !/^https:\/\//i.test(b.isi)) {
-      peringatan.push('Soal #' + i + ': URL gambar harus diawali https://.');
+      peringatan.push(pesan_(i, 'URL gambar harus diawali https://.'));
     }
   });
 
@@ -243,4 +248,22 @@ function normUjian_(u) {
     tampil_kunci: u.tampil_kunci === true,
     catatan: teks(u.catatan) || null
   };
+}
+
+/**
+ * Susunan urutan baru. ada = [{id, urutan}] dari database, ids = urutan id yang diinginkan.
+ * Id tak dikenal diabaikan; soal yang tidak disebut ditaruh di akhir. Hanya yang berubah dikembalikan.
+ */
+function urutanBerubah_(ada, ids) {
+  var sekarang = {};
+  ada.forEach(function (r) { sekarang[r.id] = r.urutan; });
+  var susunan = uniq_((ids || []).filter(function (id) { return sekarang.hasOwnProperty(id); }));
+  ada.slice().sort(function (a, b) { return a.urutan - b.urutan; }).forEach(function (r) {
+    if (susunan.indexOf(r.id) < 0) susunan.push(r.id);
+  });
+  var out = [];
+  susunan.forEach(function (id, n) {
+    if (sekarang[id] !== n + 1) out.push({ id: id, urutan: n + 1 });
+  });
+  return out;
 }

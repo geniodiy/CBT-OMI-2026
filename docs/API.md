@@ -64,6 +64,8 @@ type Hasil = {
 ### `adminLogin(password): string`
 Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda 800 ms.
 
+- `adminKeluar(tok): true` menghapus token sesi admin.
+
 ### Ujian
 - `adminUjianList(tok): (UjianRow & { jumlah_soal, n_pg, n_pgk, n_isian })[]` (termasuk token dan semua kolom).
 - `adminUjianSimpan(tok, u): UjianRow` tanpa `id` = tambah, dengan `id` = ubah. Validasi: nama, jenjang, mapel, token wajib; durasi ≥ 1. Hanya kolom yang diizinkan. Menghapus cache `beranda_v1`.
@@ -72,7 +74,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
 
 ### Soal
 - `adminSoalList(tok, ujianId): SoalRow[]` urut `urutan`, lalu `created_at`; termasuk `kunci`.
-- `adminSoalSimpan(tok, s): SoalRow` `s = { id?, ujian_id, tipe, blok, opsi, kunci, bobot }`. Divalidasi dengan `normSoal_` (aturan di `FORMAT-SOAL.md`). Soal baru mendapat `urutan = maks + 1`.
+- `adminSoalSimpan(tok, s): SoalRow` `s = { id?, ujian_id, tipe, blok, opsi, kunci, bobot }`. Divalidasi dengan `normSoal_` (aturan di `FORMAT-SOAL.md`). Soal baru mendapat `urutan = maks + 1`. Mengembalikan baris soal ditambah `peringatan: string[]`. Pesan galat dari editor manual tanpa awalan "Soal #N".
 - `adminSoalHapus(tok, id): true`
 - `adminSoalUrut(tok, ujianId, idsBerurutan: string[]): true` menulis ulang `urutan` 1..n.
 - `adminSoalImport(tok, ujianId, daftar, mode, dryRun): { jumlah: number; per_tipe: {pg,pgk,isian}; gambar_kosong: number[]; peringatan: string[] }`

@@ -45,3 +45,74 @@ function adminUjianHapus(tok, id) {
   CacheService.getScriptCache().remove(CACHE_BERANDA_);
   return true;
 }
+
+// ---- Soal ----
+
+function adminSoalList(tok, ujianId) {
+  guard_(tok);
+  return sb_('GET', 'soal?ujian_id=eq.' + enc_(ujianId) + '&order=urutan.asc,created_at.asc') || [];
+}
+
+function adminSoalSimpan(tok, s) {
+  guard_(tok);
+  if (!s || (!s.id && !s.ujian_id)) throw new Error('Ujian belum dipilih.');
+  var n = normSoal_(s, 0);
+  var baris = { tipe: n.soal.tipe, blok: n.soal.blok, opsi: n.soal.opsi, kunci: n.soal.kunci, bobot: n.soal.bobot };
+  var hasil;
+  if (s.id) {
+    hasil = sb_('PATCH', 'soal?id=eq.' + enc_(s.id), baris);
+    if (!hasil || !hasil.length) throw new Error('Soal tidak ditemukan. Mungkin sudah dihapus.');
+  } else {
+    var akhir = sb_('GET', 'soal?select=urutan&ujian_id=eq.' + enc_(s.ujian_id) + '&order=urutan.desc&limit=1');
+    baris.ujian_id = s.ujian_id;
+    baris.urutan = (akhir && akhir.length ? akhir[0].urutan : 0) + 1;
+    hasil = sb_('POST', 'soal', baris);
+  }
+  CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  return Object.assign({}, hasil[0], { peringatan: n.peringatan });
+}
+
+function adminSoalHapus(tok, id) {
+  guard_(tok);
+  if (!id) throw new Error('Soal tidak dipilih.');
+  sb_('DELETE', 'soal?id=eq.' + enc_(id), null, { Prefer: 'return=minimal' });
+  CacheService.getScriptCache().remove(CACHE_BERANDA_);
+  return true;
+}
+
+function adminSoalUrut(tok, ujianId, idsBerurutan) {
+  guard_(tok);
+  var ada = sb_('GET', 'soal?select=id,urutan&ujian_id=eq.' + enc_(ujianId)) || [];
+  var ubah = urutanBerubah_(ada, idsBerurutan);
+  sbBatch_(ubah.map(function (u) {
+    return { method: 'PATCH', path: 'soal?id=eq.' + enc_(u.id), body: { urutan: u.urutan } };
+  }));
+  return true;
+}
+
+// ---- Gambar ----
+
+var MIME_GAMBAR_ = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
+var MAKS_GAMBAR_BYTE_ = 3 * 1024 * 1024;
+
+function adminUpload(tok, base64, mime, nama) {
+  guard_(tok);
+  var ext = MIME_GAMBAR_[mime];
+  if (!ext) throw new Error('Format gambar harus PNG, JPG, WEBP, atau GIF.');
+  var bersih = String(base64 || '').replace(/^data:[^,]*,/, '');
+  var bytes = Utilities.base64Decode(bersih);
+  if (!bytes.length) throw new Error('Berkas gambar kosong.');
+  if (bytes.length > MAKS_GAMBAR_BYTE_) throw new Error('Gambar terlalu besar. Maksimal 3 MB.');
+  var dasar = prop_('SUPABASE_URL').replace(/\/+$/, '');
+  var kunci = prop_('SUPABASE_KEY');
+  var jalur = Utilities.getUuid() + '.' + ext;
+  var res = UrlFetchApp.fetch(dasar + '/storage/v1/object/soal-img/' + jalur, {
+    method: 'post', contentType: mime, payload: bytes, muteHttpExceptions: true,
+    headers: { apikey: kunci, Authorization: 'Bearer ' + kunci, 'x-upsert': 'false' }
+  });
+  if (res.getResponseCode() >= 300) {
+    Logger.log('Upload gambar %s gagal -> %s %s', nama, res.getResponseCode(), res.getContentText());
+    throw new Error('Gambar gagal diunggah (kode ' + res.getResponseCode() + '). Coba lagi.');
+  }
+  return dasar + '/storage/v1/object/public/soal-img/' + jalur;
+}

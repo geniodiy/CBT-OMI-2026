@@ -34,15 +34,17 @@ Status uji: validasi `normUjian_` lulus uji Node; alur login, tambah, ubah, hapu
 ## M3. Admin: soal (manual)
 
 Berkas: `src/JsEditor.html`, bagian soal di `ApiAdmin.gs` dan `JsAdmin.html`.
-- [ ] Editor teks kaya + panel rumus (KaTeX, pratinjau langsung, tombol cepat, mhchem), tempel sebagai teks polos.
-- [ ] Editor 3 bagian: pilih Teks/Gambar/Kosong, seret dan tombol naik/turun.
-- [ ] Editor opsi (A sampai H) dengan editor mini, kunci radio/centang, isian dengan pemisah `|`.
-- [ ] `adminUpload` + kompres gambar di browser.
-- [ ] `adminSoalList/Simpan/Hapus/Urut`; daftar soal dengan pratinjau rumus dan tanda "gambar belum diisi".
-- [ ] Pratinjau persis tampilan siswa.
-- [ ] Dukungan Arab: `normArab_` (NFKC bentuk presentasi, buang kendali arah) dipakai saat tempel dan simpan; `blokHTML` membungkus rangkaian Arab dengan `span.ar[dir=rtl]`; font Noto Naskh Arabic.
+- [x] Editor teks kaya + panel rumus (KaTeX, pratinjau langsung, tombol cepat, mhchem), tempel sebagai teks polos.
+- [x] Editor bagian (awal 3, bisa tambah sampai 8): pilih Teks/Gambar/Kosong, tombol naik/turun (seret belum ada).
+- [x] Editor opsi (A sampai H) dengan editor mini, kunci radio/centang, isian dengan pemisah `|`.
+- [x] `adminUpload` + kompres gambar di browser.
+- [x] `adminSoalList/Simpan/Hapus/Urut`; daftar soal dengan pratinjau rumus dan tanda "gambar belum diisi".
+- [x] Pratinjau persis tampilan siswa.
+- [x] Dukungan Arab: `normArab_` (NFKC bentuk presentasi, buang kendali arah) dipakai saat tempel dan simpan; `blokHTML` membungkus rangkaian Arab dengan `span.ar[dir=rtl]`; font Noto Naskh Arabic.
 
 Uji: buat satu soal tiap tipe dengan rumus `\frac`, `\sqrt`, `\ce{}`, tebal/miring/garis bawah di soal **dan** opsi; gambar di atas, di tengah, di bawah; geser posisi; unggah gambar dan muncul; simpan, buka ulang, isi tetap sama; kunci tidak lengkap ditolak dengan pesan jelas; tempel kalimat Arab berharakat (mis. ayat dan kalimat campur Arab-Indonesia) di soal dan di opsi: harakat utuh, huruf menyambung, arah benar, tersimpan dan terbuka ulang sama persis.
+
+Status uji: logika server lulus uji Node; alur editor (tempel Arab berharakat, rumus, opsi, kunci, pratinjau, simpan, ubah, urut, hapus, penanda gambar kosong) lulus uji browser dengan server tiruan. Belum dicentang: uji di Apps Script asli, termasuk unggah gambar ke Supabase Storage.
 
 ## M4. Import JSON
 

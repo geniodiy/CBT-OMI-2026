@@ -38,6 +38,32 @@ function sb_(method, path, body, extraHeaders) {
   return teks ? JSON.parse(teks) : null;
 }
 
+/** Beberapa panggilan REST sekaligus (fetchAll). daftar = [{method, path, body}]. Hasil: array JSON per permintaan. */
+function sbBatch_(daftar) {
+  var hasil = [];
+  var kunci = prop_('SUPABASE_KEY'), dasar = prop_('SUPABASE_URL').replace(/\/+$/, '') + '/rest/v1/';
+  for (var i = 0; i < daftar.length; i += 20) {
+    var reqs = daftar.slice(i, i + 20).map(function (d) {
+      var r = {
+        url: dasar + d.path, method: String(d.method).toLowerCase(), muteHttpExceptions: true,
+        headers: { apikey: kunci, Authorization: 'Bearer ' + kunci, Prefer: 'return=minimal' }
+      };
+      if (d.body !== undefined && d.body !== null) { r.contentType = 'application/json; charset=utf-8'; r.payload = JSON.stringify(d.body); }
+      return r;
+    });
+    UrlFetchApp.fetchAll(reqs).forEach(function (res) {
+      var kode = res.getResponseCode();
+      if (kode >= 300) {
+        Logger.log('Supabase batch -> %s %s', kode, res.getContentText());
+        throw new Error('Database tidak dapat diakses (kode ' + kode + '). Coba lagi sebentar.');
+      }
+      var t = res.getContentText();
+      hasil.push(t ? JSON.parse(t) : null);
+    });
+  }
+  return hasil;
+}
+
 /** Wajib di baris pertama setiap fungsi admin*. */
 function guard_(tok) {
   if (!tok || !CacheService.getScriptCache().get('adm_' + tok)) {

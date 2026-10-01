@@ -53,17 +53,32 @@
     input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); kirim(modal); } });
   }
 
+  var tabAktif = 'ujian';
+  var ujianTerpilih = null;
+  var daftarSoal = [];
+
   function tampilAdmin() {
     var s = document.querySelector('[data-view="admin"]');
     s.textContent = '';
-    s.appendChild(el('div', { class: 'tabs', role: 'tablist' },
-      el('button', { class: 'tab', role: 'tab', 'aria-selected': 'true', type: 'button' }, 'Ujian'),
-      el('span', { class: 'spacer' }),
-      el('button', { class: 'btn btn-teks', type: 'button', onclick: keluar }, 'Keluar')));
-    s.appendChild(el('div', { id: 'panelUjian' }));
+    var tabs = el('div', { class: 'tabs', role: 'tablist' });
+    [['ujian', 'Ujian'], ['soal', 'Soal']].forEach(function (t) {
+      tabs.appendChild(el('button', { class: 'tab', role: 'tab', type: 'button', 'data-tab': t[0], onclick: function () { pilihTab(t[0]); } }, t[1]));
+    });
+    tabs.appendChild(el('span', { class: 'spacer' }));
+    tabs.appendChild(el('button', { class: 'btn btn-teks', type: 'button', onclick: keluar }, 'Keluar'));
+    s.appendChild(tabs);
+    s.appendChild(el('div', { id: 'panelAdmin' }));
     window.showView('admin');
     document.getElementById('btnAdmin').textContent = 'Panel admin';
-    muatUjian();
+    pilihTab(tabAktif);
+  }
+
+  function pilihTab(t) {
+    tabAktif = t;
+    document.querySelectorAll('[data-view="admin"] .tab').forEach(function (b) {
+      b.setAttribute('aria-selected', b.getAttribute('data-tab') === t ? 'true' : 'false');
+    });
+    if (t === 'soal') tampilSoalTab(); else muatUjian();
   }
 
   function keluar() {
@@ -74,7 +89,7 @@
   }
 
   function muatUjian() {
-    var p = document.getElementById('panelUjian');
+    var p = document.getElementById('panelAdmin');
     p.textContent = '';
     p.appendChild(el('div', { class: 'kerangka' })); p.appendChild(el('div', { class: 'kerangka' }));
     window.call('adminUjianList', tokenAdmin).then(function (d) {
@@ -88,7 +103,7 @@
   }
 
   function gambarUjian() {
-    var p = document.getElementById('panelUjian');
+    var p = document.getElementById('panelAdmin');
     p.textContent = '';
     p.appendChild(el('div', { class: 'bar' },
       el('h2', null, 'Daftar ujian'),
@@ -195,6 +210,128 @@
         { teks: 'Hapus ujian', bahaya: true, aksi: function () {
           window.call('adminUjianHapus', tokenAdmin, u.id).then(function () {
             window.toast('Ujian dihapus.'); muatUjian();
+          }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
+        } }
+      ]
+    });
+  }
+
+
+  // ---------- tab Soal ----------
+
+  function labelUjian(u) { return u.nama + ' (' + u.jenjang + ' ' + u.mapel + (u.sesi ? ', ' + u.sesi : '') + ')'; }
+
+  function tampilSoalTab() {
+    var p = document.getElementById('panelAdmin');
+    p.textContent = '';
+    if (daftarUjian.length) { gambarSoalTab(); return; }
+    p.appendChild(el('div', { class: 'kerangka' }));
+    window.call('adminUjianList', tokenAdmin).then(function (d) {
+      daftarUjian = d;
+      gambarSoalTab();
+    }).catch(function (e) {
+      if (e.message.indexOf('SESI_ADMIN') === 0) return;
+      p.textContent = ''; p.appendChild(el('p', { class: 'kosong' }, e.message));
+    });
+  }
+
+  function gambarSoalTab() {
+    var p = document.getElementById('panelAdmin');
+    p.textContent = '';
+    if (!daftarUjian.length) {
+      p.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada ujian. Buat ujian dulu di tab Ujian.')));
+      return;
+    }
+    if (!ujianTerpilih || !daftarUjian.some(function (u) { return u.id === ujianTerpilih; })) ujianTerpilih = daftarUjian[0].id;
+    var pilih = el('select', { 'aria-label': 'Pilih ujian' }, daftarUjian.map(function (u) { return el('option', { value: u.id }, labelUjian(u)); }));
+    pilih.value = ujianTerpilih;
+    pilih.addEventListener('change', function () { ujianTerpilih = pilih.value; muatSoal(); });
+    p.appendChild(el('div', { class: 'bar' },
+      el('label', { class: 'field', style: 'margin:0;flex:1;min-width:220px' }, el('span', null, 'Ujian'), pilih),
+      el('button', { class: 'btn btn-utama', type: 'button', onclick: function () { bukaEditor(null); } }, 'Tambah soal')));
+    p.appendChild(el('div', { id: 'daftarSoal' }));
+    muatSoal();
+  }
+
+  function muatSoal() {
+    var d = document.getElementById('daftarSoal');
+    d.textContent = '';
+    d.appendChild(el('div', { class: 'kerangka' }));
+    var untuk = ujianTerpilih;
+    window.call('adminSoalList', tokenAdmin, untuk).then(function (h) {
+      if (untuk !== ujianTerpilih) return;
+      daftarSoal = h;
+      gambarSoal();
+    }).catch(function (e) {
+      if (e.message.indexOf('SESI_ADMIN') === 0) return;
+      d.textContent = ''; d.appendChild(el('p', { class: 'kosong' }, e.message));
+    });
+  }
+
+  function gambarKosong(soal) {
+    return (soal.blok || []).some(function (b) { return b.tipe === 'gambar' && !String(b.isi || '').trim(); });
+  }
+
+  var LABEL_TIPE = { pg: 'Pilihan ganda', pgk: 'Pilihan ganda kompleks', isian: 'Isian singkat' };
+
+  function gambarSoal() {
+    var d = document.getElementById('daftarSoal');
+    d.textContent = '';
+    if (!daftarSoal.length) {
+      d.appendChild(el('div', { class: 'tabel-bungkus' }, el('p', { class: 'kosong' }, 'Belum ada soal di ujian ini. Klik "Tambah soal".')));
+      return;
+    }
+    var kosongNo = daftarSoal.map(function (x, i) { return gambarKosong(x) ? i + 1 : 0; }).filter(Boolean);
+    if (kosongNo.length) d.appendChild(el('p', { class: 'tanda-gambar' }, 'Gambar belum diisi pada soal ' + kosongNo.join(', ') + '.'));
+    var daftar = el('div', { class: 'tabel-bungkus' });
+    daftarSoal.forEach(function (x, i) {
+      var ring = el('div', { class: 'soal-ringkas' });
+      ring.innerHTML = window.blokHTML((x.blok || []).filter(function (b) { return b.tipe === 'teks'; }));
+      window.mathify(ring);
+      daftar.appendChild(el('div', { class: 'soal-baris' },
+        el('div', { class: 'soal-no' }, String(i + 1)),
+        el('div', null,
+          el('div', { class: 'soal-meta' }, el('span', { class: 'lencana' }, LABEL_TIPE[x.tipe]), 'Bobot ' + x.bobot,
+            gambarKosong(x) ? el('span', { class: 'tanda-gambar' }, 'Gambar belum diisi') : null),
+          ring),
+        el('div', { class: 'soal-aksi' },
+          el('button', { class: 'btn btn-teks', type: 'button', disabled: i === 0, onclick: function () { geserSoal(i, -1); } }, 'Naik'),
+          el('button', { class: 'btn btn-teks', type: 'button', disabled: i === daftarSoal.length - 1, onclick: function () { geserSoal(i, 1); } }, 'Turun'),
+          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { bukaEditor(x, i); } }, 'Ubah'),
+          el('button', { class: 'btn btn-teks', type: 'button', onclick: function () { hapusSoal(x, i); } }, 'Hapus'))));
+    });
+    d.appendChild(daftar);
+  }
+
+  function bukaEditor(soal, indeks) {
+    window.Editor.buka({
+      tok: function () { return tokenAdmin; },
+      ujianId: ujianTerpilih, soal: soal,
+      nomor: soal ? indeks + 1 : daftarSoal.length + 1,
+      total: soal ? daftarSoal.length : daftarSoal.length + 1,
+      onSimpan: muatSoal
+    });
+  }
+
+  function geserSoal(i, arah) {
+    var j = i + arah;
+    if (j < 0 || j >= daftarSoal.length) return;
+    var ids = daftarSoal.map(function (x) { return x.id; });
+    var t = ids[i]; ids[i] = ids[j]; ids[j] = t;
+    window.call('adminSoalUrut', tokenAdmin, ujianTerpilih, ids).then(muatSoal).catch(function (e) {
+      if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true);
+    });
+  }
+
+  function hapusSoal(x, i) {
+    window.openModal({
+      judul: 'Hapus soal ' + (i + 1) + '?',
+      isi: 'Soal ini akan dihapus. Tindakan ini tidak bisa dibatalkan.',
+      tombol: [
+        { teks: 'Batal' },
+        { teks: 'Hapus soal', bahaya: true, aksi: function () {
+          window.call('adminSoalHapus', tokenAdmin, x.id).then(function () {
+            window.toast('Soal dihapus.'); muatSoal();
           }).catch(function (e) { if (e.message.indexOf('SESI_ADMIN') !== 0) window.toast(e.message, true); });
         } }
       ]

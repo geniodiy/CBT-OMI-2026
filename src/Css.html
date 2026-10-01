@@ -95,6 +95,51 @@ table.tabel { width: 100%; border-collapse: collapse; font-size: .95rem; }
 .baris-token { display: flex; gap: 8px; }
 .baris-token input { flex: 1; }
 
+/* editor soal */
+.btn-kecil { min-height: 36px; padding: 0 12px; }
+.editor { border: 1px solid var(--garis); border-radius: var(--radius); background: var(--putih); }
+.editor-tb { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; border-bottom: 1px solid var(--garis); }
+.btn-tb { font: inherit; min-width: 36px; min-height: 36px; padding: 0 8px; border: 1px solid var(--garis); border-radius: 6px; background: var(--putih); color: var(--teks); cursor: pointer; }
+.btn-tb:hover { border-color: var(--biru); }
+.editor-area { min-height: 96px; padding: 10px 12px; outline: none; overflow-wrap: anywhere; }
+.editor-area:focus { box-shadow: inset 0 0 0 2px var(--biru); border-radius: 0 0 var(--radius) var(--radius); }
+.editor-mini .editor-area, .editor-area.editor-mini { min-height: 44px; }
+.rumus-panel { padding: 10px; border-bottom: 1px solid var(--garis); background: var(--latar); }
+.rumus-cepat { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.rumus-ta { width: 100%; padding: 8px 10px; font: .95rem/1.4 ui-monospace, Consolas, monospace; border: 1px solid var(--garis); border-radius: var(--radius); margin-bottom: 6px; }
+.rumus-pra { min-height: 36px; padding: 6px 0; overflow-x: auto; }
+.bagian { border: 1px solid var(--garis); border-radius: var(--radius); padding: 10px; margin-bottom: 10px; }
+.bagian-kepala { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.bagian-kepala select { min-height: 36px; padding: 0 8px; font: inherit; border: 1px solid var(--garis); border-radius: 6px; background: var(--putih); }
+.spacer { flex: 1; }
+.pra-gambar { display: block; max-width: 100%; max-height: 240px; margin-top: 8px; object-fit: contain; }
+.opsi-baris { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.opsi-ed { flex: 1; min-width: 0; }
+.kontrol-kunci { padding-top: 6px; }
+.opsi-huruf { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 32px; height: 32px; margin-top: 6px; border: 1px solid var(--garis); background: var(--putih); font-weight: 600; }
+.opsi-huruf.bulat { border-radius: 50%; }
+.opsi-huruf.kotak { border-radius: 6px; }
+h3 { margin-top: 18px; }
+
+/* tampilan soal (siswa dan pratinjau) */
+.kartu-soal { background: var(--putih); border: 1px solid var(--garis); border-radius: var(--radius); padding: 18px 20px; }
+.kartu-kepala { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+.instruksi { font-weight: 600; margin: 14px 0 8px; }
+.opsi { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; margin-bottom: 8px; border: 1px solid var(--garis); border-radius: var(--radius); }
+.opsi .opsi-huruf { margin-top: 0; }
+.opsi-teks { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.isian-siswa { width: 100%; min-height: 44px; padding: 8px 12px; font: inherit; border: 1px solid var(--garis); border-radius: var(--radius); }
+
+/* daftar soal admin */
+.soal-baris { display: grid; grid-template-columns: 44px 1fr auto; gap: 12px; padding: 12px; border-bottom: 1px solid var(--garis); align-items: start; }
+.soal-baris:last-child { border-bottom: 0; }
+.soal-no { font-weight: 700; color: var(--biru-tua); }
+.soal-ringkas { max-height: 5.6em; overflow: hidden; overflow-wrap: anywhere; }
+.soal-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; flex-wrap: wrap; font-size: .9rem; color: var(--teks-redup); }
+.tanda-gambar { color: var(--merah); font-weight: 600; }
+.soal-aksi { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 2px; }
+@media (max-width: 600px) { .soal-baris { grid-template-columns: 36px 1fr; } .soal-aksi { grid-column: 1 / -1; justify-content: flex-start; } }
+
 /* toast */
 #toastRoot { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; gap: 8px; align-items: center; width: calc(100% - 24px); max-width: 420px; pointer-events: none; }
 .toast { pointer-events: auto; padding: 10px 16px; border-radius: var(--radius); background: var(--teks); color: var(--putih); font-size: .95rem; }
