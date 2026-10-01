@@ -106,7 +106,7 @@ ATURAN TIPE DAN KUNCI
 6. Kunci jawaban diambil dari lembar kunci di dokumen bila ada. Bila tidak ada, isi dengan jawaban yang paling tepat menurutmu, dan catat nomor soal tersebut di bagian CATATAN AKHIR (lihat bawah).
 
 ATURAN ISI SOAL (blok)
-7. Pisahkan stimulus (cerita, data, kutipan) dan kalimat pertanyaan menjadi blok teks terpisah bila dokumen memisahkannya. Kalimat pertanyaan boleh diawali <b>Pertanyaan</b><br>.
+7. Susun isi soal per bagian, satu bagian satu blok, dengan urutan seperti di dokumen: (a) kalimat pengantar, (b) ayat atau hadis, (c) cerita, data, atau stimulus, (d) gambar, (e) pertanyaan. Jangan menggabungkan bagian yang berbeda ke satu blok, dan jangan memecah satu bagian ke banyak blok. Blok pertanyaan diawali <b>Pertanyaan</b><br> lalu kalimat pertanyaannya. Di dalam satu blok, pisahkan paragraf dengan <br><br>.
 8. Bila soal memiliki gambar, grafik, diagram, tabel bergambar, atau peta, sisipkan blok {"tipe":"gambar","isi":""} tepat di posisi gambar itu (di atas, tengah, atau bawah teks). Biarkan "isi" KOSONG. Gambar diunggah manual di website. Satu soal boleh punya beberapa blok gambar.
 9. Bila SEBUAH OPSI berupa gambar, tulis teks opsinya "(gambar)" dan sebutkan nomor soal itu di CATATAN AKHIR.
 10. Tabel data biasa: website tidak mendukung tag tabel. Ubah menjadi teks yang rapi, misalnya satu baris per data dengan <br>, atau daftar <ul><li>...</li></ul>. Bila tabelnya rumit, jadikan blok gambar kosong.
@@ -116,7 +116,7 @@ ATURAN ISI SOAL (blok)
 ATURAN FORMAT TEKS
 13. HTML yang boleh dipakai HANYA: <b>, <strong>, <i>, <em>, <u>, <sub>, <sup>, <br>, <p>, <div>, <span>, <ul>, <ol>, <li>. Tag lain dan atribut style dilarang.
 14. Baris baru di dalam teks ditulis <br>, bukan karakter enter di dalam string JSON.
-15. Perataan teks (hanya bila di dokumen memang rata tengah, rata kanan, atau rata kiri-kanan): bungkus dengan <div class="rata-tengah">...</div>, <div class="rata-kanan">...</div>, atau <div class="rata-penuh">...</div>. Teks biasa tidak perlu dibungkus.
+15. Perataan teks (hanya bila di dokumen memang rata tengah, rata kanan, atau rata kiri-kanan): bungkus dengan <div class='rata-tengah'>...</div>, <div class='rata-kanan'>...</div>, atau <div class='rata-penuh'>...</div>. Selalu pakai tanda kutip TUNGGAL pada atribut class agar JSON tidak rusak. Teks biasa tidak perlu dibungkus.
 16. Cetak tebal, miring, garis bawah, pangkat, dan indeks di dokumen dipertahankan dengan <b>, <i>, <u>, <sup>, <sub>.
 
 ATURAN RUMUS (SANGAT PENTING)
@@ -132,7 +132,13 @@ ATURAN RUMUS (SANGAT PENTING)
 ATURAN TEKS ARAB
 23. Teks Arab (termasuk harakat: fathah, kasrah, dhammah, sukun, syaddah, tanwin) ditulis sebagai karakter Unicode Arab biasa, UTUH, dalam urutan logis (huruf pertama kata di kanan). Jangan memakai gambar, jangan transliterasi pengganti, jangan membalik urutan huruf, jangan memutus huruf.
 24. Hasil salinan PDF kadang terbalik atau terputus-putus. Bila begitu, tulis ulang kata Arab itu dengan benar. Jangan menghilangkan harakat.
-25. Ayat atau hadis boleh dijadikan blok teks tersendiri.
+25. AYAT ATAU HADIS: ayat Al-Qur'an atau hadis beserta tulisan Latin dan terjemahannya digabung dalam SATU blok teks, dengan tiga bagian berurutan:
+   a) teks Arab berharakat di dalam <div class='rata-kanan'>...</div>;
+   b) tulisan Latin (transliterasi) dalam <i>...</i>, bila ada di dokumen;
+   c) terjemahan SELALU dicetak tebal dalam <b>...</b>, termasuk keterangan sumber (surah dan ayat, atau perawi hadis).
+   Bagian a, b, dan c dipisahkan <br><br>. Contoh satu blok:
+   {"tipe":"teks","isi":"<div class='rata-kanan'>هُوَ الَّذِي جَعَلَ الشَّمْسَ ضِيَاءً وَالْقَمَرَ نُورًا</div><br><i>Huwal-lażī ja'alasy-syamsa ḍiyā'aw wal-qamara nūrā.</i><br><br><b>Artinya: Dialah yang menjadikan matahari bersinar dan bulan bercahaya. (QS. Yunus: 5)</b>"}
+   Bila dokumen tidak memuat tulisan Latin atau terjemahan, lewati bagian itu. Jangan mengarang. Kalimat pengantar seperti "Allah berfirman:" tetap menjadi blok tersendiri di atasnya, dan teks soal berikutnya menjadi blok terpisah di bawahnya.
 
 PEMERIKSAAN SEBELUM MENJAWAB
 Sebelum mengeluarkan hasil, periksa dalam hati:
