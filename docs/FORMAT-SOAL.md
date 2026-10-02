@@ -37,7 +37,7 @@ Import menerima array soal, atau objek `{ "soal": [ ... ] }`. Pembungkus pagar k
 
 ## Pemformatan teks
 
-**HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`, serta tabel: `table`, `thead`, `tbody`, `tr`, `th`, `td`. Atribut yang lolos: `class` dengan nilai `rata-kiri`, `rata-tengah`, `rata-kanan`, atau `rata-penuh` (perataan teks dari editor; `rata-penuh` = rata kiri dan kanan/justify); nilai class lain dibuang, begitu juga `style` dan atribut lain.
+**HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`, serta tabel: `table`, `thead`, `tbody`, `tr`, `th`, `td`. Atribut yang lolos: `class` dengan nilai `nomor-kurung`, `nomor-a`, `nomor-a-kurung`, `nomor-A`, `nomor-i`, `nomor-I` (gaya nomor `ol`) atau `rata-kiri`, `rata-tengah`, `rata-kanan`, atau `rata-penuh` (perataan teks dari editor; `rata-penuh` = rata kiri dan kanan/justify); nilai class lain dibuang, begitu juga `style` dan atribut lain.
 
 **Rata otomatis**: saat ditampilkan, blok teks soal yang berisi lebih dari satu kalimat (lebih dari 60 karakter) otomatis rata kiri-kanan. Dilewati bila blok sudah diberi perataan (`rata-*`), berupa tabel, atau didominasi huruf Arab. Tidak ada yang disimpan; ini hanya gaya tampilan.
 
@@ -123,6 +123,7 @@ ATURAN FORMAT TEKS
 13. HTML yang boleh dipakai HANYA: <b>, <strong>, <i>, <em>, <u>, <sub>, <sup>, <br>, <p>, <div>, <span>, <ul>, <ol>, <li>, serta <table>, <thead>, <tbody>, <tr>, <th>, <td> (atribut yang boleh hanya class pada perataan dan colspan/rowspan pada <th>/<td>). Tag lain dan atribut style dilarang.
 14. Baris baru di dalam teks ditulis <br>, bukan karakter enter di dalam string JSON.
 15. Perataan teks (hanya bila di dokumen memang rata tengah, rata kanan, atau rata kiri-kanan): bungkus dengan <div class='rata-tengah'>...</div>, <div class='rata-kanan'>...</div>, atau <div class='rata-penuh'>...</div>. Selalu pakai tanda kutip TUNGGAL pada atribut class agar JSON tidak rusak. Teks biasa tidak perlu dibungkus.
+15a. Daftar bernomor memakai <ol><li>...</li></ol>. Bila nomor di dokumen bukan angka titik, beri class pada ol sesuai bentuknya: <ol class='nomor-kurung'> untuk 1) 2) 3), <ol class='nomor-a'> untuk a. b. c., <ol class='nomor-a-kurung'> untuk a) b) c), <ol class='nomor-A'> untuk A. B. C., <ol class='nomor-i'> untuk i. ii. iii., <ol class='nomor-I'> untuk I. II. III. Angka dengan titik (1. 2. 3.) tanpa class.
 16. Cetak tebal, miring, garis bawah, pangkat, dan indeks di dokumen dipertahankan dengan <b>, <i>, <u>, <sup>, <sub>.
 
 ATURAN RUMUS (SANGAT PENTING)

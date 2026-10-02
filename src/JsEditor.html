@@ -106,6 +106,38 @@
     }
     ['keyup', 'mouseup', 'touchend'].forEach(function (n) { area.addEventListener(n, segarkanRata); });
 
+    // Gaya nomor daftar: kelas nomor-* pada elemen ol (angka biasa = tanpa kelas).
+    var GAYA_NOMOR = [['', '1.  2.  3.'], ['nomor-kurung', '1)  2)  3)'], ['nomor-a', 'a.  b.  c.'], ['nomor-a-kurung', 'a)  b)  c)'], ['nomor-A', 'A.  B.  C.'], ['nomor-i', 'i.  ii.  iii.'], ['nomor-I', 'I.  II.  III.']];
+    var gayaNomor = window.dropdown({
+      aria: 'Gaya nomor daftar', nilai: '', awalan: 'Nomor: ',
+      pilihan: GAYA_NOMOR.map(function (g) { return { nilai: g[0] || 'angka', label: g[1] }; })
+    });
+    gayaNomor.value = 'angka';
+    function olAktif() {
+      var s = window.getSelection();
+      if (!s || !s.rangeCount || !area.contains(s.anchorNode)) return null;
+      var n = s.anchorNode.nodeType === 1 ? s.anchorNode : s.anchorNode.parentNode;
+      return n && n.closest ? n.closest('ol') : null;
+    }
+    gayaNomor.addEventListener('change', function () {
+      area.focus();
+      var s = window.getSelection();
+      if (rentang) { s.removeAllRanges(); s.addRange(rentang); }
+      var ol = olAktif();
+      if (!ol) { document.execCommand('insertOrderedList'); ol = olAktif(); }
+      if (!ol) return;
+      var kls = gayaNomor.value === 'angka' ? '' : gayaNomor.value;
+      ol.className = kls;
+      if (!kls) ol.removeAttribute('class');
+      simpanRentang();
+      area.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    function segarkanNomor() {
+      var ol = olAktif();
+      gayaNomor.value = ol && ol.className && GAYA_NOMOR.some(function (g) { return g[0] === ol.className; }) ? ol.className : 'angka';
+    }
+    ['keyup', 'mouseup', 'touchend'].forEach(function (n) { area.addEventListener(n, segarkanNomor); });
+
     var pisah = function () { return el('span', { class: 'tb-pisah', 'aria-hidden': 'true' }); };
     var tb = el('div', { class: 'editor-tb', role: 'toolbar', 'aria-label': 'Format teks' },
       tombolTb(el('span', { class: 'tb-b' }, 'B'), 'Tebal', perintah('bold')),
@@ -122,6 +154,7 @@
       tb.appendChild(pisah());
       tb.appendChild(tombolTb(window.ikon('daftar', 16), 'Daftar berpoin', perintah('insertUnorderedList')));
       tb.appendChild(tombolTb(window.ikon('daftarNomor', 16), 'Daftar bernomor', perintah('insertOrderedList')));
+      tb.appendChild(gayaNomor);
       tb.appendChild(pisah());
       tb.appendChild(tombolTb(window.ikon('hapusFormat', 16), 'Hapus format', perintah('removeFormat')));
     }

@@ -1209,3 +1209,18 @@ html.adm-aktif .popover-kolom input[type="password"]:placeholder-shown { font-si
 .btn-nav-soal:disabled { opacity: .35; cursor: default; }
 .nav-soal-pos { min-width: 52px; text-align: center; font-size: .78rem; color: var(--teks-redup); font-variant-numeric: tabular-nums; }
 </style>
+
+<style>
+/* gaya nomor daftar: penanda dibuat dengan counter agar sama di semua peramban */
+ol[class*="nomor-"] { list-style: none; counter-reset: nm; padding-left: 2.1em; }
+ol[class*="nomor-"] > li { counter-increment: nm; position: relative; }
+ol[class*="nomor-"] > li::before { content: counter(nm, var(--jenis, decimal)) var(--akhir, "."); position: absolute; left: -2.1em; width: 1.8em; text-align: right; }
+ol.nomor-kurung { --jenis: decimal; --akhir: ")"; }
+ol.nomor-a { --jenis: lower-alpha; }
+ol.nomor-a-kurung { --jenis: lower-alpha; --akhir: ")"; }
+ol.nomor-A { --jenis: upper-alpha; }
+ol.nomor-i { --jenis: lower-roman; }
+ol.nomor-I { --jenis: upper-roman; }
+.editor-tb .dd { min-width: 0; }
+.editor-tb .dd-tombol { height: 28px; font-size: .78rem; }
+</style>

@@ -184,8 +184,8 @@
   };
 
   /** Sanitasi HTML dari admin atau JSON. Dipanggil setiap kali dirender. */
-  // Satu-satunya atribut yang diizinkan: class, dan hanya tiga nilai perataan teks.
-  var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan', 'rata-penuh'];
+  // Satu-satunya atribut yang diizinkan: class, dengan nilai perataan teks dan gaya nomor daftar.
+  var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan', 'rata-penuh', 'nomor-kurung', 'nomor-a', 'nomor-a-kurung', 'nomor-A', 'nomor-i', 'nomor-I'];
   DOMPurify.addHook('afterSanitizeAttributes', function (node) {
     if (!node.hasAttribute) return;
     if (node.hasAttribute('class')) {
