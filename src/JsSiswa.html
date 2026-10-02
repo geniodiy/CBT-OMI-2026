@@ -154,7 +154,7 @@
     document.documentElement.classList.add('js');
     s.textContent = '';
 
-    // hero: foto latar opsional (hero.jpg di bucket aset); bila tidak ada, tampil hijau polos
+    // hero: ilustrasi latar tertanam di Css.html (--foto)
     var aksi = el('div', { class: 'hero-aksi' },
       el('button', { type: 'button', class: 'btn btn-hero', onclick: function () { gulirKe('ujian'); } }, 'Pilih ujian'),
       el('button', { type: 'button', class: 'btn btn-hero-garis', onclick: function () { gulirKe('tentang'); } }, 'Pelajari OMI'));
@@ -163,8 +163,6 @@
       el('h1', null, 'Berlatih untuk Olimpiade Madrasah Indonesia'),
       el('p', { class: 'hero-sub' }, 'OMI adalah ajang sains madrasah dari Kemenag. Kerjakan simulasinya dengan tampilan dan aturan seperti ujian sesungguhnya.'),
       aksi));
-    var logoOmi = document.querySelector('.header-logo img[alt^="Olimpiade"]');
-    if (logoOmi && /logo-omi\.png/.test(logoOmi.src)) hero.style.setProperty('--foto', 'url("' + logoOmi.src.replace('logo-omi.png', 'hero.jpg') + '")');
     var langkahData = [['daftar', 'Pilih ujian', 'Sesuai jenjang dan mapel'], ['kunciToken', 'Isi data dan token', 'Token dari pengawas'], ['selesai', 'Kerjakan dan lihat hasil', 'Nilai langsung keluar']];
     var langkahIsi = [];
     langkahData.forEach(function (l, i) {
