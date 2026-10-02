@@ -208,7 +208,28 @@
       alatTabel('Hapus baris', 'Hapus baris ini', 'hapusBaris'),
       alatTabel('Hapus kolom', 'Hapus kolom ini', 'hapusKolom'),
       alatTabel('Hapus tabel', 'Hapus seluruh tabel', 'hapusTabel'));
-    function segarkanTabel() { barTabel.hidden = !selAktif(); }
+    // Posisi tabel di dalam kartu soal: kelas rata-* pada elemen table.
+    var tombolPosisi = {};
+    var grupPosisi = el('div', { class: 'adm-seg adm-seg-kecil adm-seg-ikon', role: 'group', 'aria-label': 'Posisi tabel' },
+      [['rata-kiri', 'rataKiri', 'Tabel rata kiri'], ['rata-tengah', 'rataTengah', 'Tabel di tengah'], ['rata-kanan', 'rataKanan', 'Tabel rata kanan'], ['rata-penuh', 'rataPenuh', 'Tabel selebar kartu (rata kiri dan kanan)']].map(function (r) {
+        var t = el('button', { type: 'button', title: r[2], 'aria-label': r[2], 'aria-pressed': 'false', onmousedown: function (e) { e.preventDefault(); }, onclick: function () {
+          var c = selAktif(); if (!c) return;
+          var tabel = c.closest('table');
+          tabel.className = r[0] === 'rata-kiri' ? '' : r[0];
+          if (!tabel.className) tabel.removeAttribute('class');
+          area.dispatchEvent(new Event('input', { bubbles: true }));
+          segarkanTabel();
+        } }, window.ikon(r[1], 15));
+        tombolPosisi[r[0]] = t; return t;
+      }));
+    barTabel.appendChild(grupPosisi);
+    function segarkanTabel() {
+      var c = selAktif();
+      barTabel.hidden = !c;
+      if (!c) return;
+      var kls = c.closest('table').className || 'rata-kiri';
+      Object.keys(tombolPosisi).forEach(function (k) { tombolPosisi[k].setAttribute('aria-pressed', kls.indexOf(k) >= 0 ? 'true' : 'false'); });
+    }
     ['keyup', 'mouseup', 'touchend', 'focusin'].forEach(function (n) { area.addEventListener(n, segarkanTabel); });
     // Tab berpindah antar sel; Tab di sel terakhir menambah baris.
     area.addEventListener('keydown', function (e) {
