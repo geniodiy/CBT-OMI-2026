@@ -493,8 +493,9 @@
   }
 
   function pilihanUjian(onGanti) {
-    if (!ujianTerpilih || !daftarUjian.some(function (u) { return u.id === ujianTerpilih; })) ujianTerpilih = daftarUjian[0].id;
-    var pilih = window.pilihCari({ aria: 'Pilih paket try out', kosong: 'Pilih paket try out', placeholder: 'Cari nama, mapel, jenjang, atau sesi', nilai: ujianTerpilih,
+    // Tanpa pilihan awal: admin memilih paket sendiri.
+    if (ujianTerpilih && !daftarUjian.some(function (u) { return u.id === ujianTerpilih; })) ujianTerpilih = null;
+    var pilih = window.pilihCari({ aria: 'Pilih paket try out', kosong: 'Pilih paket try out', placeholder: 'Cari nama, mapel, jenjang, atau sesi', nilai: ujianTerpilih || '',
       pilihan: daftarUjian.map(function (u) {
         return { nilai: u.id, label: labelUjian(u), status: statusDari(u),
           meta: u.jenjang + ' \u00b7 ' + u.mapel + (u.sesi ? ' \u00b7 ' + u.sesi : '') + ' \u00b7 ' + u.jumlah_soal + ' soal' };
@@ -502,6 +503,15 @@
     pilih.addEventListener('change', function () { ujianTerpilih = pilih.value; onGanti(); });
     pilih.classList.add('dd-ujian');
     return pilih;
+  }
+
+  /** Pesan di area tabel selama belum ada paket yang dipilih; tombol yang butuh paket dimatikan. */
+  function belumPilihPaket(d, idTombol) {
+    (idTombol || []).forEach(function (id) { var b = document.getElementById(id); if (b) b.disabled = !ujianTerpilih; });
+    if (ujianTerpilih) return false;
+    d.textContent = '';
+    d.appendChild(el('div', { class: 'adm-tabel' }, el('p', { class: 'kosong' }, 'Pilih paket soal terlebih dahulu lewat menu di atas.')));
+    return true;
   }
 
   var filterTipeSoal = 'semua', cariSoal = '';
@@ -517,8 +527,8 @@
     p.appendChild(el('div', { class: 'adm-atas' },
       el('h1', null, 'Soal'),
       el('span', { class: 'redup', id: 'ringkasSoal' }),
-      el('button', { class: 'btn', type: 'button', style: 'margin-left:auto', onclick: bukaImport }, window.ikon('unggah', 15), 'Import JSON'),
-      el('button', { class: 'btn btn-utama', type: 'button', style: 'margin-left:0', onclick: function () { bukaEditor(null); } }, window.ikon('tambah', 15), 'Tambah soal')));
+      el('button', { class: 'btn', type: 'button', id: 'tbImport', style: 'margin-left:auto', onclick: bukaImport }, window.ikon('unggah', 15), 'Import JSON'),
+      el('button', { class: 'btn btn-utama', type: 'button', id: 'tbTambahSoal', style: 'margin-left:0', onclick: function () { bukaEditor(null); } }, window.ikon('tambah', 15), 'Tambah soal')));
     p.appendChild(el('div', { class: 'adm-alat', id: 'alatSoal' }, pilihanUjian(function () { muatSoal(); })));
     p.appendChild(el('div', { id: 'daftarSoal' }));
     muatSoal();
@@ -526,6 +536,12 @@
 
   function muatSoal() {
     var d = document.getElementById('daftarSoal');
+    if (!ujianTerpilih) {
+      var alatS = document.getElementById('alatSoal');
+      while (alatS && alatS.children.length > 1) alatS.removeChild(alatS.lastChild);
+      var rs = document.getElementById('ringkasSoal'); if (rs) rs.textContent = '';
+    }
+    if (belumPilihPaket(d, ['tbImport', 'tbTambahSoal'])) return;
     d.textContent = '';
     d.appendChild(kerangkaTabel('adm-sbaris', LABEL_SOAL, 9, [85, 40, 70, 90, 55], KOLOM_SOAL));
     var untuk = ujianTerpilih;
@@ -1046,7 +1062,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     p.appendChild(el('div', { class: 'adm-atas' },
       el('h1', null, 'Hasil'),
       el('span', { class: 'redup', id: 'ringkasHasil' }),
-      el('button', { class: 'btn', type: 'button', style: 'margin-left:auto', onclick: muatHasil }, window.ikon('segarkan', 15), 'Muat ulang'),
+      el('button', { class: 'btn', type: 'button', id: 'tbMuatHasil', style: 'margin-left:auto', onclick: muatHasil }, window.ikon('segarkan', 15), 'Muat ulang'),
       el('button', { class: 'btn btn-utama', type: 'button', style: 'margin-left:0', id: 'tbCsv', onclick: eksporCsv }, window.ikon('unduh', 15), 'Ekspor CSV')));
     p.appendChild(el('div', { class: 'adm-alat', id: 'alatHasil' }, pilihanUjian(function () { filterSekolah = ''; filterKelas = ''; cariHasil = ''; muatHasil(); })));
     p.appendChild(el('div', { id: 'daftarHasil' }));
@@ -1055,6 +1071,13 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
 
   function muatHasil() {
     var d = document.getElementById('daftarHasil');
+    if (!ujianTerpilih) {
+      var alatH = document.getElementById('alatHasil');
+      while (alatH && alatH.children.length > 1) alatH.removeChild(alatH.lastChild);
+      var rh = document.getElementById('ringkasHasil'); if (rh) rh.textContent = '';
+      daftarHasil = [];
+    }
+    if (belumPilihPaket(d, ['tbMuatHasil', 'tbCsv'])) return;
     d.textContent = '';
     d.appendChild(kerangkaTabel('adm-hbaris', LABEL_HASIL, 9, [40, 80, 45, 75, 35], KOLOM_HASIL));
     var untuk = ujianTerpilih;
