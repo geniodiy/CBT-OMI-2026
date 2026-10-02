@@ -69,7 +69,7 @@ MTs
 
 **Desain beranda terbaru (selaras redesign admin, hijau lembut)**. Berlaku di `body[data-halaman="beranda"]` (token warna hijau `--biru: #1f8a4c`, `--latar: #f3f7f3`, radius kartu 16 px):
 1. Header putih datar (tidak melayang, tanpa blur) dengan menu Beranda / Pilih ujian / Tentang OMI / Jadwal dan penilaian yang menggulir ke bagian terkait (disembunyikan di bawah 960 px).
-2. Hero berfoto: foto dibaca dari `hero.jpg` di bucket Storage `aset` (sama dengan logo OMI); bila berkas tidak ada, tampil hijau polos. Lapisan hijau tua rata (bukan gradien) menutup foto agar teks terbaca. Kuning hanya titik kecil di label "Try Out OMI 2026".
+2. Hero berfoto: foto dibaca dari `hero.jpg` di bucket Storage `aset` (sama dengan logo OMI); bila berkas tidak ada, tampil hijau polos. Lapisan hijau tua menutup foto agar teks terbaca: rata di desktop, bergradasi gelap dari atas ke bawah di HP (satu-satunya gradien di luar halaman ujian, atas permintaan pemilik). Kuning hanya titik kecil di label "Try Out OMI 2026".
 3. Kartu tiga langkah (Pilih ujian, Isi data dan token, Kerjakan dan lihat hasil) menempel di perbatasan hero.
 4. Pilih ujian: filter jenjang berbentuk segmen; kartu paket berisi ikon mapel, nama, jenjang, mapel, sesi, chip jumlah soal per tipe, durasi, dan "Mulai ujian".
 5. Di bawah Pilih ujian hanya tiga bagian: Apa itu OMI, Bentuk tes dan jadwal, dan Penilaian (kartu putih bergaris tipis). Kartu jenjang, daftar yang disiapkan, dan larangan sudah dihapus.

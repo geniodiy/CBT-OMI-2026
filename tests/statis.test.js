@@ -45,7 +45,7 @@ const css = baca('Css.html');
 let dalamLatar = false;
 for (const baris of css.split('\n')) {
   if (/--latar-ujian:/.test(baris)) dalamLatar = true;
-  if (/gradient/.test(baris)) cek('gradien hanya latar ujian/avatar', dalamLatar || /--latar-ujian|\.u-avatar/.test(baris), baris.trim());
+  if (/gradient/.test(baris)) cek('gradien hanya latar ujian/avatar/lapisan hero HP', dalamLatar || /--latar-ujian|\.u-avatar|\.hero::before/.test(baris), baris.trim());
   if (dalamLatar && /;\s*$/.test(baris)) dalamLatar = false;
   if (/box-shadow/.test(baris) || /--bayangan/.test(baris)) cek('bayangan bukan hitam pekat', !/rgba\(\s*0\s*,\s*0\s*,\s*0|#000\b/.test(baris), baris.trim());
   if (/text-transform:\s*uppercase/.test(baris)) cek('kapital semua hanya nama peserta', /\.u-nama/.test(baris), baris.trim());

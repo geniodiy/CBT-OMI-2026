@@ -433,6 +433,8 @@ body[data-halaman="beranda"] .footer-situs a { border-bottom: 2px solid var(--ku
 }
 @media (max-width: 600px) {
   body[data-halaman="beranda"] .hero { padding: 46px 0 96px; }
+  /* HP: lapisan hijau gelap bergradasi dari atas (tempat teks) ke bawah agar tulisan tetap jelas di atas ilustrasi */
+  body[data-halaman="beranda"] .hero::before { background: linear-gradient(180deg, rgba(12, 56, 32, .9) 0%, rgba(12, 56, 32, .8) 55%, rgba(12, 56, 32, .5) 100%); }
   body[data-halaman="beranda"] .grid-ujian { grid-template-columns: 1fr; }
 }
 
