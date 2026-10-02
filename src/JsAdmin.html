@@ -723,6 +723,7 @@ ATURAN TEKS ARAB
    {"tipe":"teks","isi":"<div class='rata-tengah'>هُوَ الَّذِي جَعَلَ الشَّمْسَ ضِيَاءً وَالْقَمَرَ نُورًا</div>"},
    {"tipe":"teks","isi":"<div class='rata-tengah'><i>Huwal-lażī ja'alasy-syamsa ḍiyā'aw wal-qamara nūrā.</i><br><b>Artinya: Dialah yang menjadikan matahari bersinar dan bulan bercahaya. (QS. Yunus: 5)</b></div>"}
    Teks Arab tidak boleh digabung ke blok Latin atau terjemahan. Bila dokumen tidak memuat tulisan Latin, blok 2 hanya berisi terjemahan tebal; bila tidak memuat terjemahan, blok 2 hanya berisi Latin; bila keduanya tidak ada, hanya buat blok 1. Jangan mengarang. Kalimat pengantar seperti "Allah berfirman:" tetap menjadi blok tersendiri di atasnya, dan teks soal berikutnya menjadi blok terpisah di bawahnya.
+26. Pembatas kunci dan string JSON WAJIB tanda kutip lurus ASCII ("), bukan kutip lengkung (“ ” ‘ ’). Kutip lengkung hanya boleh muncul di dalam isi teks soal, tidak pernah sebagai pembatas string.
 
 PEMERIKSAAN SEBELUM MENJAWAB
 Sebelum mengeluarkan hasil, periksa dalam hati:
@@ -741,6 +742,23 @@ Bila batas keluaranmu tidak cukup untuk semua soal, keluarkan sebagian soal pert
 CATATAN AKHIR
 Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis satu baris terpisah diawali "CATATAN:" berisi nomor soal dan alasannya (kunci tidak ada di dokumen, opsi berupa gambar, tabel rumit, teks Arab meragukan). Bila tidak ada, jangan tulis apa pun.`;
 
+  /** Ubah kutip lengkung yang membatasi string JSON menjadi kutip lurus; kutip lengkung di dalam isi string dibiarkan. */
+  function luruskanKutip(t) {
+    var hasil = '', dalam = false, lengkung = false;
+    for (var i = 0; i < t.length; i++) {
+      var c = t.charAt(i);
+      if (dalam && c === '\\') { hasil += c + t.charAt(++i); continue; }
+      var kutip = c === '"' || c === '\u201C' || c === '\u201D';
+      if (!dalam) {
+        if (kutip) { dalam = true; lengkung = c !== '"'; hasil += '"'; } else hasil += c;
+      } else if (lengkung ? ((c === '\u201C' || c === '\u201D') && /^\s*[,:}\]]/.test(t.slice(i + 1))) : c === '"') {
+        dalam = false; hasil += '"';
+      } else if (c === '"') hasil += '\\"';
+      else hasil += c;
+    }
+    return hasil;
+  }
+
   /** Buang pagar kode, urai JSON, beri posisi baris dan kolom bila rusak. Mengembalikan array/objek. */
   function uraiImport(teks) {
     var t = String(teks || '').trim();
@@ -754,6 +772,9 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     if (akhir > 0 && akhir < t.length - 1) t = t.slice(0, akhir + 1);
     try { return JSON.parse(t); }
     catch (e) {
+      // AI kadang memakai tanda kutip lengkung; luruskan lalu coba lagi.
+      var lurus = luruskanKutip(t);
+      if (lurus !== t) { try { return JSON.parse(lurus); } catch (e2) { /* pakai pesan galat asli */ } }
       var m = /position (\d+)/.exec(e.message), lk = /line (\d+) column (\d+)/.exec(e.message);
       var lokasi = '';
       if (lk) lokasi = ' pada baris ' + lk[1] + ', kolom ' + lk[2];

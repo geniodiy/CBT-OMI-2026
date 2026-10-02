@@ -143,6 +143,7 @@ ATURAN TEKS ARAB
    {"tipe":"teks","isi":"<div class='rata-tengah'>هُوَ الَّذِي جَعَلَ الشَّمْسَ ضِيَاءً وَالْقَمَرَ نُورًا</div>"},
    {"tipe":"teks","isi":"<div class='rata-tengah'><i>Huwal-lażī ja'alasy-syamsa ḍiyā'aw wal-qamara nūrā.</i><br><b>Artinya: Dialah yang menjadikan matahari bersinar dan bulan bercahaya. (QS. Yunus: 5)</b></div>"}
    Teks Arab tidak boleh digabung ke blok Latin atau terjemahan. Bila dokumen tidak memuat tulisan Latin, blok 2 hanya berisi terjemahan tebal; bila tidak memuat terjemahan, blok 2 hanya berisi Latin; bila keduanya tidak ada, hanya buat blok 1. Jangan mengarang. Kalimat pengantar seperti "Allah berfirman:" tetap menjadi blok tersendiri di atasnya, dan teks soal berikutnya menjadi blok terpisah di bawahnya.
+26. Pembatas kunci dan string JSON WAJIB tanda kutip lurus ASCII ("), bukan kutip lengkung (“ ” ‘ ’). Kutip lengkung hanya boleh muncul di dalam isi teks soal, tidak pernah sebagai pembatas string.
 
 PEMERIKSAAN SEBELUM MENJAWAB
 Sebelum mengeluarkan hasil, periksa dalam hati:
