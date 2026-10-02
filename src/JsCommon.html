@@ -619,23 +619,26 @@
 
 
   /**
-   * Kolom cari yang sekaligus pemilih (untuk daftar yang bisa panjang, misalnya paket soal).
-   * opt: { pilihan: [{ nilai, label, meta, status: { k, teks } }], nilai, aria, placeholder, kata }
-   * Saat diklik kolom dikosongkan agar langsung diketik dan daftar muncul di bawahnya; hasil: properti value dan event 'change'.
+   * Pemilih dengan pencarian (untuk daftar yang bisa panjang, misalnya paket soal).
+   * opt: { pilihan: [{ nilai, label, meta, status: { k, teks } }], nilai, aria, placeholder (kolom cari), kosong (teks tombol saat belum memilih) }
+   * Tampil sebagai tombol dropdown; saat dibuka, panel berisi kolom cari di atas dan daftar di bawahnya. Hasil: properti value dan event 'change'.
    */
   window.pilihCari = function (opt) {
     var nilai = opt.nilai == null ? '' : String(opt.nilai);
-    var input = window.el('input', { type: 'text', class: 'cb-input', autocomplete: 'off', spellcheck: false, role: 'combobox', 'aria-expanded': 'false', 'aria-autocomplete': 'list', 'aria-label': opt.aria || null, placeholder: opt.placeholder || 'Cari' });
-    var hapus = window.el('button', { type: 'button', class: 'cb-hapus', title: 'Hapus ketikan', 'aria-label': 'Hapus ketikan', hidden: true }, window.ikon('silang', 13));
-    var kotak = window.el('div', { class: 'cb-kotak' }, window.ikon('cari', 15), input, hapus);
+    var teksTombol = window.el('span', { class: 'cb-label' });
+    var kotak = window.el('button', { type: 'button', class: 'cb-kotak cb-tombol', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-label': opt.aria || null }, teksTombol, window.ikon('turun', 14));
     var wadah = window.el('div', { class: 'cb' }, kotak);
-    var panel = null, aktif = -1, butir = [], tersaring = [];
+    var panel = null, input = null, hapus = null, aktif = -1, butir = [], tersaring = [];
 
     function labelDari(v) {
       for (var i = 0; i < opt.pilihan.length; i++) if (String(opt.pilihan[i].nilai) === v) return opt.pilihan[i].label;
       return '';
     }
-    function tampilLabel() { input.value = labelDari(nilai); kotak.classList.remove('cb-ketik'); hapus.hidden = true; }
+    function tampilLabel() {
+      var l = labelDari(nilai);
+      teksTombol.textContent = l || opt.kosong || 'Pilih paket try out';
+      teksTombol.classList.toggle('cb-kosong-teks', !l);
+    }
     Object.defineProperty(wadah, 'value', { get: function () { return nilai; }, set: function (v) { nilai = v == null ? '' : String(v); tampilLabel(); } });
     tampilLabel();
 
@@ -649,7 +652,7 @@
       return f;
     }
     function pilih(v) {
-      nilai = String(v); tampilLabel(); tutupPanel(); input.blur();
+      nilai = String(v); tampilLabel(); tutupPanel(); kotak.focus();
       wadah.dispatchEvent(new Event('change', { bubbles: true }));
     }
     function geser(i) {
@@ -658,15 +661,14 @@
       butir.forEach(function (b, n) { b.classList.toggle('hv', n === aktif); });
       butir[aktif].scrollIntoView({ block: 'nearest' });
     }
+    var kepala, daftarEl, kaki;
     function gambarDaftar() {
       var kata = input.value.trim().toLowerCase();
-      if (!kotak.classList.contains('cb-ketik')) kata = '';
       tersaring = opt.pilihan.filter(function (p) { return !kata || (p.label + ' ' + (p.meta || '')).toLowerCase().indexOf(kata) >= 0; });
-      panel.textContent = '';
-      panel.appendChild(window.el('div', { class: 'cb-kepala' },
-        window.el('span', null, kata ? tersaring.length + ' dari ' + opt.pilihan.length + ' paket cocok' : opt.pilihan.length + ' paket'),
-        window.el('span', null, kata ? 'kata: "' + input.value.trim() + '"' : 'terbaru di atas')));
-      var daftar = window.el('div', { class: 'cb-daftar', role: 'listbox' });
+      kepala.textContent = '';
+      kepala.appendChild(window.el('span', null, kata ? tersaring.length + ' dari ' + opt.pilihan.length + ' paket cocok' : opt.pilihan.length + ' paket'));
+      kepala.appendChild(window.el('span', null, kata ? 'kata: "' + input.value.trim() + '"' : 'terbaru di atas'));
+      daftarEl.textContent = '';
       butir = tersaring.map(function (p, n) {
         var ini = String(p.nilai) === nilai;
         var b = window.el('div', { class: 'cb-butir' + (ini ? ' on' : ''), role: 'option', 'aria-selected': ini ? 'true' : 'false' },
@@ -675,13 +677,10 @@
         b.addEventListener('mousedown', function (e) { e.preventDefault(); });
         b.addEventListener('click', function () { pilih(p.nilai); });
         b.addEventListener('mousemove', function () { geser(n); });
-        daftar.appendChild(b);
+        daftarEl.appendChild(b);
         return b;
       });
-      if (!tersaring.length) daftar.appendChild(window.el('div', { class: 'cb-kosong' }, 'Tidak ada paket yang cocok dengan "' + input.value.trim() + '".'));
-      panel.appendChild(daftar);
-      panel.appendChild(window.el('div', { class: 'cb-kaki' }, window.el('span', null, window.el('kbd', null, window.ikon('naik', 11)), window.el('kbd', null, window.ikon('turunSoal', 11)), 'pilih'),
-        window.el('span', null, window.el('kbd', null, 'Enter'), 'buka'), window.el('span', null, window.el('kbd', null, 'Esc'), 'tutup')));
+      if (!tersaring.length) daftarEl.appendChild(window.el('div', { class: 'cb-kosong' }, 'Tidak ada paket yang cocok dengan "' + input.value.trim() + '".'));
       aktif = -1;
       for (var i = 0; i < tersaring.length; i++) if (String(tersaring[i].nilai) === nilai) aktif = i;
       geser(kata ? 0 : Math.max(0, aktif));
@@ -690,34 +689,29 @@
       if (e.key === 'ArrowDown') { e.preventDefault(); geser(aktif + 1); }
       else if (e.key === 'ArrowUp') { e.preventDefault(); geser(aktif - 1); }
       else if (e.key === 'Enter') { if (aktif >= 0 && tersaring[aktif]) { e.preventDefault(); pilih(tersaring[aktif].nilai); } }
-      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); tutupPanel(); tampilLabel(); input.blur(); }
-      else if (e.key === 'Tab') { tutupPanel(); tampilLabel(); }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); tutupPanel(); kotak.focus(); }
+      else if (e.key === 'Tab') tutupPanel();
     }
     function buka() {
-      if (panelTerbuka && panelTerbuka.tombol === kotak) return;
       panel = window.el('div', { class: 'dd-menu cb-menu' });
       panel.style.width = Math.max(kotak.offsetWidth, 340) + 'px';
-      kotak.classList.add('cb-ketik');          // kosongkan kolom supaya langsung bisa diketik
-      input.value = ''; hapus.hidden = true;
+      input = window.el('input', { type: 'text', class: 'cb-input', autocomplete: 'off', spellcheck: false, role: 'combobox', 'aria-expanded': 'true', 'aria-autocomplete': 'list', 'aria-label': 'Cari paket', placeholder: opt.placeholder || 'Cari' });
+      hapus = window.el('button', { type: 'button', class: 'cb-hapus', title: 'Hapus ketikan', 'aria-label': 'Hapus ketikan', hidden: true }, window.ikon('silang', 13));
+      kepala = window.el('div', { class: 'cb-kepala' });
+      daftarEl = window.el('div', { class: 'cb-daftar', role: 'listbox' });
+      kaki = window.el('div', { class: 'cb-kaki' }, window.el('span', null, window.el('kbd', null, window.ikon('naik', 11)), window.el('kbd', null, window.ikon('turunSoal', 11)), 'pilih'),
+        window.el('span', null, window.el('kbd', null, 'Enter'), 'buka'), window.el('span', null, window.el('kbd', null, 'Esc'), 'tutup'));
+      panel.appendChild(window.el('div', { class: 'cb-cari' }, window.ikon('cari', 15), input, hapus));
+      panel.appendChild(kepala); panel.appendChild(daftarEl); panel.appendChild(kaki);
+      input.addEventListener('input', function () { hapus.hidden = input.value === ''; gambarDaftar(); });
+      hapus.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      hapus.addEventListener('click', function () { input.value = ''; hapus.hidden = true; gambarDaftar(); input.focus(); });
       gambarDaftar();
       pasangPanel(kotak, panel, kotak.offsetWidth, kunci);
-      input.setAttribute('aria-expanded', 'true');
+      // Di layar sentuh keyboard baru muncul bila kolom cari diketuk.
+      if (!window.layarSentuh()) input.focus();
     }
-    var tutupLama = null;
-    input.addEventListener('focus', function () { buka(); });
-    input.addEventListener('click', function () { if (!(panelTerbuka && panelTerbuka.tombol === kotak)) buka(); });
-    input.addEventListener('input', function () {
-      if (!(panelTerbuka && panelTerbuka.tombol === kotak)) buka();
-      hapus.hidden = input.value === '';
-      gambarDaftar();
-    });
-    hapus.addEventListener('mousedown', function (e) { e.preventDefault(); });
-    hapus.addEventListener('click', function () { input.value = ''; hapus.hidden = true; gambarDaftar(); input.focus(); });
-    // klik di luar: kembalikan tampilan ke paket terpilih
-    document.addEventListener('mousedown', function (e) {
-      if (!wadah.isConnected) return;
-      if (kotak.classList.contains('cb-ketik') && !kotak.contains(e.target) && !(panel && panel.contains(e.target))) tampilLabel();
-    }, true);
+    kotak.addEventListener('click', function () { if (panelTerbuka && panelTerbuka.tombol === kotak) tutupPanel(); else buka(); });
     return wadah;
   };
 

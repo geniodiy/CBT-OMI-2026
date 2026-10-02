@@ -494,7 +494,7 @@
 
   function pilihanUjian(onGanti) {
     if (!ujianTerpilih || !daftarUjian.some(function (u) { return u.id === ujianTerpilih; })) ujianTerpilih = daftarUjian[0].id;
-    var pilih = window.pilihCari({ aria: 'Cari dan pilih paket soal', placeholder: 'Cari nama, mapel, jenjang, atau sesi', nilai: ujianTerpilih,
+    var pilih = window.pilihCari({ aria: 'Pilih paket try out', kosong: 'Pilih paket try out', placeholder: 'Cari nama, mapel, jenjang, atau sesi', nilai: ujianTerpilih,
       pilihan: daftarUjian.map(function (u) {
         return { nilai: u.id, label: labelUjian(u), status: statusDari(u),
           meta: u.jenjang + ' \u00b7 ' + u.mapel + (u.sesi ? ' \u00b7 ' + u.sesi : '') + ' \u00b7 ' + u.jumlah_soal + ' soal' };

@@ -1224,3 +1224,14 @@ ol.nomor-I { --jenis: upper-roman; }
 .editor-tb .dd { min-width: 0; }
 .editor-tb .dd-tombol { height: 28px; font-size: .78rem; }
 </style>
+
+<style>
+/* pemilih paket: tombol dropdown; kolom cari berada di panel */
+.cb-tombol { width: 100%; cursor: pointer; font: inherit; text-align: left; color: var(--teks); }
+.cb-label { flex: 1; min-width: 0; font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cb-label.cb-kosong-teks { font-weight: 400; color: #8fa397; }
+.cb-cari { display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 40px; color: var(--teks-redup); border-bottom: 1px solid var(--garis); }
+.cb-cari svg { flex: none; }
+.cb-cari .cb-input { font-weight: 400; }
+html.adm-aktif .cb-label { font-size: .86rem; font-weight: 500; }
+</style>
