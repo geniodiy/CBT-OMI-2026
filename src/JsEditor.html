@@ -331,9 +331,20 @@
       pilihan: [{ nilai: 'asli', label: 'Asli' }, { nilai: 'kecil', label: 'Kecil' }, { nilai: 'sedang', label: 'Sedang' }, { nilai: 'besar', label: 'Besar' }, { nilai: 'penuh', label: 'Penuh lebar' }]
     });
 
+    o.rata = b && b.tipe === 'gambar' && b.rata ? b.rata : 'kiri';
+    var tombolRataG = {};
+    function aturRataG() {
+      Object.keys(tombolRataG).forEach(function (k) { tombolRataG[k].setAttribute('aria-pressed', o.rata === k ? 'true' : 'false'); });
+    }
+    var grupRata = el('div', { class: 'adm-seg adm-seg-kecil adm-seg-ikon', role: 'group', 'aria-label': 'Posisi gambar' },
+      [['kiri', 'rataKiri', 'Rata kiri'], ['tengah', 'rataTengah', 'Rata tengah'], ['kanan', 'rataKanan', 'Rata kanan'], ['penuh', 'rataPenuh', 'Rata kiri dan kanan (direntangkan selebar kartu)']].map(function (r) {
+        var t = el('button', { type: 'button', title: r[2], 'aria-label': r[2], onclick: function () { o.rata = r[0]; aturRataG(); aturPra(); o.root && o.root.dispatchEvent(new Event('input', { bubbles: true })); } }, window.ikon(r[1], 15));
+        tombolRataG[r[0]] = t; return t;
+      }));
+
     function aturPra() {
       var u = o.url.value.trim();
-      o.pra.className = 'pra-gambar' + (o.ukuran.value !== 'asli' ? ' blok-gambar ukuran-' + o.ukuran.value : '');
+      o.pra.className = 'pra-gambar' + (o.ukuran.value !== 'asli' || o.rata !== 'kiri' ? ' blok-gambar' : '') + (o.ukuran.value !== 'asli' ? ' ukuran-' + o.ukuran.value : '') + (o.rata !== 'kiri' ? ' posisi-' + o.rata : '');
       if (/^https:\/\//i.test(u)) { o.pra.src = u; o.pra.hidden = false; } else { o.pra.hidden = true; o.pra.removeAttribute('src'); }
       o.status.textContent = u === '' ? 'Gambar belum diisi. Soal tidak tampil ke siswa sebelum gambar diisi.' : (/^https:\/\//i.test(u) ? '' : 'URL gambar harus diawali https://');
     }
@@ -359,7 +370,7 @@
     });
 
     var sekGambar = el('div', { class: 'bagian-gambar' },
-      el('div', { class: 'baris-token' }, o.url, tbUnggah), el('div', { class: 'baris-ukuran' }, o.ukuran, el('span', { class: 'redup' }, 'Pilih seberapa besar gambar ditampilkan kepada siswa.')), o.file, o.pra, o.status);
+      el('div', { class: 'baris-token' }, o.url, tbUnggah), el('div', { class: 'baris-ukuran' }, o.ukuran, grupRata, el('span', { class: 'redup' }, 'Ukuran dan posisi gambar di layar siswa.')), o.file, o.pra, o.status);
     var btnTeks = el('button', { type: 'button', onclick: function () { o.mode = 'teks'; aturMode(); } }, 'Teks');
     var btnGambar = el('button', { type: 'button', onclick: function () { o.mode = 'gambar'; aturMode(); aturPra(); } }, 'Gambar');
     function aturMode() {
@@ -376,12 +387,13 @@
       el('div', { class: 'bagian-kepala' }, o.nomor, el('div', { class: 'adm-seg adm-seg-kecil', role: 'group', 'aria-label': 'Jenis bagian' }, btnTeks, btnGambar),
         el('span', { class: 'spacer' }), o.tombolNaik, o.tombolTurun, o.tombolHapus),
       o.teks.el, sekGambar);
-    aturMode();
+    aturMode(); aturRataG();
     if (o.mode === 'gambar') aturPra();
     o.ambil = function () {
       if (o.mode === 'teks') return o.teks.kosong() ? null : { tipe: 'teks', isi: o.teks.ambil() };
       var g = { tipe: 'gambar', isi: o.url.value.trim() };
       if (o.ukuran.value !== 'asli') g.ukuran = o.ukuran.value;
+      if (o.rata !== 'kiri') g.rata = o.rata;
       return g;
     };
     return o;

@@ -709,6 +709,11 @@ html.adm-aktif textarea, html.adm-aktif .adm-import textarea { font-size: .86rem
 .blok-gambar.ukuran-sedang { width: min(100%, 360px); }
 .blok-gambar.ukuran-besar { width: min(100%, 540px); }
 .blok-gambar.ukuran-penuh { width: 100%; }
+/* posisi gambar: kiri (bawaan), tengah, kanan, atau penuh (direntangkan selebar kartu, seperti justify) */
+.blok-gambar.posisi-tengah { margin-left: auto; margin-right: auto; }
+.blok-gambar.posisi-kanan { margin-left: auto; margin-right: 0; }
+.blok-gambar.posisi-penuh { width: 100%; }
+.adm-seg-ikon button { display: inline-grid; place-items: center; min-width: 30px; }
 .baris-ukuran { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 6px 0; font-size: .82rem; }
 .ar { font-family: "Noto Naskh Arabic", "Traditional Arabic", "Geeza Pro", serif; font-size: 1.25em; line-height: 2; direction: rtl; unicode-bidi: isolate; }
 .ar-blok { text-align: right; direction: rtl; }

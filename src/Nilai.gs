@@ -103,6 +103,8 @@ function galatSoal_(i, pesan) {
 
 /** Ukuran tampil gambar. Tanpa ukuran = ukuran asli (maksimal selebar kartu). */
 var UKURAN_GAMBAR_ = ['kecil', 'sedang', 'besar', 'penuh'];
+/** Posisi gambar: kiri (bawaan bila kosong), tengah, kanan, atau penuh (direntangkan selebar kartu, seperti justify). */
+var RATA_GAMBAR_ = ['kiri', 'tengah', 'kanan', 'penuh'];
 
 function bagianBlok_(x, i) {
   var blok = [];
@@ -113,6 +115,8 @@ function bagianBlok_(x, i) {
       var item = { tipe: t, isi: t === 'teks' ? normArab_(b.isi) : String(b.isi == null ? '' : b.isi).trim() };
       var uk = t === 'gambar' && b.ukuran != null ? String(b.ukuran).toLowerCase().trim() : '';
       if (uk && UKURAN_GAMBAR_.indexOf(uk) >= 0) item.ukuran = uk;
+      var rt = t === 'gambar' && b.rata != null ? String(b.rata).toLowerCase().trim() : '';
+      if (rt && rt !== 'kiri' && RATA_GAMBAR_.indexOf(rt) >= 0) item.rata = rt;
       blok.push(item);
     });
   } else {
@@ -225,6 +229,12 @@ function normSoal_(x, i) {
     var uk = b && b.ukuran != null ? String(b.ukuran).toLowerCase().trim() : '';
     if (uk && String(b.tipe).toLowerCase().trim() === 'gambar' && UKURAN_GAMBAR_.indexOf(uk) < 0) {
       peringatan.push(pesan_(i, 'ukuran gambar "' + b.ukuran + '" tidak dikenal (gunakan kecil, sedang, besar, atau penuh); dipakai ukuran asli.'));
+    }
+  });
+  (Array.isArray(x.blok) ? x.blok : []).forEach(function (b) {
+    var rt = b && b.rata != null ? String(b.rata).toLowerCase().trim() : '';
+    if (rt && String(b.tipe).toLowerCase().trim() === 'gambar' && RATA_GAMBAR_.indexOf(rt) < 0) {
+      peringatan.push(pesan_(i, 'rata gambar "' + b.rata + '" tidak dikenal (gunakan kiri, tengah, kanan, atau penuh); dipakai rata kiri.'));
     }
   });
   blok.forEach(function (b) {

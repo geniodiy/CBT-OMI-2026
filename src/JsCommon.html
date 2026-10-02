@@ -217,7 +217,8 @@
         var url = String(b.isi || '').trim();
         if (!/^https:\/\//i.test(url)) return '';
         var img = document.createElement('img');
-        img.className = 'blok-gambar' + (['kecil', 'sedang', 'besar', 'penuh'].indexOf(b.ukuran) >= 0 ? ' ukuran-' + b.ukuran : '');
+        img.className = 'blok-gambar' + (['kecil', 'sedang', 'besar', 'penuh'].indexOf(b.ukuran) >= 0 ? ' ukuran-' + b.ukuran : '') +
+          (['tengah', 'kanan', 'penuh'].indexOf(b.rata) >= 0 ? ' posisi-' + b.rata : '');
         img.alt = 'Gambar soal';
         img.referrerPolicy = 'no-referrer';
         img.src = url;
