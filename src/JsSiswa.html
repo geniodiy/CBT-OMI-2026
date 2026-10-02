@@ -166,9 +166,12 @@
     var logoOmi = document.querySelector('.header-logo img[alt^="Olimpiade"]');
     if (logoOmi && /logo-omi\.png/.test(logoOmi.src)) hero.style.setProperty('--foto', 'url("' + logoOmi.src.replace('logo-omi.png', 'hero.jpg') + '")');
     var langkahData = [['daftar', 'Pilih ujian', 'Sesuai jenjang dan mapel'], ['kunciToken', 'Isi data dan token', 'Token dari pengawas'], ['selesai', 'Kerjakan dan lihat hasil', 'Nilai langsung keluar']];
-    var langkahKartu = el('div', { class: 'isi langkah-bungkus' }, el('div', { class: 'langkah' }, langkahData.map(function (l) {
-      return el('div', { class: 'langkah-item' }, el('span', { class: 'langkah-ikon' }, window.ikon(l[0], 20)), el('div', null, el('strong', null, l[1]), el('span', null, l[2])));
-    })));
+    var langkahIsi = [];
+    langkahData.forEach(function (l, i) {
+      langkahIsi.push(el('div', { class: 'langkah-item' }, el('span', { class: 'langkah-ikon' }, window.ikon(l[0], 20), el('span', { class: 'langkah-no' }, String(i + 1))), el('div', null, el('strong', null, l[1]), el('span', null, l[2]))));
+      if (i < langkahData.length - 1) langkahIsi.push(el('div', { class: 'langkah-sambung', 'aria-hidden': 'true' }, el('i'), el('span', null, window.ikon('kanan', 14)), el('i')));
+    });
+    var langkahKartu = el('div', { class: 'isi langkah-bungkus' }, el('div', { class: 'langkah' }, langkahIsi));
 
     // daftar ujian
     halaman = { jumlah: el('span', { class: 'jumlah-paket' }), lanjut: el('div'), filter: el('div', { class: 'filter', role: 'tablist', 'aria-label': 'Jenjang' }),
