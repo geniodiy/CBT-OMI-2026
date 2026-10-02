@@ -342,11 +342,31 @@ body[data-halaman="beranda"] .hero-sub { color: rgba(255, 255, 255, .92); }
 .langkah-item > div span { display: block; font-size: .86rem; color: var(--teks-redup); }
 .langkah-ikon { position: relative; flex: none; width: 40px; height: 40px; border-radius: 12px; background: var(--kuning); color: var(--biru-tua); display: grid; place-items: center; }
 .langkah-no { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; background: var(--biru-tua); color: #fff; font-size: .68rem; font-weight: 800; line-height: 1; display: grid; place-items: center; border: 2px solid var(--putih); }
-/* penghubung: garis tipis dan lingkaran hijau berpanah kuning tebal */
+/* penghubung: garis tipis dan lingkaran hijau berpanah kuning tebal; animasi 5 detik: 1 ke 2, lalu 2 ke 3 */
 .langkah-sambung { flex: 1; min-width: 40px; display: flex; align-items: center; margin: 0 16px; }
-.langkah-sambung i { flex: 1; height: 0; border-top: 2px solid #d5e3d9; }
-.langkah-sambung span { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--biru); color: var(--kuning); display: grid; place-items: center; box-shadow: 0 0 0 4px var(--putih); position: relative; z-index: 1; margin: 0 -1px; }
+.langkah-sambung i { flex: 1; height: 2px; background: #d5e3d9; position: relative; overflow: hidden; }
+.langkah-sambung i::after { content: ""; position: absolute; inset: 0; background: var(--kuning); transform: scaleX(0); transform-origin: left; }
+.langkah-sambung span { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--biru); color: var(--kuning); display: grid; place-items: center; box-shadow: 0 0 0 4px var(--putih); position: relative; z-index: 1; margin: 0 -1px; overflow: hidden; }
 .langkah-sambung svg { stroke-width: 3.2; }
+.langkah-sambung.k1 i::after { animation: lgIsiK1 5s ease-in-out infinite; }
+.langkah-sambung.k2 i::after { animation: lgIsiK2 5s ease-in-out infinite; }
+.langkah-sambung.k1 svg { animation: lgPanahK1 5s cubic-bezier(.5, 0, .2, 1) infinite; }
+.langkah-sambung.k2 svg { animation: lgPanahK2 5s cubic-bezier(.5, 0, .2, 1) infinite; }
+.langkah-item.n1 .langkah-ikon { animation: lgDenyut1 5s ease-out infinite; }
+.langkah-item.n2 .langkah-ikon { animation: lgDenyut2 5s ease-out infinite; }
+.langkah-item.n3 .langkah-ikon { animation: lgDenyut3 5s ease-out infinite; }
+@keyframes lgPanahK1 { 0% { transform: translateX(0); opacity: .5 } 4% { transform: translateX(0); opacity: 1 } 14% { transform: translateX(22px); opacity: 0 } 14.01% { transform: translateX(-22px); opacity: 0 } 28% { transform: translateX(0); opacity: 1 } 36%, 100% { transform: translateX(0); opacity: .5 } }
+@keyframes lgPanahK2 { 0%, 32% { transform: translateX(0); opacity: .5 } 36% { transform: translateX(0); opacity: 1 } 46% { transform: translateX(22px); opacity: 0 } 46.01% { transform: translateX(-22px); opacity: 0 } 60% { transform: translateX(0); opacity: 1 } 68%, 100% { transform: translateX(0); opacity: .5 } }
+@keyframes lgPanahV1 { 0% { transform: translateY(0) rotate(90deg); opacity: .5 } 4% { transform: translateY(0) rotate(90deg); opacity: 1 } 14% { transform: translateY(18px) rotate(90deg); opacity: 0 } 14.01% { transform: translateY(-18px) rotate(90deg); opacity: 0 } 28% { transform: translateY(0) rotate(90deg); opacity: 1 } 36%, 100% { transform: translateY(0) rotate(90deg); opacity: .5 } }
+@keyframes lgPanahV2 { 0%, 32% { transform: translateY(0) rotate(90deg); opacity: .5 } 36% { transform: translateY(0) rotate(90deg); opacity: 1 } 46% { transform: translateY(18px) rotate(90deg); opacity: 0 } 46.01% { transform: translateY(-18px) rotate(90deg); opacity: 0 } 60% { transform: translateY(0) rotate(90deg); opacity: 1 } 68%, 100% { transform: translateY(0) rotate(90deg); opacity: .5 } }
+@keyframes lgIsiK1 { 0% { transform: scaleX(0); opacity: 1 } 30% { transform: scaleX(1) } 90% { transform: scaleX(1); opacity: 1 } 100% { transform: scaleX(1); opacity: 0 } }
+@keyframes lgIsiK2 { 0%, 30% { transform: scaleX(0); opacity: 1 } 62% { transform: scaleX(1) } 90% { transform: scaleX(1); opacity: 1 } 100% { transform: scaleX(1); opacity: 0 } }
+@keyframes lgIsiV1 { 0% { transform: scaleY(0); opacity: 1 } 30% { transform: scaleY(1) } 90% { transform: scaleY(1); opacity: 1 } 100% { transform: scaleY(1); opacity: 0 } }
+@keyframes lgIsiV2 { 0%, 30% { transform: scaleY(0); opacity: 1 } 62% { transform: scaleY(1) } 90% { transform: scaleY(1); opacity: 1 } 100% { transform: scaleY(1); opacity: 0 } }
+@keyframes lgDenyut1 { 0% { box-shadow: 0 0 0 0 rgba(227, 181, 5, .55) } 12% { box-shadow: 0 0 0 9px rgba(227, 181, 5, 0) } 100% { box-shadow: 0 0 0 0 rgba(227, 181, 5, 0) } }
+@keyframes lgDenyut2 { 0%, 30% { box-shadow: 0 0 0 0 rgba(227, 181, 5, 0) } 31% { box-shadow: 0 0 0 0 rgba(227, 181, 5, .55) } 44% { box-shadow: 0 0 0 9px rgba(227, 181, 5, 0) } 100% { box-shadow: 0 0 0 0 rgba(227, 181, 5, 0) } }
+@keyframes lgDenyut3 { 0%, 62% { box-shadow: 0 0 0 0 rgba(227, 181, 5, 0) } 63% { box-shadow: 0 0 0 0 rgba(227, 181, 5, .55) } 76% { box-shadow: 0 0 0 9px rgba(227, 181, 5, 0) } 100% { box-shadow: 0 0 0 0 rgba(227, 181, 5, 0) } }
+@media (prefers-reduced-motion: reduce) { .langkah-sambung i::after, .langkah-sambung svg, .langkah-ikon { animation: none !important; } .langkah-sambung svg { opacity: 1; } }
 
 body[data-halaman="beranda"] .pita { padding: 44px 0 0; }
 body[data-halaman="beranda"] .judul-bagian h2 { font-size: 1.4rem; letter-spacing: -.02em; }
@@ -402,9 +422,14 @@ body[data-halaman="beranda"] .footer-situs a { border-bottom: 2px solid var(--ku
 @media (max-width: 900px) {
   .langkah { flex-direction: column; align-items: stretch; padding: 16px 18px; }
   .langkah-sambung { flex-direction: column; align-self: flex-start; align-items: center; flex: none; min-width: 0; min-height: 30px; margin: 4px 0 4px 8px; }
-  .langkah-sambung i { flex: none; height: 8px; border-top: 0; border-left: 2px solid #d5e3d9; }
+  .langkah-sambung i { flex: none; width: 2px; height: 8px; }
+  .langkah-sambung i::after { transform: scaleY(0); transform-origin: top; }
+  .langkah-sambung.k1 i::after { animation-name: lgIsiV1; }
+  .langkah-sambung.k2 i::after { animation-name: lgIsiV2; }
+  .langkah-sambung.k1 svg { animation-name: lgPanahV1; }
+  .langkah-sambung.k2 svg { animation-name: lgPanahV2; }
   .langkah-sambung span { width: 22px; height: 22px; box-shadow: 0 0 0 3px var(--putih); }
-  .langkah-sambung span svg { width: 11px; height: 11px; transform: rotate(90deg); }
+  .langkah-sambung span svg { width: 11px; height: 11px; }
 }
 @media (max-width: 600px) {
   body[data-halaman="beranda"] .hero { padding: 46px 0 96px; }
