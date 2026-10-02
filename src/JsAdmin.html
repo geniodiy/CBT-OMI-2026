@@ -640,8 +640,19 @@
         ikonAksi('hapus', 'Hapus', function () { hapusSoal(x, i); }, 'adm-ikon-hapus')));
   }
 
-  /** Tampilan soal persis seperti siswa, ditambah kunci jawaban yang ditandai untuk admin. */
-  function lihatSoal(x, i) {
+  /** Indeks soal yang lolos saringan tipe dan pencarian saat ini (urutan tampil di daftar). */
+  function indeksTersaring() {
+    var kata = cariSoal.trim().toLowerCase(), hasil = [];
+    daftarSoal.forEach(function (x, i) {
+      if (filterTipeSoal === 'kosong' ? !gambarKosong(x) : (filterTipeSoal !== 'semua' && x.tipe !== filterTipeSoal)) return;
+      var teks = (x.blok || []).filter(function (b) { return b.tipe === 'teks'; }).map(function (b) { return b.isi; }).join(' ').replace(/<[^>]+>/g, ' ').toLowerCase();
+      if (kata && teks.indexOf(kata) < 0) return;
+      hasil.push(i);
+    });
+    return hasil;
+  }
+
+  function kartuLihatSoal(x, i) {
     var kartu = window.soalSiswaEl({ tipe: x.tipe, blok: x.blok, opsi: x.opsi || [] }, i + 1, daftarSoal.length);
     var kunci = x.kunci || [];
     if (x.tipe === 'isian') {
@@ -652,13 +663,52 @@
       });
       kartu.appendChild(el('div', { class: 'adm-kunci-info' }, window.ikon('centang', 15), el('span', null, 'Kunci jawaban: ', el('strong', null, kunci.join(', ')))));
     }
-    window.openModal({
-      judul: 'Lihat soal ' + (i + 1), lebar: true, isi: kartu,
+    return kartu;
+  }
+
+  /** Tampilan soal persis seperti siswa, ditambah kunci jawaban yang ditandai untuk admin. Tombol kiri/kanan berpindah antar soal. */
+  function lihatSoal(x, i) {
+    var urut = indeksTersaring();
+    if (urut.indexOf(i) < 0) urut = daftarSoal.map(function (_, n) { return n; });
+    var pos = urut.indexOf(i), modal;
+    var judul;
+    var sebelumnya = el('button', { type: 'button', class: 'btn btn-teks btn-nav-soal', title: 'Soal sebelumnya', 'aria-label': 'Soal sebelumnya', onclick: function () { pindah(-1); } }, window.ikon('kiri', 16));
+    var berikutnya = el('button', { type: 'button', class: 'btn btn-teks btn-nav-soal', title: 'Soal berikutnya', 'aria-label': 'Soal berikutnya', onclick: function () { pindah(1); } }, window.ikon('kanan', 16));
+    var posisi = el('span', { class: 'nav-soal-pos', 'aria-live': 'polite' });
+    function tampil() {
+      var n = urut[pos];
+      modal.badan.textContent = '';
+      modal.badan.appendChild(kartuLihatSoal(daftarSoal[n], n));
+      window.mathify(modal.badan);
+      modal.badan.scrollTop = 0;
+      judul.textContent = 'Lihat soal ' + (n + 1);
+      posisi.textContent = (pos + 1) + ' / ' + urut.length;
+      sebelumnya.disabled = pos === 0; berikutnya.disabled = pos === urut.length - 1;
+    }
+    function pindah(d) {
+      var p = pos + d;
+      if (p < 0 || p >= urut.length) return;
+      pos = p; tampil();
+    }
+    function tombolPanah(e) {
+      if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if (e.key === 'ArrowLeft') pindah(-1); else if (e.key === 'ArrowRight') pindah(1);
+    }
+    modal = window.openModal({
+      judul: 'Lihat soal ' + (i + 1), lebar: true, isi: el('div'),
       tombol: [
-        { teks: 'Ubah soal', aksi: function () { setTimeout(function () { bukaEditor(x, i); }, 0); } },
-        { teks: 'Tutup', utama: true }
+        { teks: 'Ubah soal', aksi: function () { var n = urut[pos]; setTimeout(function () { bukaEditor(daftarSoal[n], n); }, 0); } },
+        { teks: 'Tutup', utama: true, aksi: function () { document.removeEventListener('keydown', tombolPanah); } }
       ]
     });
+    judul = modal.el.querySelector('.modal-kepala h2');
+    var kaki = modal.el.querySelector('.modal-kaki');
+    kaki.insertBefore(el('div', { class: 'nav-soal' }, sebelumnya, posisi, berikutnya), kaki.firstChild);
+    document.addEventListener('keydown', tombolPanah);
+    // Penutupan lewat Esc atau klik latar tidak melewati tombol Tutup; lepas pendengar saat modal hilang.
+    var pantau = new MutationObserver(function () { if (!modal.el.isConnected) { document.removeEventListener('keydown', tombolPanah); pantau.disconnect(); } });
+    pantau.observe(document.getElementById('modalRoot'), { childList: true, subtree: true });
+    tampil();
   }
 
   var PROMPT_AI = String.raw`PERAN
