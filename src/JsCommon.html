@@ -224,9 +224,19 @@
         img.src = url;
         return img.outerHTML;
       }
-      return '<div class="blok-teks">' + window.clean(b.isi) + '</div>';
+      var html = window.clean(b.isi);
+      return '<div class="blok-teks' + (perluRataPenuh(html) ? ' auto-penuh' : '') + '">' + html + '</div>';
     }).join('');
   };
+
+  /** Teks soal dengan lebih dari satu kalimat otomatis rata kiri-kanan, kecuali sudah diberi perataan, berupa tabel, atau didominasi huruf Arab. */
+  function perluRataPenuh(html) {
+    if (/<table|class="rata-/i.test(html)) return false;
+    var teks = html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    var arab = (teks.match(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g) || []).length;
+    if (arab > teks.length / 3) return false;
+    return teks.length > 60 && /[.!?]["'\u201D\u2019)\]]*\s+\S/.test(teks);
+  }
 
   function bungkusArab(akar) {
     var jalan = document.createTreeWalker(akar, NodeFilter.SHOW_TEXT, {

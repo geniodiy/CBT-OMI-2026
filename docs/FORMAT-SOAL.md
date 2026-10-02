@@ -39,6 +39,8 @@ Import menerima array soal, atau objek `{ "soal": [ ... ] }`. Pembungkus pagar k
 
 **HTML yang diizinkan** (selain itu dibuang oleh DOMPurify): `b`, `strong`, `i`, `em`, `u`, `sub`, `sup`, `br`, `p`, `div`, `span`, `ul`, `ol`, `li`, serta tabel: `table`, `thead`, `tbody`, `tr`, `th`, `td`. Atribut yang lolos: `class` dengan nilai `rata-kiri`, `rata-tengah`, `rata-kanan`, atau `rata-penuh` (perataan teks dari editor; `rata-penuh` = rata kiri dan kanan/justify); nilai class lain dibuang, begitu juga `style` dan atribut lain.
 
+**Rata otomatis**: saat ditampilkan, blok teks soal yang berisi lebih dari satu kalimat (lebih dari 60 karakter) otomatis rata kiri-kanan. Dilewati bila blok sudah diberi perataan (`rata-*`), berupa tabel, atau didominasi huruf Arab. Tidak ada yang disimpan; ini hanya gaya tampilan.
+
 **Tabel**: tabel dibuat dengan tombol tabel di toolbar editor (jumlah baris dan kolom, opsi baris judul; saat kursor berada di dalam tabel muncul tombol tambah/hapus baris, tambah/hapus kolom, dan hapus tabel; Tab pindah antar sel). Tabel yang disalin dari Word atau Excel otomatis menjadi tabel (baris pertama sebagai judul). Di JSON, tabel ditulis sebagai HTML di dalam blok teks, satu tabel satu blok: `<table><thead><tr><th>A</th><th>B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>`. Sel digabung dengan `colspan='2'` atau `rowspan='2'` (hanya angka 2 sampai 12); atribut lain (`style`, `border`, `width`) dibuang. Tabel tidak didukung di dalam opsi jawaban (editor opsi memakai versi mini).
 
 **LaTeX** dirender KaTeX:

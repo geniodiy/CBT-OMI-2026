@@ -742,21 +742,36 @@ Bila batas keluaranmu tidak cukup untuk semua soal, keluarkan sebagian soal pert
 CATATAN AKHIR
 Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis satu baris terpisah diawali "CATATAN:" berisi nomor soal dan alasannya (kunci tidak ada di dokumen, opsi berupa gambar, tabel rumit, teks Arab meragukan). Bila tidak ada, jangan tulis apa pun.`;
 
-  /** Ubah kutip lengkung yang membatasi string JSON menjadi kutip lurus; kutip lengkung di dalam isi string dibiarkan. */
+  /** Perbaiki kerusakan JSON yang lazim dari AI: kutip lengkung sebagai pembatas, enter mentah di dalam string, koma berlebih, dan kutip lurus tak berhambat di dalam isi. */
   function luruskanKutip(t) {
+    t = t.replace(/[\u200B\uFEFF]/g, '');
     var hasil = '', dalam = false, lengkung = false;
     for (var i = 0; i < t.length; i++) {
       var c = t.charAt(i);
-      if (dalam && c === '\\') { hasil += c + t.charAt(++i); continue; }
-      var kutip = c === '"' || c === '\u201C' || c === '\u201D';
+      var kutip = c === '"' || c === '\u201C' || c === '\u201D' || c === '\u201E';
       if (!dalam) {
-        if (kutip) { dalam = true; lengkung = c !== '"'; hasil += '"'; } else hasil += c;
-      } else if (lengkung ? ((c === '\u201C' || c === '\u201D') && /^\s*[,:}\]]/.test(t.slice(i + 1))) : c === '"') {
-        dalam = false; hasil += '"';
-      } else if (c === '"') hasil += '\\"';
+        if (kutip) { dalam = true; lengkung = c !== '"'; hasil += '"'; }
+        else if (c === '\u2018' || c === '\u2019') hasil += "'";
+        else hasil += c;
+        continue;
+      }
+      if (c === '\\') {
+        var n = t.charAt(i + 1);
+        // Garis miring tunggal sebelum huruf rumus (\frac) digandakan agar tidak jadi escape yang salah.
+        if (/["\\\/bfnrtu]/.test(n) && !(n === 'f' && /^f(rac|orall)/.test(t.slice(i + 1))) && !(n === 'b' && /^b(eta|ar|oldsymbol|inom)/.test(t.slice(i + 1))) && !(n === 'n' && /^n(eq|u|abla|ot|i|subset)/.test(t.slice(i + 1))) && !(n === 'r' && /^r(ightarrow|ho|angle)/.test(t.slice(i + 1))) && !(n === 't' && /^t(ext|imes|heta|au|riangle|o)/.test(t.slice(i + 1)))) { hasil += c + n; i++; }
+        else hasil += '\\\\';
+        continue;
+      }
+      var sisa = t.slice(i + 1);
+      var penutup = lengkung ? (c === '\u201C' || c === '\u201D' || c === '\u201E') : c === '"';
+      if (penutup && /^\s*[,:}\]]/.test(sisa)) { dalam = false; hasil += '"'; }
+      else if (c === '"') hasil += '\\"';
+      else if (c === '\n') hasil += '\\n';
+      else if (c === '\r') { /* abaikan */ }
+      else if (c === '\t') hasil += '\\t';
       else hasil += c;
     }
-    return hasil;
+    return hasil.replace(/,(\s*[}\]])/g, '$1');
   }
 
   /** Buang pagar kode, urai JSON, beri posisi baris dan kolom bila rusak. Mengembalikan array/objek. */
@@ -774,7 +789,7 @@ Setelah JSON (di luar array), bila ada hal yang perlu diperiksa manusia, tulis s
     catch (e) {
       // AI kadang memakai tanda kutip lengkung; luruskan lalu coba lagi.
       var lurus = luruskanKutip(t);
-      if (lurus !== t) { try { return JSON.parse(lurus); } catch (e2) { /* pakai pesan galat asli */ } }
+      if (lurus !== t) { try { return JSON.parse(lurus); } catch (e2) { e = e2; t = lurus; } }
       var m = /position (\d+)/.exec(e.message), lk = /line (\d+) column (\d+)/.exec(e.message);
       var lokasi = '';
       if (lk) lokasi = ' pada baris ' + lk[1] + ', kolom ' + lk[2];
