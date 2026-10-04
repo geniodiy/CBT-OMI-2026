@@ -407,24 +407,54 @@
     o.ukuran.addEventListener('change', aturPra);
 
     var tbUnggah = el('button', { type: 'button', class: 'btn btn-kecil', onclick: function () { o.file.click(); } }, window.ikon('unggah', 14), 'Unggah');
-    o.file.addEventListener('change', function () {
-      var f = o.file.files && o.file.files[0];
-      o.file.value = '';
+    function unggahBerkas(f) {
       if (!f) return;
       tbUnggah.disabled = true; o.status.textContent = 'Mengunggah gambar...';
       kompres(f).then(function (h) {
         var b64 = h.data.split(',')[1] || '';
         if (b64.length * 0.75 > MAKS_BYTE) throw new Error('Gambar terlalu besar. Maksimal 3 MB.');
-        return window.call('adminUpload', ctx.tok(), b64, h.mime, f.name);
+        return window.call('adminUpload', ctx.tok(), b64, h.mime, f.name || 'gambar');
       }).then(function (url) {
         o.url.value = url; aturPra();
         window.toast('Gambar terunggah.');
       }).catch(function (e) { o.status.textContent = e.message; })
         .then(function () { tbUnggah.disabled = false; });
+    }
+    o.file.addEventListener('change', function () {
+      var f = o.file.files && o.file.files[0];
+      o.file.value = '';
+      unggahBerkas(f);
     });
 
-    var sekGambar = el('div', { class: 'bagian-gambar' },
-      el('div', { class: 'baris-token' }, o.url, tbUnggah), el('div', { class: 'baris-ukuran' }, o.ukuran, grupRata, el('span', { class: 'redup' }, 'Ukuran dan posisi gambar di layar siswa.')), o.file, o.pra, o.status);
+    /** Gambar dari papan klip (Ctrl+V) atau seretan berkas; mengembalikan berkas gambar pertama atau null. */
+    function gambarDari(dt) {
+      if (!dt) return null;
+      var items = dt.items || [];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file' && /^image\//.test(items[i].type)) return items[i].getAsFile();
+      }
+      var fl = dt.files || [];
+      for (var j = 0; j < fl.length; j++) if (/^image\//.test(fl[j].type)) return fl[j];
+      return null;
+    }
+    o.terimaTempel = function (f) {
+      if (o.mode === 'gambar') { unggahBerkas(f); return true; }
+      if (o.teks.kosong()) { o.mode = 'gambar'; aturMode(); aturPra(); unggahBerkas(f); return true; }
+      return false;
+    };
+    var tbTempel = el('button', { type: 'button', class: 'btn btn-kecil', title: 'Tempel gambar dari papan klip', onclick: function () {
+      if (!(navigator.clipboard && navigator.clipboard.read)) { window.toast('Tekan Ctrl+V (atau tahan lama lalu Tempel di HP) di kotak gambar ini.', true); return; }
+      navigator.clipboard.read().then(function (daftar) {
+        for (var i = 0; i < daftar.length; i++) {
+          var tipe = daftar[i].types.filter(function (t) { return /^image\//.test(t); })[0];
+          if (tipe) return daftar[i].getType(tipe).then(function (blob) { unggahBerkas(new File([blob], 'tempel.' + (tipe.split('/')[1] || 'png'), { type: tipe })); });
+        }
+        window.toast('Tidak ada gambar di papan klip.', true);
+      }).catch(function () { window.toast('Izin papan klip ditolak. Tekan Ctrl+V di kotak gambar ini.', true); });
+    } }, window.ikon('tempel', 14), 'Tempel');
+
+    var sekGambar = el('div', { class: 'bagian-gambar', tabindex: '0' },
+      el('div', { class: 'baris-token' }, o.url, tbUnggah, tbTempel), el('div', { class: 'tempel-info redup' }, 'Atau salin gambar lalu tekan Ctrl+V di sini, juga bisa diseret ke kotak ini.'), el('div', { class: 'baris-ukuran' }, o.ukuran, grupRata, el('span', { class: 'redup' }, 'Ukuran dan posisi gambar di layar siswa.')), o.file, o.pra, o.status);
     var btnTeks = el('button', { type: 'button', onclick: function () { o.mode = 'teks'; aturMode(); } }, 'Teks');
     var btnGambar = el('button', { type: 'button', onclick: function () { o.mode = 'gambar'; aturMode(); aturPra(); } }, 'Gambar');
     function aturMode() {
@@ -441,6 +471,21 @@
       el('div', { class: 'bagian-kepala' }, o.nomor, el('div', { class: 'adm-seg adm-seg-kecil', role: 'group', 'aria-label': 'Jenis bagian' }, btnTeks, btnGambar),
         el('span', { class: 'spacer' }), o.tombolNaik, o.tombolTurun, o.tombolHapus),
       o.teks.el, sekGambar);
+    // Ctrl+V gambar di mana pun di dalam bagian ini (fase tangkap agar mendahului editor teks yang hanya menerima teks polos)
+    o.root.addEventListener('paste', function (e) {
+      var f = gambarDari(e.clipboardData);
+      if (!f) return;
+      e.preventDefault(); e.stopPropagation();
+      if (!o.terimaTempel(f)) window.toast('Bagian ini berisi teks. Ubah jenisnya ke Gambar, atau tempel di bagian gambar.', true);
+    }, true);
+    sekGambar.addEventListener('dragover', function (e) { e.preventDefault(); sekGambar.classList.add('seret'); });
+    sekGambar.addEventListener('dragleave', function () { sekGambar.classList.remove('seret'); });
+    sekGambar.addEventListener('drop', function (e) {
+      sekGambar.classList.remove('seret');
+      var f = gambarDari(e.dataTransfer);
+      if (!f) return;
+      e.preventDefault(); unggahBerkas(f);
+    });
     aturMode(); aturRataG();
     if (o.mode === 'gambar') aturPra();
     o.ambil = function () {
