@@ -19,7 +19,7 @@ Panduan untuk Claude Code di repo ini. Baca file ini dulu, lalu `docs/PRD.md` da
   - KaTeX 0.16.9 (`katex.min.css`, `katex.min.js`, `contrib/auto-render.min.js`, `contrib/mhchem.min.js`)
   - DOMPurify 3.0.6
   - html2pdf.js 0.10.1
-- Font: pakai font sistem atau satu keluarga dari Google Fonts (lihat `docs/UI.md`).
+- Font: pakai font sistem atau satu keluarga dari Google Fonts, ditambah Noto Naskh Arabic khusus teks Arab (lihat `docs/UI.md`).
 - Deploy dengan **clasp** (`rootDir` = `src`).
 
 ## Struktur repo
@@ -29,7 +29,7 @@ CLAUDE.md, README.md, TASKS.md
 docs/            PRD, ARSITEKTUR, UI, API, FORMAT-SOAL, referensi/
 supabase/        schema.sql
 contoh/          soal-contoh.json
-assets/          logo-omi.png, logo-kemenag.png (sumber; yang dipakai web ada di Supabase Storage bucket "aset")
+assets/          logo-omi.png, logo-genio.png (sumber). Logo OMI dibaca dari Supabase Storage bucket "aset"; logo Genio tertanam (data URI) di Index.html
 src/             SEMUA kode Apps Script (dikirim ke Google lewat clasp)
   appsscript.json
   Code.gs        doGet, include
@@ -65,6 +65,7 @@ Secret disimpan di **Script Properties** (Project Settings di editor Apps Script
 4. Setiap fungsi `admin*` memanggil `guard_(tok)` di baris pertama.
 5. Semua HTML dari admin/JSON disanitasi dengan DOMPurify (whitelist tag di `docs/FORMAT-SOAL.md`) **setiap kali dirender**, bukan hanya saat disimpan.
 6. URL gambar hanya `https://`.
+6a. Teks Arab (termasuk harakat) wajib utuh dan tampil benar kanan-ke-kiri di editor, soal, opsi, hasil, dan PDF; aturan di bagian "Teks Arab" `docs/FORMAT-SOAL.md`.
 
 **Apps Script**
 7. Fungsi publik (bisa dipanggil `google.script.run`) tanpa garis bawah di akhir nama. Helper privat berakhiran `_`.
@@ -81,7 +82,7 @@ Secret disimpan di **Script Properties** (Project Settings di editor Apps Script
 
 ## Aturan tampilan (ringkas, rinci di `docs/UI.md`)
 
-Simpel dan tegas, bukan tampilan "template AI". **Dilarang:** gradien, glassmorphism, bayangan tebal, kartu bertumpuk di dalam kartu, ikon dekoratif berlebihan, emoji di antarmuka, animasi masuk di setiap bagian, label huruf kapital semua, tanda panah "→" di tombol. Warna diambil dari logo (biru OMI, merah kecil, hijau Kemenag).
+Simpel dan tegas, bukan tampilan "template AI". **Pengecualian:** halaman ujian meniru CBT OMI asli (kaca tembus pandang, bayangan lembut, ikon garis, label Title Case, animasi halus), lihat bagian 9 `docs/UI.md`. Di luar halaman ujian berlaku **Dilarang:** gradien, glassmorphism, bayangan tebal, kartu bertumpuk di dalam kartu, ikon dekoratif berlebihan, emoji di antarmuka, animasi masuk di setiap bagian, label huruf kapital semua, tanda panah "→" di tombol. Warna diambil dari logo (biru OMI, merah kecil, hijau Kemenag).
 
 ## Cara bekerja
 

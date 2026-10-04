@@ -1,0 +1,874 @@
+<script>
+(function () {
+  var TAG_BOLEH = ['b', 'strong', 'i', 'em', 'u', 'sub', 'sup', 'br', 'p', 'div', 'span', 'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td'];
+  var ARAB = '[\\u0600-\\u06FF\\u0750-\\u077F\\u08A0-\\u08FF\\uFB50-\\uFDFF\\uFE70-\\uFEFF]';
+  var RE_ARAB = new RegExp(ARAB + '+(?:[\\s\\u200C\\u200D]+' + ARAB + '+)*', 'g');
+  var RE_ARAB_ADA = new RegExp(ARAB);
+
+  var App = window.App = { onSesiAdminHabis: null };
+
+  // ---- indikator muat: bilah tipis di atas layar, muncul bila panggilan server > 150 ms ----
+  var menunggu = 0, pewaktuBilah = null;
+  function bilahNaik() {
+    menunggu++;
+    if (menunggu === 1) {
+      pewaktuBilah = setTimeout(function () {
+        var b = document.getElementById('bilahMuat');
+        if (b) b.classList.add('aktif');
+      }, 150);
+    }
+  }
+  function bilahTurun() {
+    menunggu = Math.max(0, menunggu - 1);
+    if (menunggu === 0) {
+      clearTimeout(pewaktuBilah);
+      var b = document.getElementById('bilahMuat');
+      if (b) b.classList.remove('aktif');
+    }
+  }
+
+  /** Panggil fungsi server. Menolak dengan Error berpesan Indonesia. */
+  window.call = function (fn) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    bilahNaik();
+    return new Promise(function (ok, gagal) {
+      google.script.run
+        .withSuccessHandler(function (h) { bilahTurun(); ok(h); })
+        .withFailureHandler(function (e) {
+          bilahTurun();
+          var pesan = String((e && e.message) || e || 'Terjadi kesalahan. Coba lagi.').replace(/^Error:\s*/, '');
+          // Galat bawaan Google (kuota, waktu habis, jaringan) diganti kalimat yang bisa ditindaklanjuti.
+          if (/too many (simultaneous )?(times|invocations)|Exceeded maximum execution time|Service (Unavailable|invoked)|quota|NetworkError|Failed to fetch|Load failed/i.test(pesan)) {
+            pesan = 'Server sedang sibuk atau koneksi terputus. Tunggu sebentar, lalu coba lagi.';
+          }
+          if (pesan.indexOf('SESI_ADMIN') === 0 && App.onSesiAdminHabis) App.onSesiAdminHabis(pesan);
+          gagal(new Error(pesan));
+        })[fn].apply(null, args);
+    });
+  };
+
+  /** Tombol sibuk: menampilkan putaran kecil dan menolak klik ganda selama janji berjalan. */
+  window.sibuk = function (tombol, janji) {
+    tombol.classList.add('sibuk'); tombol.disabled = true;
+    function selesai() { tombol.classList.remove('sibuk'); tombol.disabled = false; }
+    janji.then(selesai, selesai);
+    return janji;
+  };
+
+  /**
+   * Layar muat: dua cincin berputar dengan titik berdenyut di tengah dan teks langkah yang berganti.
+   * langkah: daftar kalimat singkat, misalnya ['Memeriksa token', 'Menyiapkan soal'].
+   */
+  window.muatan = function (judul, langkah) {
+    var cincin = window.el('div', { class: 'muat-cincin', 'aria-hidden': 'true' },
+      window.el('i'), window.el('i'), window.el('b'));
+    var teks = window.el('p', { class: 'muat-langkah', 'aria-live': 'polite' }, (langkah && langkah[0]) || '');
+    var kotak = window.el('div', { class: 'muat', role: 'status' }, cincin, window.el('h2', null, judul), teks);
+    if (langkah && langkah.length > 1) {
+      var n = 0;
+      var jam = setInterval(function () {
+        if (!kotak.isConnected) { clearInterval(jam); return; }
+        n = (n + 1) % langkah.length;
+        teks.classList.remove('ganti'); void teks.offsetWidth;
+        teks.textContent = langkah[n]; teks.classList.add('ganti');
+      }, 1300);
+    }
+    return kotak;
+  };
+
+  /** html2pdf.js (besar) baru dimuat saat dibutuhkan atau saat browser menganggur. */
+  var janjiPdf = null;
+  window.pastikanPdf = function () {
+    if (window.html2pdf) return Promise.resolve();
+    if (janjiPdf) return janjiPdf;
+    janjiPdf = new Promise(function (ok, gagal) {
+      var sc = document.createElement('script');
+      sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      sc.onload = function () { ok(); };
+      sc.onerror = function () { janjiPdf = null; gagal(new Error('Pustaka PDF tidak dapat dimuat.')); };
+      document.head.appendChild(sc);
+    });
+    return janjiPdf;
+  };
+  window.siapkanPdfNanti = function () {
+    var mulai = function () { window.pastikanPdf().catch(function () { /* dicoba lagi saat tombol ditekan */ }); };
+    if (window.requestIdleCallback) window.requestIdleCallback(mulai, { timeout: 4000 }); else setTimeout(mulai, 2500);
+  };
+
+  /** aksi (opsional): { teks, fn }, misalnya tombol "Urungkan" di dalam toast. */
+  window.toast = function (pesan, galat, aksi) {
+    var el = document.createElement('div');
+    el.className = 'toast' + (galat ? ' toast-galat' : '');
+    el.appendChild(document.createTextNode(pesan));
+    if (aksi) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'toast-aksi'; b.textContent = aksi.teks;
+      b.addEventListener('click', function () { el.remove(); aksi.fn(); });
+      el.appendChild(b);
+    }
+    document.getElementById('toastRoot').appendChild(el);
+    setTimeout(function () { el.remove(); }, aksi ? 7000 : (galat ? 6000 : 3500));
+  };
+
+  /**
+   * opt: { judul, isi (string teks, atau Node), tombol: [{teks, utama, bahaya, aksi}], lebar, tutupDiLuar }
+   * aksi(modal) boleh mengembalikan false agar modal tidak tertutup.
+   */
+  /** True pada HP dan tablet (penunjuk sentuh): dipakai untuk melewati fokus otomatis dan menyesuaikan tata letak keyboard. */
+  window.layarSentuh = function () { return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); };
+
+  window.openModal = function (opt) {
+    var terakhirFokus = document.activeElement;
+    var latar = document.createElement('div');
+    latar.className = 'modal-latar';
+    var kotak = document.createElement('div');
+    kotak.className = 'modal' + (opt.lebar ? ' modal-lebar' : '') + (opt.kelas ? ' ' + opt.kelas : '');
+    kotak.setAttribute('role', 'dialog');
+    kotak.setAttribute('aria-modal', 'true');
+
+    var kepala = document.createElement('div'); kepala.className = 'modal-kepala';
+    var h = document.createElement('h2'); h.textContent = opt.judul || '';
+    if (opt.ikon) {
+      kepala.classList.add('dgn-ikon');
+      var tile = document.createElement('span'); tile.className = 'modal-ikon'; tile.appendChild(window.ikon(opt.ikon, 20));
+      var teks = document.createElement('div'); teks.appendChild(h);
+      if (opt.sub) { var sub = document.createElement('p'); sub.className = 'modal-sub'; sub.textContent = opt.sub; teks.appendChild(sub); }
+      kepala.appendChild(tile); kepala.appendChild(teks);
+    } else kepala.appendChild(h);
+    var badan = document.createElement('div'); badan.className = 'modal-badan';
+    if (opt.isi instanceof Node) badan.appendChild(opt.isi);
+    else badan.textContent = opt.isi || '';
+    var kaki = document.createElement('div'); kaki.className = 'modal-kaki';
+    kotak.appendChild(kepala); kotak.appendChild(badan); kotak.appendChild(kaki);
+    latar.appendChild(kotak);
+
+    var modal = {
+      el: kotak, badan: badan,
+      close: function () {
+        document.removeEventListener('keydown', onKey, true);
+        latar.remove();
+        if (terakhirFokus && terakhirFokus.focus) terakhirFokus.focus();
+      }
+    };
+    (opt.tombol || []).forEach(function (t) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn' + (t.utama ? ' btn-utama' : t.bahaya ? ' btn-bahaya' : ' btn-teks');
+      b.textContent = t.teks;
+      b.addEventListener('click', function () {
+        if (!t.aksi || t.aksi(modal) !== false) modal.close();
+      });
+      kaki.appendChild(b);
+    });
+    if (!kaki.children.length) kaki.hidden = true;
+
+    function onKey(e) {
+      if (e.key === 'Escape' && opt.tutupDiLuar !== false) { e.stopPropagation(); modal.close(); }
+      if (e.key === 'Tab') {
+        var f = kotak.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!f.length) return;
+        var awal = f[0], akhir = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === awal) { e.preventDefault(); akhir.focus(); }
+        else if (!e.shiftKey && document.activeElement === akhir) { e.preventDefault(); awal.focus(); }
+      }
+    }
+    document.addEventListener('keydown', onKey, true);
+    if (opt.tutupDiLuar !== false) {
+      latar.addEventListener('mousedown', function (e) { if (e.target === latar) modal.close(); });
+    }
+    document.getElementById('modalRoot').appendChild(latar);
+    // Di layar sentuh kolom isian tidak difokus otomatis: keyboard baru muncul bila pengguna mengetuk kolomnya.
+    var fokus = window.layarSentuh() ? null : (kotak.querySelector('input, select, textarea') || kaki.querySelector('.btn-utama, .btn-bahaya') || kotak.querySelector('button'));
+    if (fokus) fokus.focus(); else { kotak.setAttribute('tabindex', '-1'); kotak.focus({ preventScroll: true }); }
+    return modal;
+  };
+
+  /** Sanitasi HTML dari admin atau JSON. Dipanggil setiap kali dirender. */
+  // Satu-satunya atribut yang diizinkan: class, dengan nilai perataan teks dan gaya nomor daftar.
+  var KELAS_BOLEH = ['rata-kiri', 'rata-tengah', 'rata-kanan', 'rata-penuh', 'nomor-kurung', 'nomor-a', 'nomor-a-kurung', 'nomor-A', 'nomor-i', 'nomor-I'];
+  DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+    if (!node.hasAttribute) return;
+    if (node.hasAttribute('class')) {
+      var ok = node.getAttribute('class').split(/\s+/).filter(function (c) { return KELAS_BOLEH.indexOf(c) >= 0; });
+      if (ok.length) node.setAttribute('class', ok.join(' ')); else node.removeAttribute('class');
+    }
+    // Sel tabel yang digabung: hanya angka 2 sampai 12.
+    ['colspan', 'rowspan'].forEach(function (a) {
+      if (!node.hasAttribute(a)) return;
+      var n = parseInt(node.getAttribute(a), 10);
+      if (n >= 2 && n <= 12) node.setAttribute(a, String(n)); else node.removeAttribute(a);
+    });
+  });
+
+  window.clean = function (html) {
+    return DOMPurify.sanitize(String(html == null ? '' : html), { ALLOWED_TAGS: TAG_BOLEH, ALLOWED_ATTR: ['class', 'colspan', 'rowspan'] });
+  };
+
+  /** Sama dengan normArab_ di Nilai.gs (jaga keduanya tetap seragam). Dipakai saat tempel. */
+  window.normArab = function (teks) {
+    var s = String(teks == null ? '' : teks).replace(/[\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '');
+    return s.replace(/[\uFB50-\uFDFF\uFE70-\uFEFF]+/g, function (m) { return m.normalize('NFKC'); });
+  };
+
+  /** HTML aman untuk daftar bagian soal. Bagian gambar kosong atau bukan https dilewati. */
+  window.blokHTML = function (bloks) {
+    return (bloks || []).map(function (b) {
+      if (b.tipe === 'gambar') {
+        var url = String(b.isi || '').trim();
+        if (!/^https:\/\//i.test(url)) return '';
+        var img = document.createElement('img');
+        img.className = 'blok-gambar' + (['kecil', 'sedang', 'besar', 'penuh'].indexOf(b.ukuran) >= 0 ? ' ukuran-' + b.ukuran : '') +
+          (['tengah', 'kanan', 'penuh'].indexOf(b.rata) >= 0 ? ' posisi-' + b.rata : '');
+        img.alt = 'Gambar soal';
+        img.referrerPolicy = 'no-referrer';
+        img.src = url;
+        return img.outerHTML;
+      }
+      var html = window.clean(b.isi);
+      return '<div class="blok-teks' + (perluRataPenuh(html) ? ' auto-penuh' : '') + '">' + html + '</div>';
+    }).join('');
+  };
+
+  /** Teks soal dengan lebih dari satu kalimat otomatis rata kiri-kanan, kecuali sudah diberi perataan, berupa tabel, atau didominasi huruf Arab. */
+  function perluRataPenuh(html) {
+    if (/<table|class="rata-/i.test(html)) return false;
+    var teks = html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
+    var arab = (teks.match(/[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/g) || []).length;
+    if (arab > teks.length / 3) return false;
+    return teks.length > 60 && /[.!?]["'\u201D\u2019)\]]*\s+\S/.test(teks);
+  }
+
+  function bungkusArab(akar) {
+    var jalan = document.createTreeWalker(akar, NodeFilter.SHOW_TEXT, {
+      acceptNode: function (n) {
+        if (!RE_ARAB_ADA.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+        for (var p = n.parentNode; p && p !== akar; p = p.parentNode) {
+          if (p.classList && (p.classList.contains('katex') || p.classList.contains('ar'))) return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var daftar = [];
+    while (jalan.nextNode()) daftar.push(jalan.currentNode);
+    daftar.forEach(function (n) {
+      var teks = n.nodeValue, frag = document.createDocumentFragment(), akhir = 0, m;
+      RE_ARAB.lastIndex = 0;
+      while ((m = RE_ARAB.exec(teks))) {
+        if (m.index > akhir) frag.appendChild(document.createTextNode(teks.slice(akhir, m.index)));
+        var s = document.createElement('span');
+        s.className = 'ar'; s.setAttribute('dir', 'rtl'); s.setAttribute('lang', 'ar');
+        s.textContent = m[0];
+        frag.appendChild(s);
+        akhir = m.index + m[0].length;
+      }
+      if (akhir < teks.length) frag.appendChild(document.createTextNode(teks.slice(akhir)));
+      n.parentNode.replaceChild(frag, n);
+    });
+    // Bagian teks yang seluruhnya Arab dibuat rata kanan.
+    akar.querySelectorAll('.blok-teks').forEach(function (b) {
+      var sisa = b.textContent.replace(new RegExp(ARAB, 'g'), '').replace(/[\s\d.,:;()\-\u200C\u200D]/g, '');
+      if (!sisa && b.querySelector('.ar')) b.classList.add('ar-blok');
+    });
+  }
+
+  /** Render rumus (KaTeX + mhchem) lalu bungkus teks Arab. Panggil setelah innerHTML diisi. */
+  window.mathify = function (el) {
+    if (window.renderMathInElement) {
+      try {
+        window.renderMathInElement(el, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true },
+            { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false
+        });
+      } catch (e) { /* rumus rusak dibiarkan sebagai teks */ }
+    }
+    bungkusArab(el);
+  };
+
+  /** Buat elemen: el('div', {class:'x', onclick:fn}, anak1, 'teks', ...). Teks selalu lewat textContent. */
+  window.el = function (tag, props) {
+    var e = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (k) {
+      var v = props[k];
+      if (v == null || v === false) return;
+      if (k.indexOf('on') === 0 && typeof v === 'function') e.addEventListener(k.slice(2), v);
+      else if (k === 'class') e.className = v;
+      else if (k in e && k !== 'list') e[k] = v;
+      else e.setAttribute(k, v === true ? '' : v);
+    });
+    function tambah(a) {
+      if (a == null || a === false) return;
+      if (Array.isArray(a)) { a.forEach(tambah); return; }
+      e.appendChild(a instanceof Node ? a : document.createTextNode(String(a)));
+    }
+    Array.prototype.slice.call(arguments, 2).forEach(tambah);
+    return e;
+  };
+
+  var IKON = {
+    jam: [['circle', { cx: 12, cy: 12, r: 9 }], ['path', { d: 'M12 7v5l3 2' }]],
+    segarkan: [['path', { d: 'M20.5 12a8.5 8.5 0 1 1-2.6-6.1' }], ['path', { d: 'M20.5 4v5h-5' }]],
+    silang: [['path', { d: 'M7 7l10 10M17 7L7 17' }]],
+    henti: [['rect', { x: 6, y: 6, width: 12, height: 12, rx: 2.5 }]],
+    buku: [['path', { d: 'M5 4.5h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z' }], ['path', { d: 'M5 17a3 3 0 0 1 3-3h10' }]],
+    bantuan: [['circle', { cx: 12, cy: 12, r: 9 }], ['path', { d: 'M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.7.3-1 .9-1 1.6' }], ['path', { d: 'M12 16.8h.01' }]],
+    kiri: [['path', { d: 'M14.5 6l-6 6 6 6' }]],
+    kanan: [['path', { d: 'M9.5 6l6 6-6 6' }]],
+    daftar: [['path', { d: 'M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01' }]],
+    centang: [['path', { d: 'M5 12.5l4.5 4.5L19 7.5' }]],
+    unduh: [['path', { d: 'M12 4v11M8 11l4 4 4-4M5 19h14' }]],
+    unggah: [['path', { d: 'M12 15V4M8 8l4-4 4 4M5 15v4h14v-4' }]],
+    naik: [['path', { d: 'M7 14l5-5 5 5' }]],
+    turunSoal: [['path', { d: 'M7 10l5 5 5-5' }]],
+    mata: [['path', { d: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z' }], ['circle', { cx: 12, cy: 12, r: 3 }]],
+    gambar: [['rect', { x: 4, y: 5, width: 16, height: 14, rx: 2 }], ['circle', { cx: 9, cy: 10, r: 1.5 }], ['path', { d: 'M4 17l5-4 4 3 3-2 4 3' }]],
+    rataKiri: [['path', { d: 'M4 6h16M4 10h10M4 14h16M4 18h10' }]],
+    rataTengah: [['path', { d: 'M4 6h16M7 10h10M4 14h16M7 18h10' }]],
+    rataKanan: [['path', { d: 'M4 6h16M10 10h10M4 14h16M10 18h10' }]],
+    rataPenuh: [['path', { d: 'M4 6h16M4 10h16M4 14h16M4 18h16' }]],
+    daftarNomor: [['path', { d: 'M10 6.5h10M10 12h10M10 17.5h10' }], ['path', { d: 'M4.5 5l1.5-1v5M4.5 13.5h3l-3 4h3' }]],
+    hapusFormat: [['path', { d: 'M4 17l9-9 4 4-6 6H6z' }], ['path', { d: 'M11 20h9' }]],
+    tambah: [['path', { d: 'M12 5v14M5 12h14' }]],
+    turun: [['path', { d: 'M7 10l5 5 5-5' }]],
+    kalender: [['rect', { x: 4, y: 5, width: 16, height: 15, rx: 2 }], ['path', { d: 'M4 10h16M8 3v4M16 3v4' }]],
+    ubah: [['path', { d: 'M4 20l1-4L16.5 4.5a2 2 0 0 1 3 3L8 19z' }], ['path', { d: 'M14.5 6.5l3 3' }]],
+    duplikat: [['rect', { x: 8, y: 8, width: 12, height: 12, rx: 2 }], ['path', { d: 'M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2' }]],
+    salin: [['rect', { x: 8, y: 8, width: 12, height: 12, rx: 2 }], ['path', { d: 'M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2' }]],
+    hapus: [['path', { d: 'M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5' }]],
+    cari: [['circle', { cx: 11, cy: 11, r: 6 }], ['path', { d: 'M20 20l-4.2-4.2' }]],
+    ujian: [['rect', { x: 4, y: 3.5, width: 16, height: 17, rx: 2.5 }], ['path', { d: 'M8 8.5h8M8 12h8M8 15.5h5' }]],
+    hasil: [['path', { d: 'M5 20v-9M12 20V5M19 20v-6' }]],
+    keluar: [['path', { d: 'M10 5H6a1.5 1.5 0 0 0-1.5 1.5v11A1.5 1.5 0 0 0 6 19h4M14 8l4 4-4 4M18 12H9' }]],
+    beranda: [['path', { d: 'M4 11l8-7 8 7M6 10v9h12v-9' }]],
+    peringatan: [['path', { d: 'M12 4l9 16H3z' }], ['path', { d: 'M12 10v4M12 17h.01' }]],
+    tabel: [['rect', { x: 4, y: 5, width: 16, height: 14, rx: 2 }], ['path', { d: 'M4 10h16M4 14.5h16M10 5v14' }]],
+    cetak: [['path', { d: 'M7 9V4h10v5M7 17H5a1 1 0 0 1-1-1v-5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v5a1 1 0 0 1-1 1h-2' }], ['rect', { x: 7, y: 14, width: 10, height: 6, rx: 1 }]],
+    orang: [['circle', { cx: 12, cy: 8, r: 3.5 }], ['path', { d: 'M5 20c.6-3.6 3.4-5.5 7-5.5s6.4 1.9 7 5.5' }]],
+    gembok: [['rect', { x: 5, y: 10.5, width: 14, height: 9.5, rx: 2.5 }], ['path', { d: 'M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5M12 14.5v2' }]],
+    hitung: [['rect', { x: 5, y: 3, width: 14, height: 18, rx: 2.5 }], ['path', { d: 'M8.5 7.5h7M9 12h.01M12 12h.01M15 12h.01M9 16h.01M12 16h.01M15 16h.01' }]],
+    daun: [['path', { d: 'M5 19C5 10.5 10 5 19 5c0 9-5.5 14-14 14z' }], ['path', { d: 'M5 19l7-7' }]],
+    labu: [['path', { d: 'M9.5 3.5h5M10.5 3.5v6L5.8 18a2 2 0 0 0 1.8 3h8.8a2 2 0 0 0 1.8-3l-4.7-8.5v-6' }], ['path', { d: 'M8 15h8' }]],
+    atom: [['circle', { cx: 12, cy: 12, r: 1.6 }], ['ellipse', { cx: 12, cy: 12, rx: 9.5, ry: 3.8 }], ['ellipse', { cx: 12, cy: 12, rx: 9.5, ry: 3.8, transform: 'rotate(60 12 12)' }], ['ellipse', { cx: 12, cy: 12, rx: 9.5, ry: 3.8, transform: 'rotate(120 12 12)' }]],
+    bumi: [['circle', { cx: 12, cy: 12, r: 9 }], ['ellipse', { cx: 12, cy: 12, rx: 4, ry: 9 }], ['path', { d: 'M3 12h18' }]],
+    tempel: [['rect', { x: 8, y: 3, width: 8, height: 4, rx: 1 }], ['path', { d: 'M16 5h2a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h2' }]],
+    kunciToken: [['circle', { cx: 8, cy: 14, r: 4 }], ['path', { d: 'M11 11.5L19 4M16 7l2.5 2.5' }]],
+    selesai: [['circle', { cx: 12, cy: 12, r: 9 }], ['path', { d: 'M8.3 12.4l2.6 2.6 4.8-5.2' }]],
+    dokumen: [['path', { d: 'M7 3.5h7l4 4V20.5H7z' }], ['path', { d: 'M14 3.5v4h4' }], ['path', { d: 'M9.5 12h5M9.5 15.5h5' }]]
+  };
+
+  /** Ikon garis tipis (SVG) yang mengikuti warna teks. Semua aria-hidden karena selalu disertai teks. */
+  window.ikon = function (nama, ukuran) {
+    var ns = 'http://www.w3.org/2000/svg', svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor'); svg.setAttribute('stroke-width', '1.7');
+    svg.setAttribute('stroke-linecap', 'round'); svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('width', ukuran || 18); svg.setAttribute('height', ukuran || 18);
+    svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
+    (IKON[nama] || []).forEach(function (b) {
+      var e = document.createElementNS(ns, b[0]);
+      Object.keys(b[1]).forEach(function (k) { e.setAttribute(k, b[1][k]); });
+      svg.appendChild(e);
+    });
+    return svg;
+  };
+
+
+  // ---------- dropdown dan pemilih waktu buatan sendiri (menggantikan <select> dan datetime-local bawaan perangkat) ----------
+
+  var NAMA_BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  var NAMA_HARI = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+  var panelTerbuka = null;
+
+  function tutupPanel() {
+    if (!panelTerbuka) return;
+    var p = panelTerbuka; panelTerbuka = null;
+    document.removeEventListener('mousedown', p.luar, true);
+    document.removeEventListener('keydown', p.tombolKunci, true);
+    window.removeEventListener('resize', p.ukuran);
+    window.removeEventListener('scroll', p.gulir, true);
+    p.panel.remove();
+    p.tombol.setAttribute('aria-expanded', 'false');
+  }
+
+  /** Menempatkan panel (position: fixed) di bawah tombol, atau di atas bila tidak muat. */
+  function pasangPanel(tombol, panel, lebarMin, tombolKunci) {
+    tutupPanel();
+    panel.style.position = 'fixed';
+    document.body.appendChild(panel);
+    var lebar = Math.max(tombol.getBoundingClientRect().width, lebarMin || 0);
+    panel.style.minWidth = lebar + 'px';
+    function susun() {
+      var r = tombol.getBoundingClientRect();
+      var vv = window.visualViewport;
+      var vh = (vv && vv.height) || window.innerHeight, vt = (vv && vv.offsetTop) || 0;
+      panel.style.maxHeight = ''; panel.style.overflowY = '';
+      var tinggi = panel.offsetHeight, lebarPanel = panel.offsetWidth;
+      var atas;
+      if (tinggi <= vt + vh - r.bottom - 8) atas = r.bottom + 6;
+      else if (tinggi <= r.top - vt - 8) atas = r.top - tinggi - 6;
+      else if (tinggi <= vh - 16) atas = vt + vh - tinggi - 8;          // tidak muat di atas maupun bawah: geser agar seluruhnya terlihat
+      else { atas = vt + 8; panel.style.maxHeight = (vh - 16) + 'px'; panel.style.overflowY = 'auto'; }
+      panel.style.top = Math.max(vt + 8, Math.round(atas)) + 'px';
+      panel.style.left = Math.max(8, Math.min(Math.round(r.left), window.innerWidth - lebarPanel - 8)) + 'px';
+    }
+    susun();
+    tombol.setAttribute('aria-expanded', 'true');
+    var lebarAwal = window.innerWidth;
+    var kead = {
+      panel: panel, tombol: tombol, tutup: tutupPanel, tombolKunci: tombolKunci,
+      luar: function (e) { if (!panel.contains(e.target) && !tombol.contains(e.target)) tutupPanel(); },
+      // Keyboard layar mengubah tinggi (bukan lebar) dan menggulirkan halaman: panel tetap terbuka dan hanya disusun ulang.
+      ukuran: function () { if (window.innerWidth !== lebarAwal) tutupPanel(); else susun(); },
+      gulir: function (e) {
+        if (panel.contains(e.target)) return;
+        var a = document.activeElement;
+        if (a && (a === tombol || tombol.contains(a) || panel.contains(a))) { susun(); return; }
+        tutupPanel();
+      }
+    };
+    panelTerbuka = kead;
+    document.addEventListener('mousedown', kead.luar, true);
+    document.addEventListener('keydown', tombolKunci, true);
+    window.addEventListener('resize', kead.ukuran);
+    window.addEventListener('scroll', kead.gulir, true);
+  }
+
+  /**
+   * Pengganti <select>. opt: { pilihan: [{ nilai, label, jml }], nilai, aria, bebas: 'placeholder' (boleh ketik nilai lain),
+   * placeholder, awalan, lebar }. Elemen hasil punya properti value dan memicu event 'change' seperti <select>.
+   */
+  window.dropdown = function (opt) {
+    var nilai = opt.nilai == null ? '' : String(opt.nilai);
+    var teks = window.el('span', { class: 'dd-teks' });
+    var tombol = window.el('button', { type: 'button', class: 'dd-tombol', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-label': opt.aria || null },
+      teks, window.ikon('turun', 13));
+    var wadah = window.el('div', { class: 'dd' }, tombol);
+    function labelDari(v) {
+      for (var i = 0; i < opt.pilihan.length; i++) if (String(opt.pilihan[i].nilai) === v) return opt.pilihan[i].label;
+      return v;
+    }
+    function tampilkan() {
+      teks.textContent = nilai === '' && opt.placeholder ? opt.placeholder : (opt.awalan || '') + labelDari(nilai);
+      teks.classList.toggle('dd-kosong', nilai === '' && !!opt.placeholder);
+    }
+    Object.defineProperty(wadah, 'value', { get: function () { return nilai; }, set: function (v) { nilai = v == null ? '' : String(v); tampilkan(); } });
+    tampilkan();
+
+    var aktif = -1, butir = [];
+    function pilih(v) {
+      nilai = String(v); tampilkan(); tutupPanel(); tombol.focus();
+      wadah.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    function sorot(i) {
+      if (!butir.length) return;
+      aktif = (i + butir.length) % butir.length;
+      butir.forEach(function (b, n) { b.classList.toggle('hv', n === aktif); });
+      butir[aktif].scrollIntoView({ block: 'nearest' });
+    }
+    function kunci(e) {
+      if (e.target && e.target.classList && e.target.classList.contains('dd-bebas')) {
+        if (e.key === 'Enter') { e.preventDefault(); if (e.target.value.trim()) pilih(e.target.value.trim()); }
+        else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); tutupPanel(); tombol.focus(); }
+        return;
+      }
+      if (e.key === 'ArrowDown') { e.preventDefault(); sorot(aktif + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); sorot(aktif - 1); }
+      else if (e.key === 'Enter' || e.key === ' ') { if (aktif >= 0) { e.preventDefault(); pilih(butir[aktif].getAttribute('data-nilai')); } }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); tutupPanel(); tombol.focus(); }
+      else if (e.key === 'Tab') tutupPanel();
+    }
+    function buka() {
+      var panel = window.el('div', { class: 'dd-menu', role: 'listbox' });
+      butir = opt.pilihan.map(function (p, n) {
+        var b = window.el('div', { class: 'dd-butir' + (String(p.nilai) === nilai ? ' on' : ''), role: 'option', 'data-nilai': String(p.nilai), 'aria-selected': String(p.nilai) === nilai ? 'true' : 'false' },
+          window.el('span', { class: 'dd-label' }, p.label),
+          p.jml != null ? window.el('small', null, String(p.jml)) : null,
+          String(p.nilai) === nilai ? window.ikon('centang', 14) : null);
+        b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        b.addEventListener('click', function () { pilih(p.nilai); });
+        b.addEventListener('mousemove', function () { sorot(n); });
+        panel.appendChild(b);
+        return b;
+      });
+      var input = null;
+      if (opt.bebas) {
+        input = window.el('input', { type: 'text', class: 'dd-bebas', placeholder: opt.bebas, maxLength: 30, 'aria-label': opt.bebas });
+        panel.appendChild(window.el('div', { class: 'dd-pemisah' }));
+        panel.appendChild(input);
+      }
+      pasangPanel(tombol, panel, opt.lebar || 0, kunci);
+      aktif = -1;
+      for (var i = 0; i < butir.length; i++) if (butir[i].classList.contains('on')) aktif = i;
+      sorot(aktif < 0 ? 0 : aktif);
+    }
+    tombol.addEventListener('click', function () { if (panelTerbuka && panelTerbuka.tombol === tombol) tutupPanel(); else buka(); });
+    tombol.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); if (!(panelTerbuka && panelTerbuka.tombol === tombol)) buka(); }
+    });
+    return wadah;
+  };
+
+  function dua(n) { return (n < 10 ? '0' : '') + n; }
+  function urai(v) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(v || '');
+    return m ? { y: +m[1], m: +m[2] - 1, d: +m[3], jam: +m[4], mnt: +m[5] } : null;
+  }
+  function formatWaktu(t) { return t.d + ' ' + NAMA_BULAN[t.m].slice(0, 3) + ' ' + t.y + ', ' + dua(t.jam) + '.' + dua(t.mnt); }
+
+  /**
+   * Pemilih tanggal dan jam. opt: { nilai: 'YYYY-MM-DDTHH:mm' atau '', aria, placeholder }.
+   * Elemen hasil punya properti value (format yang sama dengan input datetime-local) dan memicu event 'change'.
+   */
+  window.pilihWaktu = function (opt) {
+    var nilai = opt.nilai || '';
+    var teks = window.el('span', { class: 'dd-teks' });
+    var tombol = window.el('button', { type: 'button', class: 'dd-tombol', 'aria-haspopup': 'dialog', 'aria-expanded': 'false', 'aria-label': opt.aria || null },
+      teks, window.ikon('kalender', 14));
+    var wadah = window.el('div', { class: 'dd' }, tombol);
+    function tampilkan() {
+      var t = urai(nilai);
+      teks.textContent = t ? formatWaktu(t) : (opt.placeholder || 'Pilih tanggal dan jam');
+      teks.classList.toggle('dd-kosong', !t);
+    }
+    Object.defineProperty(wadah, 'value', { get: function () { return nilai; }, set: function (v) { nilai = v || ''; tampilkan(); } });
+    tampilkan();
+
+    function buka() {
+      var awal = urai(nilai), sekarang = new Date();
+      var st = awal ? { y: awal.y, m: awal.m, tgl: { y: awal.y, m: awal.m, d: awal.d }, jam: awal.jam, mnt: awal.mnt }
+        : { y: sekarang.getFullYear(), m: sekarang.getMonth(), tgl: null, jam: 8, mnt: 0 };
+      var panel = window.el('div', { class: 'dd-kal', role: 'dialog', 'aria-label': 'Pilih tanggal dan jam' });
+      var inJam, inMnt;
+
+      function terapkan() {
+        var t = st.tgl || { y: sekarang.getFullYear(), m: sekarang.getMonth(), d: sekarang.getDate() };
+        nilai = t.y + '-' + dua(t.m + 1) + '-' + dua(t.d) + 'T' + dua(st.jam) + ':' + dua(st.mnt);
+        tampilkan(); tutupPanel(); tombol.focus();
+        wadah.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      function hapus() {
+        nilai = ''; tampilkan(); tutupPanel(); tombol.focus();
+        wadah.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      function geser(n) {
+        st.m += n;
+        if (st.m < 0) { st.m = 11; st.y--; } else if (st.m > 11) { st.m = 0; st.y++; }
+        gambar();
+      }
+      function batas(v, maks) { v = parseInt(v, 10); return isNaN(v) ? 0 : Math.max(0, Math.min(maks, v)); }
+      function gambar() {
+        panel.textContent = '';
+        panel.appendChild(window.el('div', { class: 'dd-kal-kepala' },
+          window.el('strong', null, NAMA_BULAN[st.m] + ' ' + st.y),
+          window.el('div', null,
+            window.el('button', { type: 'button', class: 'dd-nav', 'aria-label': 'Bulan sebelumnya', onclick: function () { geser(-1); } }, window.ikon('kiri', 14)),
+            window.el('button', { type: 'button', class: 'dd-nav', 'aria-label': 'Bulan berikutnya', onclick: function () { geser(1); } }, window.ikon('kanan', 14)))));
+        panel.appendChild(window.el('div', { class: 'dd-hari' }, NAMA_HARI.map(function (h) { return window.el('span', null, h); })));
+        var grid = window.el('div', { class: 'dd-tgl' });
+        var pertama = new Date(st.y, st.m, 1), geserAwal = (pertama.getDay() + 6) % 7;
+        var hariBulan = new Date(st.y, st.m + 1, 0).getDate(), jumlahSel = Math.ceil((geserAwal + hariBulan) / 7) * 7;
+        for (var i = 0; i < jumlahSel; i++) {
+          var tgl = new Date(st.y, st.m, 1 - geserAwal + i);
+          var kelas = 'dd-sel';
+          if (tgl.getMonth() !== st.m) kelas += ' o';
+          if (tgl.getFullYear() === sekarang.getFullYear() && tgl.getMonth() === sekarang.getMonth() && tgl.getDate() === sekarang.getDate()) kelas += ' t';
+          if (st.tgl && st.tgl.y === tgl.getFullYear() && st.tgl.m === tgl.getMonth() && st.tgl.d === tgl.getDate()) kelas += ' s';
+          (function (tg) {
+            grid.appendChild(window.el('button', { type: 'button', class: kelas, onclick: function () {
+              st.tgl = { y: tg.getFullYear(), m: tg.getMonth(), d: tg.getDate() };
+              st.y = tg.getFullYear(); st.m = tg.getMonth(); gambar();
+            } }, String(tg.getDate())));
+          })(tgl);
+        }
+        panel.appendChild(grid);
+        inJam = window.el('input', { type: 'text', class: 'dd-wkt', inputmode: 'numeric', maxLength: 2, value: dua(st.jam), 'aria-label': 'Jam' });
+        inMnt = window.el('input', { type: 'text', class: 'dd-wkt', inputmode: 'numeric', maxLength: 2, value: dua(st.mnt), 'aria-label': 'Menit' });
+        function ubahWaktu() { st.jam = batas(inJam.value, 23); st.mnt = batas(inMnt.value, 59); inJam.value = dua(st.jam); inMnt.value = dua(st.mnt); }
+        [[inJam, 23, 'jam'], [inMnt, 59, 'mnt']].forEach(function (x) {
+          x[0].addEventListener('change', ubahWaktu);
+          x[0].addEventListener('focus', function () { x[0].select(); });
+          x[0].addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+              e.preventDefault(); e.stopPropagation();
+              var n = (e.key === 'ArrowUp' ? 1 : -1) + batas(x[0].value, x[1]);
+              x[0].value = dua(n < 0 ? x[1] : n > x[1] ? 0 : n); ubahWaktu();
+            }
+          });
+        });
+        function preset(j) { return window.el('button', { type: 'button', class: 'dd-preset', onclick: function () { st.jam = j; st.mnt = 0; inJam.value = dua(j); inMnt.value = '00'; } }, dua(j) + '.00'); }
+        panel.appendChild(window.el('div', { class: 'dd-jam' }, window.el('span', null, 'Jam'), inJam, ':', inMnt,
+          window.el('div', { class: 'dd-pres' }, preset(8), preset(13), preset(16))));
+        panel.appendChild(window.el('div', { class: 'dd-aksi' },
+          window.el('button', { type: 'button', class: 'dd-teks-btn', onclick: hapus }, 'Hapus'),
+          window.el('button', { type: 'button', class: 'dd-teks-btn', onclick: function () {
+            st.tgl = { y: sekarang.getFullYear(), m: sekarang.getMonth(), d: sekarang.getDate() }; st.y = st.tgl.y; st.m = st.tgl.m; gambar();
+          } }, 'Hari ini'),
+          window.el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { ubahWaktu(); terapkan(); } }, 'Terapkan')));
+      }
+      function kunci(e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); tutupPanel(); tombol.focus(); }
+        else if (e.key === 'Enter' && e.target && e.target.classList && e.target.classList.contains('dd-wkt')) { e.preventDefault(); terapkan(); }
+      }
+      gambar();
+      pasangPanel(tombol, panel, 0, kunci);
+    }
+    tombol.addEventListener('click', function () { if (panelTerbuka && panelTerbuka.tombol === tombol) tutupPanel(); else buka(); });
+    return wadah;
+  };
+
+
+  /**
+   * Pemilih dengan pencarian (untuk daftar yang bisa panjang, misalnya paket soal).
+   * opt: { pilihan: [{ nilai, label, meta, status: { k, teks } }], nilai, aria, placeholder (kolom cari), kosong (teks tombol saat belum memilih) }
+   * Tampil sebagai tombol dropdown; saat dibuka, panel berisi kolom cari di atas dan daftar di bawahnya. Hasil: properti value dan event 'change'.
+   */
+  window.pilihCari = function (opt) {
+    var nilai = opt.nilai == null ? '' : String(opt.nilai);
+    var teksTombol = window.el('span', { class: 'cb-label' });
+    var kotak = window.el('button', { type: 'button', class: 'cb-kotak cb-tombol', 'aria-haspopup': 'listbox', 'aria-expanded': 'false', 'aria-label': opt.aria || null }, teksTombol, window.ikon('turun', 14));
+    var wadah = window.el('div', { class: 'cb' }, kotak);
+    var panel = null, input = null, hapus = null, aktif = -1, butir = [], tersaring = [];
+
+    function labelDari(v) {
+      for (var i = 0; i < opt.pilihan.length; i++) if (String(opt.pilihan[i].nilai) === v) return opt.pilihan[i].label;
+      return '';
+    }
+    function tampilLabel() {
+      var l = labelDari(nilai);
+      teksTombol.textContent = l || opt.kosong || 'Pilih paket try out';
+      teksTombol.classList.toggle('cb-kosong-teks', !l);
+    }
+    Object.defineProperty(wadah, 'value', { get: function () { return nilai; }, set: function (v) { nilai = v == null ? '' : String(v); tampilLabel(); } });
+    tampilLabel();
+
+    function sorot(bagian, kata) {
+      var f = window.el('span', { class: 'cb-teks' });
+      var t = String(bagian), k = kata.toLowerCase(), i = k ? t.toLowerCase().indexOf(k) : -1;
+      if (i < 0) { f.textContent = t; return f; }
+      f.appendChild(document.createTextNode(t.slice(0, i)));
+      f.appendChild(window.el('mark', null, t.slice(i, i + k.length)));
+      f.appendChild(document.createTextNode(t.slice(i + k.length)));
+      return f;
+    }
+    function pilih(v) {
+      nilai = String(v); tampilLabel(); tutupPanel(); kotak.focus();
+      wadah.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    function geser(i) {
+      if (!butir.length) return;
+      aktif = (i + butir.length) % butir.length;
+      butir.forEach(function (b, n) { b.classList.toggle('hv', n === aktif); });
+      butir[aktif].scrollIntoView({ block: 'nearest' });
+    }
+    var kepala, daftarEl, kaki;
+    function gambarDaftar() {
+      var kata = input.value.trim().toLowerCase();
+      tersaring = opt.pilihan.filter(function (p) { return !kata || (p.label + ' ' + (p.meta || '')).toLowerCase().indexOf(kata) >= 0; });
+      kepala.textContent = '';
+      kepala.appendChild(window.el('span', null, kata ? tersaring.length + ' dari ' + opt.pilihan.length + ' paket cocok' : opt.pilihan.length + ' paket'));
+      kepala.appendChild(window.el('span', null, kata ? 'kata: "' + input.value.trim() + '"' : 'terbaru di atas'));
+      daftarEl.textContent = '';
+      butir = tersaring.map(function (p, n) {
+        var ini = String(p.nilai) === nilai;
+        var b = window.el('div', { class: 'cb-butir' + (ini ? ' on' : ''), role: 'option', 'aria-selected': ini ? 'true' : 'false' },
+          window.el('div', { class: 'cb-isi' }, window.el('b', null, sorot(p.label, kata)), window.el('span', { class: 'cb-meta' }, p.meta || '')),
+          ini ? window.ikon('centang', 15) : (p.status ? window.el('span', { class: 'adm-pil adm-pil-' + p.status.k }, p.status.teks) : null));
+        b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+        b.addEventListener('click', function () { pilih(p.nilai); });
+        b.addEventListener('mousemove', function () { geser(n); });
+        daftarEl.appendChild(b);
+        return b;
+      });
+      if (!tersaring.length) daftarEl.appendChild(window.el('div', { class: 'cb-kosong' }, 'Tidak ada paket yang cocok dengan "' + input.value.trim() + '".'));
+      aktif = -1;
+      for (var i = 0; i < tersaring.length; i++) if (String(tersaring[i].nilai) === nilai) aktif = i;
+      geser(kata ? 0 : Math.max(0, aktif));
+    }
+    function kunci(e) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); geser(aktif + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); geser(aktif - 1); }
+      else if (e.key === 'Enter') { if (aktif >= 0 && tersaring[aktif]) { e.preventDefault(); pilih(tersaring[aktif].nilai); } }
+      else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); tutupPanel(); kotak.focus(); }
+      else if (e.key === 'Tab') tutupPanel();
+    }
+    function buka() {
+      panel = window.el('div', { class: 'dd-menu cb-menu' });
+      panel.style.width = Math.max(kotak.offsetWidth, 340) + 'px';
+      input = window.el('input', { type: 'text', class: 'cb-input', autocomplete: 'off', spellcheck: false, role: 'combobox', 'aria-expanded': 'true', 'aria-autocomplete': 'list', 'aria-label': 'Cari paket', placeholder: opt.placeholder || 'Cari' });
+      hapus = window.el('button', { type: 'button', class: 'cb-hapus', title: 'Hapus ketikan', 'aria-label': 'Hapus ketikan', hidden: true }, window.ikon('silang', 13));
+      kepala = window.el('div', { class: 'cb-kepala' });
+      daftarEl = window.el('div', { class: 'cb-daftar', role: 'listbox' });
+      kaki = window.el('div', { class: 'cb-kaki' }, window.el('span', null, window.el('kbd', null, window.ikon('naik', 11)), window.el('kbd', null, window.ikon('turunSoal', 11)), 'pilih'),
+        window.el('span', null, window.el('kbd', null, 'Enter'), 'buka'), window.el('span', null, window.el('kbd', null, 'Esc'), 'tutup'));
+      panel.appendChild(window.el('div', { class: 'cb-cari' }, window.ikon('cari', 15), input, hapus));
+      panel.appendChild(kepala); panel.appendChild(daftarEl); panel.appendChild(kaki);
+      input.addEventListener('input', function () { hapus.hidden = input.value === ''; gambarDaftar(); });
+      hapus.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      hapus.addEventListener('click', function () { input.value = ''; hapus.hidden = true; gambarDaftar(); input.focus(); });
+      gambarDaftar();
+      pasangPanel(kotak, panel, kotak.offsetWidth, kunci);
+      // Di layar sentuh keyboard baru muncul bila kolom cari diketuk.
+      if (!window.layarSentuh()) input.focus();
+    }
+    kotak.addEventListener('click', function () { if (panelTerbuka && panelTerbuka.tombol === kotak) tutupPanel(); else buka(); });
+    return wadah;
+  };
+
+  window.showView = function (nama) {
+    document.querySelectorAll('[data-view]').forEach(function (s) { s.hidden = s.getAttribute('data-view') !== nama; });
+    var btnAdmin = document.getElementById('btnAdmin');
+    if (btnAdmin) btnAdmin.hidden = nama === 'ujian';
+    document.body.classList.toggle('mode-ujian', nama === 'ujian');
+    document.documentElement.classList.toggle('adm-aktif', nama === 'admin');
+    document.body.setAttribute('data-halaman', nama);
+    window.scrollTo(0, 0);
+  };
+
+  window.simpanLokal = function (kunci, nilai) {
+    try { localStorage.setItem(kunci, JSON.stringify(nilai)); return true; } catch (e) { return false; }
+  };
+  window.bacaLokal = function (kunci) {
+    try { var v = localStorage.getItem(kunci); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+  };
+  window.hapusLokal = function (kunci) {
+    try { localStorage.removeItem(kunci); } catch (e) { /* abaikan */ }
+  };
+
+  // ---------- keyboard layar (HP dan tablet) ----------
+  // Halaman Apps Script berjalan di dalam iframe sehingga tinggi keyboard sering tidak terbaca. Tata letak TIDAK diubah
+  // (tidak ada yang diangkat ke atas): saat kolom isian difokus, halaman hanya digulir seperlunya sampai kolom itu berada tepat di atas
+  // keyboard (tinggi keyboard memakai visualViewport bila terbaca, bila tidak diperkirakan dari ukuran layar). Popup tidak diubah ukuran dan posisinya;
+  // badan popup diberi ruang kosong seukuran keyboard agar baris yang diisi dapat digulir tepat di atas keyboard.
+  (function () {
+    var vv = window.visualViewport, root = document.documentElement;
+    var lebarAwal = window.innerWidth, tinggiPenuh = window.innerHeight, lepas = null, jadwal = [];
+    function dapatDiketik(e) {
+      return !!e && e.nodeType === 1 && (/^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName) || e.isContentEditable) &&
+        !(e.tagName === 'INPUT' && /^(checkbox|radio|button|submit|file|range|color)$/.test(e.type));
+    }
+    /** Tinggi keyboard dan apakah terukur. */
+    function keyboard() {
+      var h = window.innerHeight, w = window.innerWidth;
+      var terukur = vv ? Math.round(tinggiPenuh - vv.height - vv.offsetTop) : 0;
+      if (terukur > 80) return { px: terukur, terukur: true };
+      var mendatar = w > h, hp = Math.min(w, h) < 600;
+      return { px: Math.round(h * (hp ? (mendatar ? .55 : .42) : (mendatar ? .42 : .34))), terukur: false };
+    }
+    function atur() {
+      if (window.innerWidth !== lebarAwal) { lebarAwal = window.innerWidth; tinggiPenuh = window.innerHeight; }
+      tinggiPenuh = Math.max(tinggiPenuh, window.innerHeight);
+      var h = vv ? vv.height : window.innerHeight, top = vv ? vv.offsetTop : 0;
+      root.style.setProperty('--vv-h', Math.round(h) + 'px');
+      root.style.setProperty('--vv-top', Math.round(top) + 'px');
+      document.body && document.body.classList.toggle('kbd-aktif', tinggiPenuh - h > 120);
+    }
+    var popupTetap = null;
+    /** Mengembalikan popup ke ukuran dan posisi semula. */
+    function lepasPopup() {
+      if (!popupTetap) return;
+      var lat = popupTetap.parentNode;
+      popupTetap.style.height = ''; popupTetap.style.marginTop = '';
+      if (lat && lat.style) { lat.style.alignItems = ''; lat.style.paddingBottom = ''; }
+      var bd = popupTetap.querySelector('.modal-badan'); if (bd) bd.style.removeProperty('--ekstra');
+      popupTetap = null;
+    }
+    /** Menaikkan popup agar seluruhnya, termasuk tombol footer, berada di atas keyboard: dinaikkan utuh bila muat, bila tidak dipendekkan (isinya menggulir). */
+    function susunPopup(m, k) {
+      if (popupTetap && popupTetap !== m) lepasPopup();
+      popupTetap = m;
+      var lat = m.parentNode;
+      m.style.height = ''; m.style.marginTop = ''; lat.style.alignItems = '';
+      var atasPeta = (vv && vv.offsetTop) || 0;
+      var batas = (vv && k.terukur ? vv.offsetTop + vv.height : window.innerHeight - k.px) - 8, minAtas = atasPeta + 8;
+      var r = m.getBoundingClientRect();
+      if (r.bottom <= batas) return;
+      var lr = lat.getBoundingClientRect(), pad = parseFloat(getComputedStyle(lat).paddingTop) || 0;
+      var tinggi = r.height, atasBaru, tinggiBaru = 0;
+      if (tinggi <= batas - minAtas) atasBaru = batas - tinggi;
+      else { atasBaru = minAtas; tinggiBaru = batas - minAtas; }
+      lat.style.alignItems = 'flex-start';
+      m.style.marginTop = Math.max(0, Math.round(atasBaru - lr.top - pad)) + 'px';
+      if (tinggiBaru) m.style.height = Math.round(tinggiBaru) + 'px';
+    }
+    function pasangKb(aktif) {
+      var k = aktif ? keyboard() : { px: 0, terukur: false };
+      var m = aktif && document.activeElement && document.activeElement.closest ? document.activeElement.closest('.modal') : null;
+      if (m) susunPopup(m, k);
+      else if (!aktif || popupTetap) lepasPopup();
+      if (!aktif) document.body.style.removeProperty('--ekstra-halaman');
+      root.style.setProperty('--kb', k.px + 'px');
+      document.body.classList.toggle('kbd-fokus', aktif);
+    }
+    /** Menggulir seperlunya agar elemen (atau kursor) berada di atas keyboard dan tetap terlihat. */
+    function pastikanTerlihat(el, caret) {
+      if (!el || !el.getBoundingClientRect) return;
+      var k = keyboard(), r = caret || el.getBoundingClientRect();
+      var dasar = (vv && k.terukur ? vv.offsetTop + vv.height : window.innerHeight - k.px) - 14;
+      var wadah = el.closest ? el.closest('.modal-badan') : null;
+      if (wadah) {
+        // Isi popup digulir; kekurangan ruang gulir (baris di dasar isi) ditambal ruang kosong seperlunya.
+        wadah.style.setProperty('--ekstra', '0px');
+        r = caret || el.getBoundingClientRect();
+        var wr = wadah.getBoundingClientRect(), bawah = Math.min(wr.bottom - 8, dasar), atas = Math.max(wr.top, 0) + 8;
+        if (r.bottom > bawah) {
+          var butuh = r.bottom - bawah, tersisa = wadah.scrollHeight - wadah.clientHeight - wadah.scrollTop;
+          if (butuh > tersisa) wadah.style.setProperty('--ekstra', Math.ceil(butuh - tersisa) + 'px');
+          wadah.scrollTo({ top: wadah.scrollTop + butuh, behavior: 'smooth' });
+        } else if (r.top < atas) wadah.scrollTo({ top: wadah.scrollTop - (atas - r.top), behavior: 'smooth' });
+        return;
+      }
+      document.body.style.setProperty('--ekstra-halaman', '0px');
+      r = caret || el.getBoundingClientRect();
+      if (r.bottom > dasar) {
+        var perlu = r.bottom - dasar, sisa = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+        if (perlu > sisa) document.body.style.setProperty('--ekstra-halaman', Math.ceil(perlu - sisa) + 'px');
+        window.scrollBy({ top: perlu, left: 0, behavior: 'smooth' });
+      } else if (r.top < 56) window.scrollBy({ top: r.top - 56, left: 0, behavior: 'smooth' });
+    }
+    function posisiCaret() {
+      var sel = window.getSelection && window.getSelection();
+      if (!sel || !sel.rangeCount) return null;
+      var rg = sel.getRangeAt(0).cloneRange(); rg.collapse(false);
+      var rc = rg.getClientRects()[0] || rg.getBoundingClientRect();
+      return rc && (rc.top || rc.bottom) ? rc : null;
+    }
+    /** HP selalu dianggap memakai keyboard layar. Tablet hanya bila keyboard layar benar-benar terukur (keyboard fisik: tidak ada yang digeser). */
+    function perluGeser() { return Math.min(window.innerWidth, window.innerHeight) < 600 || keyboard().terukur; }
+    function terapkan(el) {
+      if (perluGeser()) { pasangKb(true); pastikanTerlihat(el); } else pasangKb(false);
+    }
+    if (vv) { vv.addEventListener('resize', function () { atur(); if (dapatDiketik(document.activeElement) && window.layarSentuh()) terapkan(document.activeElement); }); vv.addEventListener('scroll', atur); }
+    window.addEventListener('resize', atur);
+    window.addEventListener('orientationchange', function () { setTimeout(atur, 300); });
+    document.addEventListener('focusin', function (e) {
+      if (!window.layarSentuh() || !dapatDiketik(e.target)) return;
+      clearTimeout(lepas);
+      jadwal.forEach(clearTimeout);
+      var hp = Math.min(window.innerWidth, window.innerHeight) < 600;
+      if (hp) pasangKb(true);
+      // Diperiksa dua kali: setelah ruang keyboard disiapkan, lalu setelah animasi keyboard selesai (tablet menunggu sampai keyboard terukur).
+      jadwal = [setTimeout(function () { terapkan(e.target); }, hp ? 120 : 380), setTimeout(function () { terapkan(e.target); }, hp ? 450 : 750)];
+    });
+    document.addEventListener('focusout', function () {
+      clearTimeout(lepas);
+      lepas = setTimeout(function () { if (!dapatDiketik(document.activeElement)) pasangKb(false); }, 250);
+    });
+    // Keyboard layar Android dapat ditutup (tombol kembali) tanpa melepas fokus kolom. Mengetuk bagian lain (bukan kolom isian) mengembalikan tata letak.
+    document.addEventListener('click', function (e) {
+      if (!document.body.classList.contains('kbd-fokus')) return;
+      var t = e.target, label = t.closest ? t.closest('label') : null;
+      if (dapatDiketik(t) || (label && label.querySelector('input,textarea,select'))) return;
+      pasangKb(false);
+    });
+    // Saat mengetik di editor atau kolom panjang, kursor dijaga tetap di atas keyboard.
+    document.addEventListener('input', function (e) {
+      if (!window.layarSentuh() || !dapatDiketik(e.target) || !document.body.classList.contains('kbd-fokus')) return;
+      var rc = e.target.isContentEditable ? posisiCaret() : null;
+      pastikanTerlihat(e.target, rc);
+    });
+    atur();
+  })();
+})();
+</script>
