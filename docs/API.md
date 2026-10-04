@@ -81,7 +81,7 @@ Mengembalikan token admin (6 jam). Salah sandi: "Kata sandi salah." setelah jeda
   `mode` = `'tambah'` | `'ganti'`. `dryRun = true` hanya memeriksa. Galat pertama menghentikan dengan pesan "Soal #N: ...". Peringatan (tidak menghentikan): kata LaTeX tanpa garis miring (`sqrt`, `frac`, `alpha`, `times`, dst.) di luar tanda `$`, tanda `$` tidak berpasangan, teks soal sangat pendek. Insert dalam potongan ≤ 50 baris. Mode `ganti` memasukkan soal baru lebih dulu, baru menghapus soal lama, supaya gagal di tengah tidak menghilangkan soal. `daftar` boleh array atau `{soal: [...]}`. Hasil juga memuat `pratinjau`: maks. 10 soal pertama setelah normalisasi (untuk pratinjau di modal).
 
 ### Gambar
-- `adminUpload(tok, base64, mime, nama): string` (URL publik). `mime` ∈ image/png, image/jpeg, image/webp, image/gif. Maks. 3 MB. Galat: "Format gambar harus PNG, JPG, WEBP, atau GIF."
+- `adminUpload(tok, base64, mime, nama): string` (URL publik; tujuan Drive atau Supabase menurut `UNGGAH_KE`, lihat ARSITEKTUR). Pembantu: `izinkanDrive()` dijalankan sekali dari editor untuk memberi izin. `mime` ∈ image/png, image/jpeg, image/webp, image/gif. Maks. 3 MB. Galat: "Format gambar harus PNG, JPG, WEBP, atau GIF."
 
 ### Hasil
 - `adminHasil(tok, ujianId): HasilRow[]` hanya `status = 'selesai'`, **tanpa kolom `jawaban`**, urut: `skor desc, benar desc, salah asc, durasi_detik asc`. Tiap baris juga memuat `poin` dan `maks` (nilai ditampilkan poin/maks). Kolom: id, nama, nomor_peserta, kelas, sekolah, benar, salah, kosong, skor, durasi_detik, selesai_at.

@@ -151,14 +151,28 @@ function adminSoalUrut(tok, ujianId, idsBerurutan) {
 var MIME_GAMBAR_ = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
 var MAKS_GAMBAR_BYTE_ = 3 * 1024 * 1024;
 
-function adminUpload(tok, base64, mime, nama) {
-  guard_(tok);
-  var ext = MIME_GAMBAR_[mime];
-  if (!ext) throw new Error('Format gambar harus PNG, JPG, WEBP, atau GIF.');
-  var bersih = String(base64 || '').replace(/^data:[^,]*,/, '');
-  var bytes = Utilities.base64Decode(bersih);
-  if (!bytes.length) throw new Error('Berkas gambar kosong.');
-  if (bytes.length > MAKS_GAMBAR_BYTE_) throw new Error('Gambar terlalu besar. Maksimal 3 MB.');
+var NAMA_FOLDER_GAMBAR_ = 'Try Out OMI - Gambar Soal';
+
+/** Folder Drive tujuan gambar: DRIVE_FOLDER_ID bila diisi, selain itu dibuat sekali lalu diingat di Script Properties. */
+function folderGambar_() {
+  var props = PropertiesService.getScriptProperties();
+  var id = props.getProperty('DRIVE_FOLDER_ID');
+  if (id) {
+    try { return DriveApp.getFolderById(id); }
+    catch (e) { throw new Error('Folder Drive untuk gambar tidak ditemukan. Periksa DRIVE_FOLDER_ID di Script Properties.'); }
+  }
+  var folder = DriveApp.createFolder(NAMA_FOLDER_GAMBAR_);
+  props.setProperty('DRIVE_FOLDER_ID', folder.getId());
+  return folder;
+}
+
+function unggahKeDrive_(bytes, mime, ext) {
+  var berkas = folderGambar_().createFile(Utilities.newBlob(bytes, mime, Utilities.getUuid() + '.' + ext));
+  berkas.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return urlGambarDrive_(berkas.getId());
+}
+
+function unggahKeSupabase_(bytes, mime, ext, nama) {
   var dasar = prop_('SUPABASE_URL').replace(/\/+$/, '');
   var kunci = prop_('SUPABASE_KEY');
   var jalur = Utilities.getUuid() + '.' + ext;
@@ -171,6 +185,34 @@ function adminUpload(tok, base64, mime, nama) {
     throw new Error('Gambar gagal diunggah (kode ' + res.getResponseCode() + '). Coba lagi.');
   }
   return dasar + '/storage/v1/object/public/soal-img/' + jalur;
+}
+
+/** Tujuan unggahan dipilih lewat Script Property UNGGAH_KE: "drive" (bawaan) atau "supabase". */
+function adminUpload(tok, base64, mime, nama) {
+  guard_(tok);
+  var ext = MIME_GAMBAR_[mime];
+  if (!ext) throw new Error('Format gambar harus PNG, JPG, WEBP, atau GIF.');
+  var bersih = String(base64 || '').replace(/^data:[^,]*,/, '');
+  var bytes = Utilities.base64Decode(bersih);
+  if (!bytes.length) throw new Error('Berkas gambar kosong.');
+  if (bytes.length > MAKS_GAMBAR_BYTE_) throw new Error('Gambar terlalu besar. Maksimal 3 MB.');
+  var tujuan = String(PropertiesService.getScriptProperties().getProperty('UNGGAH_KE') || 'drive').toLowerCase();
+  if (tujuan === 'supabase') return unggahKeSupabase_(bytes, mime, ext, nama);
+  try {
+    return unggahKeDrive_(bytes, mime, ext);
+  } catch (e) {
+    Logger.log('Upload gambar %s ke Drive gagal: %s', nama, e.message);
+    if (/izin|permission|authorization|access/i.test(e.message)) {
+      throw new Error('Aplikasi belum diberi izin Google Drive. Jalankan fungsi izinkanDrive di editor Apps Script sekali, lalu deploy versi baru.');
+    }
+    throw new Error(e.message && e.message.indexOf('Folder Drive') === 0 ? e.message : 'Gambar gagal diunggah ke Drive. Coba lagi.');
+  }
+}
+
+/** Jalankan sekali dari editor Apps Script untuk memberi izin Drive dan membuat folder gambar. */
+function izinkanDrive() {
+  var folder = folderGambar_();
+  Logger.log('Folder gambar siap: %s (%s)', folder.getName(), folder.getUrl());
 }
 
 // ---- Import JSON ----

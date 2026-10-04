@@ -400,3 +400,8 @@ function tokenAcak_(n) {
   for (var i = 0; i < (n || 6); i++) t += abjad.charAt(Math.floor(Math.random() * abjad.length));
   return t;
 }
+
+/** URL gambar publik untuk berkas Drive yang dibagikan "siapa saja dengan tautan". Bentuk lh3 stabil untuk tag img. */
+function urlGambarDrive_(id) {
+  return 'https://lh3.googleusercontent.com/d/' + encodeURIComponent(String(id));
+}

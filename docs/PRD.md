@@ -50,7 +50,7 @@ Login dengan kata sandi (Script Properties `ADMIN_PASSWORD`). Tiga tab:
 
 **Opsi**: 2 sampai 8 (A sampai H), hanya untuk pg dan pgk.
 
-**Gambar**: unggah dari admin (dikompres di browser, maks. lebar 1000 px), disimpan di Supabase Storage bucket `soal-img`. Bisa juga tempel URL `https://`. Pada import JSON, gambar cukup berupa blok `{"tipe":"gambar","isi":""}` yang diisi manual kemudian; soal dengan gambar kosong diberi penanda "gambar belum diisi" di daftar soal.
+**Gambar**: unggah dari admin (dikompres di browser, maks. lebar 1000 px), disimpan di Google Drive (folder otomatis, dibagikan lewat tautan) atau, bila `UNGGAH_KE=supabase`, di Supabase Storage bucket `soal-img`. Bisa juga tempel URL `https://`. Pada import JSON, gambar cukup berupa blok `{"tipe":"gambar","isi":""}` yang diisi manual kemudian; soal dengan gambar kosong diberi penanda "gambar belum diisi" di daftar soal.
 
 **Label instruksi otomatis** di atas pilihan jawaban:
 - pg: "Pilih satu jawaban benar!"

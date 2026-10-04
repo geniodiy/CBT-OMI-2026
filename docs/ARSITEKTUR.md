@@ -78,7 +78,7 @@ Optimasi jika kuota/konkurensi kurang (jangan dikerjakan di awal): cache soal+ku
 
 ## Gambar
 
-`adminUpload(tok, base64, mime, nama)`: klien mengecilkan gambar (lebar maks. 1000 px, JPEG kualitas 0,85 atau PNG), mengirim base64 ke server, server mengunggah ke `storage/v1/object/soal-img/<uuid>.<ext>` dengan service_role dan mengembalikan URL publik `.../storage/v1/object/public/soal-img/<uuid>.<ext>`. Batas 3 MB per gambar.
+`adminUpload(tok, base64, mime, nama)`: klien mengecilkan gambar (lebar maks. 1000 px, JPEG kualitas 0,85 atau PNG) dan mengirim base64 ke server. Tujuan unggahan dipilih oleh Script Property `UNGGAH_KE`: `drive` (bawaan) menyimpan berkas di folder Drive "Try Out OMI - Gambar Soal" (dibuat otomatis, id diingat di `DRIVE_FOLDER_ID`, atau isi `DRIVE_FOLDER_ID` dengan folder sendiri), dibagikan "siapa saja dengan tautan", dan mengembalikan `https://lh3.googleusercontent.com/d/<id>`; `supabase` memakai `storage/v1/object/soal-img/<uuid>.<ext>` seperti semula. Drive membutuhkan scope `https://www.googleapis.com/auth/drive`: jalankan `izinkanDrive` sekali dari editor lalu deploy versi baru. Batas 3 MB per gambar. Tautan berbagi Drive yang ditempel di kolom URL diubah otomatis ke bentuk `lh3`.
 
 Logo web dibaca dari bucket `aset` (URL publik) agar ringan dan ter-cache; unggah `assets/logo-omi.png` ke bucket itu. Logo Genio (`assets/logo-genio.png`, versi kecil 200 px) tertanam sebagai data URI di `Index.html`, jadi tidak perlu diunggah secara manual lewat dashboard Supabase.
 

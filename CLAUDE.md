@@ -54,7 +54,7 @@ clasp deploy                      # buat versi deployment
 ```
 
 Secret disimpan di **Script Properties** (Project Settings di editor Apps Script), bukan di kode:
-`SUPABASE_URL`, `SUPABASE_KEY` (service_role), `ADMIN_PASSWORD`.
+`SUPABASE_URL`, `SUPABASE_KEY` (service_role), `ADMIN_PASSWORD`. Opsional: `UNGGAH_KE` (`drive` bawaan atau `supabase`) dan `DRIVE_FOLDER_ID`.
 
 ## Aturan kode (wajib)
 

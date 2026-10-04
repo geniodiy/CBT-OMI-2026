@@ -59,3 +59,5 @@ const j={buka_at:'2026-10-01T01:00:00Z',tutup_at:'2026-10-01T03:00:00Z'};
 a.strictEqual(ctx.statusJadwal_(j,t-1),'belum');a.strictEqual(ctx.statusJadwal_(j,t),'buka');a.strictEqual(ctx.statusJadwal_(j,t+2*3600000),'tutup');a.strictEqual(ctx.statusJadwal_({},t),'buka');a.strictEqual(ctx.statusJadwal_({buka_at:null,tutup_at:null},t),'buka');
 a(/^[A-HJ-NP-Z2-9]{6}$/.test(ctx.tokenAcak_(6)));
 console.log('uji jadwal lulus');}
+
+a.strictEqual(T.urlGambarDrive_('1AbC_dEf-GHi'),'https://lh3.googleusercontent.com/d/1AbC_dEf-GHi');

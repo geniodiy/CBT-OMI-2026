@@ -396,7 +396,15 @@
         tombolRataG[r[0]] = t; return t;
       }));
 
+    /** Tautan berbagi Drive (file/d/ID/view, open?id=ID, uc?id=ID) diubah ke URL gambar yang bisa dimuat tag img. */
+    function luruskanDrive() {
+      var m = /^https:\/\/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=)([\w-]{20,})/i.exec(o.url.value.trim());
+      if (!m) return;
+      o.url.value = 'https://lh3.googleusercontent.com/d/' + m[1];
+      window.toast('Tautan Drive diubah ke URL gambar. Pastikan berkas dibagikan untuk "siapa saja yang memiliki tautan".');
+    }
     function aturPra() {
+      luruskanDrive();
       var u = o.url.value.trim();
       o.pra.className = 'pra-gambar' + (o.ukuran.value !== 'asli' || o.rata !== 'kiri' ? ' blok-gambar' : '') + (o.ukuran.value !== 'asli' ? ' ukuran-' + o.ukuran.value : '') + (o.rata !== 'kiri' ? ' posisi-' + o.rata : '');
       if (/^https:\/\//i.test(u)) { o.pra.src = u; o.pra.hidden = false; } else { o.pra.hidden = true; o.pra.removeAttribute('src'); }
