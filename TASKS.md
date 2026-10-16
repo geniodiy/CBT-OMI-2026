@@ -169,6 +169,8 @@ Tahap 1: rebranding dan landing baru
 - [x] Ilustrasi hero umum bernuansa merah (`assets/hero.jpg`, tertanam sebagai data URI `--foto` di Css.html).
 - Uji: `node tests/jalankan.js` lulus; uji browser beranda 1280/390 px, form admin, ruang ujian.
 
-Tahap 2: tema "GET Standar" dan pratinjau tema di form admin.
+Tahap 2: tema "GET Standar" (`get`).
+- [x] Tata letak sendiri (bilah atas, soal lebar, panel kanan), warna netral hitam/abu, hanya logo Genio; pilihan "GET Standar (netral)" di form ujian admin. Uji browser 1366 px dan 390 px (laci, popup selesai).
+- [ ] Pratinjau tema di form admin.
 Tahap 3: tema KSN (kompetisi sains), perlu tangkapan layar CBT aslinya.
 Tahap 4: penilaian per ujian (poin benar, salah, kosong; skor minus).

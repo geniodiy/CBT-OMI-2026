@@ -405,7 +405,9 @@
     s.textContent = '';
     var inisial = (p.nama || '?').trim().split(/\s+/).slice(0, 2).map(function (x) { return x.charAt(0); }).join('').toUpperCase();
 
-    document.body.setAttribute('data-tema', window.temaUjian(U.ujian.tema));
+    U.tema = window.temaUjian(U.ujian.tema);
+    document.body.setAttribute('data-tema', U.tema);
+    if (U.tema === 'get') { bangunLayarGet(inisial); return; }
     var logoSide = el('div', { class: 'u-logo' }, window.logoUjian(U.ujian.tema),
       el('div', null, el('strong', null, U.ujian.lomba || 'Genio Exclusive Test'), el('span', null, U.ujian.lomba ? 'Simulasi oleh GET' : 'CBT')));
     var side = el('aside', { class: 'u-side', 'aria-label': 'Data peserta' },
@@ -463,6 +465,74 @@
       e.tombolLaci, e.laci, e.lapis);
 
     s.appendChild(el('div', { class: 'ujian' }, side, main, panel));
+    document.addEventListener('keydown', escLaci);
+    var tersimpan = window.bacaLokal(KUNCI_HURUF);
+    U.huruf = typeof tersimpan === 'number' && tersimpan >= 0 && tersimpan < SKALA_HURUF.length ? tersimpan : 1;
+    terapkanHuruf();
+  }
+
+  /**
+   * Tema GET Standar: bilah atas (merek, kemajuan, waktu, selesai), soal lebar di kiri, panel peserta dan daftar soal di kanan.
+   * Memakai referensi elemen yang sama (U.el) dengan tema OMI agar logika ujian tetap satu.
+   */
+  function bangunLayarGet(inisial) {
+    var s = document.querySelector('[data-view="ujian"]');
+    var p = U.peserta, e = U.el;
+
+    e.progres = el('i');
+    e.status = el('span', { class: 'g-status' });
+    e.timer = el('div', { class: 'u-timer g-timer', role: 'timer' }, '--:--:--');
+    e.tombolLaci = el('button', { type: 'button', class: 'btn u-laci-tombol', 'aria-expanded': 'false', 'aria-controls': 'laciSoal', onclick: function () {
+      if (e.laci.classList.contains('buka')) tutupLaci(); else bukaLaci();
+    } }, window.ikon('daftar'), 'Daftar Soal');
+    var bar = el('header', { class: 'g-bar' },
+      el('div', { class: 'g-merek' }, window.logoUjian('get'),
+        el('div', null, el('strong', null, 'Genio Exclusive Test'), el('span', null, U.ujian.nama))),
+      el('div', { class: 'g-kemajuan' }, e.status, el('div', { class: 'g-rel', 'aria-hidden': 'true' }, e.progres)),
+      el('div', { class: 'g-waktu' }, el('span', { class: 'g-waktu-label' }, window.ikon('jam', 15), 'Sisa waktu'), e.timer),
+      e.tombolLaci,
+      el('button', { type: 'button', class: 'btn btn-utama g-selesai', onclick: konfirmasiSelesai }, 'Selesai'));
+
+    e.isi = el('div', { class: 'kartu-isi' });
+    e.nomor = el('b');
+    e.tipe = el('span', { class: 'g-tipe' });
+    e.hKecil = el('button', { type: 'button', class: 'btn-alat', 'aria-label': 'Perkecil huruf', title: 'Perkecil huruf', onclick: function () { ubahHuruf(-1); } }, 'A-');
+    e.hBesar = el('button', { type: 'button', class: 'btn-alat', 'aria-label': 'Perbesar huruf', title: 'Perbesar huruf', onclick: function () { ubahHuruf(1); } }, 'A+');
+    // Tema ini tidak memakai panah kecil di kepala soal; elemennya tetap ada karena logika pindah soal mengaturnya.
+    e.panahKiri = el('button', { type: 'button' }); e.panahKanan = el('button', { type: 'button' });
+    var kepala = el('div', { class: 'kartu-kepala g-kepala' },
+      el('div', { class: 'g-judul-soal' }, el('span', null, 'Soal ', e.nomor), e.tipe),
+      el('div', { class: 'g-huruf', role: 'group', 'aria-label': 'Ukuran huruf' }, e.hKecil, e.hBesar));
+    e.kartu = el('div', { class: 'kartu-soal g-kartu' }, kepala, e.isi);
+    e.sebelumnya = el('button', { type: 'button', class: 'btn', onclick: function () { pindah(U.idx - 1); } }, window.ikon('kiri'), 'Sebelumnya');
+    e.berikutnya = el('button', { type: 'button', class: 'btn btn-utama', onclick: function () { pindah(U.idx + 1); } }, 'Selanjutnya', window.ikon('kanan'));
+    e.posisi = el('span', { class: 'u-posisi g-posisi' });
+    var main = el('section', { class: 'g-main', 'aria-label': 'Soal' }, e.kartu, el('div', { class: 'u-nav g-nav' }, e.sebelumnya, e.posisi, e.berikutnya));
+
+    e.refresh = el('button', { type: 'button', class: 'g-aksi-btn', onclick: function () {
+      e.refresh.disabled = true;
+      sinkron(true).then(function () { e.refresh.disabled = false; });
+    } }, window.ikon('segarkan', 16), 'Sinkronkan');
+    e.hitung = el('span', { class: 'g-hitung' });
+    e.grid = el('div', { class: 'u-grid g-grid' }, U.soal.map(function (soal, i) {
+      return el('button', { type: 'button', class: 'sel', onclick: function () { pindah(i); tutupLaci(); } }, String(i + 1));
+    }));
+    var legenda = el('div', { class: 'g-legenda', 'aria-hidden': 'true' },
+      el('span', null, el('i', { class: 'g-l-isi' }), 'Terjawab'), el('span', null, el('i', { class: 'g-l-kosong' }), 'Belum'), el('span', null, el('i', { class: 'g-l-buka' }), 'Dibuka'));
+    e.laci = el('div', { class: 'u-laci g-laci', id: 'laciSoal' },
+      el('div', { class: 'g-peserta' }, el('span', { class: 'g-avatar', 'aria-hidden': 'true' }, inisial),
+        el('div', null, el('strong', null, p.nama), el('span', null, [U.ujian.jenjang + ' ' + U.ujian.mapel, U.ujian.sesi].filter(Boolean).join(', ')))),
+      el('div', { class: 'g-daftar-kepala' }, el('strong', null, 'Daftar soal'), e.hitung),
+      e.grid, legenda,
+      el('div', { class: 'g-aksi' },
+        el('button', { type: 'button', class: 'g-aksi-btn', onclick: function () { tutupLaci(); kosongkanJawaban(); } }, window.ikon('silang', 16), 'Kosongkan jawaban'),
+        e.refresh,
+        el('button', { type: 'button', class: 'g-aksi-btn', onclick: function () { tutupLaci(); pusatBantuan(); } }, window.ikon('bantuan', 16), 'Bantuan')),
+      el('button', { type: 'button', class: 'btn btn-utama g-selesai-laci', onclick: function () { tutupLaci(); konfirmasiSelesai(); } }, 'Selesaikan ujian'));
+    e.lapis = el('div', { class: 'u-lapis', onclick: tutupLaci });
+    var samping = el('aside', { class: 'g-samping', 'aria-label': 'Peserta dan daftar soal' }, e.laci, e.lapis);
+
+    s.appendChild(el('div', { class: 'ujian-get' }, bar, main, samping));
     document.addEventListener('keydown', escLaci);
     var tersimpan = window.bacaLokal(KUNCI_HURUF);
     U.huruf = typeof tersimpan === 'number' && tersimpan >= 0 && tersimpan < SKALA_HURUF.length ? tersimpan : 1;
@@ -527,11 +597,11 @@
     U.grid_siap = true;
     var n = jumlahTerjawab();
     U.el.hitung.textContent = n + '/' + U.soal.length + ' Terjawab';
-    U.el.tombolLaci.lastChild.textContent = 'Daftar Soal ' + n + '/' + U.soal.length;
+    U.el.tombolLaci.lastChild.textContent = (U.tema === 'get' ? 'Soal ' : 'Daftar Soal ') + n + '/' + U.soal.length;
     U.el.progres.style.transform = 'scaleX(' + (U.soal.length ? n / U.soal.length : 0) + ')';
     U.el.posisi.textContent = (U.idx + 1) + ' / ' + U.soal.length;
     U.el.nomor.textContent = String(U.idx + 1);
-    U.el.status.textContent = 'Status: ' + n + ' dari ' + U.soal.length + ' Soal';
+    U.el.status.textContent = U.tema === 'get' ? n + ' dari ' + U.soal.length + ' soal terjawab' : 'Status: ' + n + ' dari ' + U.soal.length + ' Soal';
   }
 
   // soal

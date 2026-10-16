@@ -292,7 +292,7 @@ function normUjian_(u) {
 }
 
 /** Tema tampilan ruang ujian yang dikenal. Tema pertama adalah bawaan; nilai lain diganti bawaan. */
-var TEMA_UJIAN_ = ['omi'];
+var TEMA_UJIAN_ = ['omi', 'get'];
 function temaUjian_(t) {
   var v = String(t == null ? '' : t).trim().toLowerCase();
   return TEMA_UJIAN_.indexOf(v) >= 0 ? v : TEMA_UJIAN_[0];

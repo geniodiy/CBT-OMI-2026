@@ -717,7 +717,7 @@
   };
 
   /** Tema tampilan ruang ujian (sama dengan TEMA_UJIAN_ di Nilai.gs). Tema pertama adalah bawaan. */
-  window.TEMA_UJIAN = [{ nilai: 'omi', label: 'CBT OMI', lomba: 'OMI 2026' }];
+  window.TEMA_UJIAN = [{ nilai: 'omi', label: 'CBT OMI', lomba: 'OMI 2026' }, { nilai: 'get', label: 'GET Standar (netral)' }];
   window.temaUjian = function (t) {
     return window.TEMA_UJIAN.some(function (x) { return x.nilai === t; }) ? t : window.TEMA_UJIAN[0].nilai;
   };
