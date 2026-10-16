@@ -170,7 +170,7 @@ Kontras teks ≥ 4,5:1. Semua kontrol bisa dicapai dengan keyboard, fokus `outli
 
 Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emoji. Label huruf kapital semua. Tanda "→" di tombol. Animasi masuk di tiap bagian. Hiasan angka "01/02/03" selain nomor soal yang memang berurutan. Kata pemasaran di antarmuka.
 
-**Warna GET (Oktober 2026):** beranda, popup, dan panel admin memakai merah `#c62828` (tua `#9e1b1b`, muda `#fdeaea`, latar `#faf5f5`, garis `#eee0e0`) menggantikan hijau lembut sebelumnya; kuning `#e3b505` tetap sebagai aksen kecil; hijau `#17803d` hanya untuk status aktif atau berhasil. Ruang ujian tidak berubah (warna tema lomba).
+**Warna GET (Oktober 2026):** beranda, popup, dan panel admin memakai merah `#c62828` (tua `#9e1b1b`, muda `#fdeaea`, latar `#faf5f5`, garis `#eee0e0`) menggantikan hijau lembut sebelumnya; kuning dicabut (ubin ikon langkah merah muda dengan ikon merah tua, garis aksen dan label lomba merah); hijau `#17803d` hanya untuk status aktif atau berhasil. Ruang ujian tidak berubah (warna tema lomba).
 
 ## 9. Halaman ujian: tema lomba (tema `omi` meniru CBT OMI, pengecualian yang disengaja)
 

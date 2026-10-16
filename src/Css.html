@@ -1291,3 +1291,19 @@ body[data-halaman="beranda"] .hero { --foto: url("data:image/jpeg;base64,/9j/4AA
 /* label lomba di kartu paket */
 .kontainer-lomba { display: inline-block; align-self: flex-start; justify-self: start; width: max-content; max-width: 100%; margin-bottom: 3px; padding: 1px 8px; font-size: .7rem; font-weight: 700; color: #6b5200; background: #fdf1c4; border-radius: 6px; }
 </style>
+
+<style>
+/* GET satu aksen merah: kuning dicabut dari beranda dan popup. Ubin langkah memakai merah muda dengan ikon merah tua. */
+.langkah-ikon { background: var(--biru-muda); color: var(--biru-tua); box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14); }
+.langkah-no { background: var(--biru); }
+.langkah-sambung i::after { background: var(--biru); }
+.langkah-sambung span { color: #fff; }
+@keyframes lgDenyut1 { 0% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, .32) } 12% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 9px rgba(198, 40, 40, 0) } 100% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, 0) } }
+@keyframes lgDenyut2 { 0%, 30% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, 0) } 31% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, .32) } 44% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 9px rgba(198, 40, 40, 0) } 100% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, 0) } }
+@keyframes lgDenyut3 { 0%, 62% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, 0) } 63% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, .32) } 76% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 9px rgba(198, 40, 40, 0) } 100% { box-shadow: inset 0 0 0 1px rgba(198, 40, 40, .14), 0 0 0 0 rgba(198, 40, 40, 0) } }
+body[data-halaman="beranda"] .eyebrow::before { background: #ffb4b4; }
+body[data-halaman="beranda"] .judul-utama::before, body[data-halaman="beranda"] .footer-situs::before { background: var(--biru); }
+body[data-halaman="beranda"] .footer-situs a { border-bottom-color: var(--biru); }
+.kontainer-lomba { color: var(--biru-tua); background: var(--biru-muda); }
+.catatan-pengawas { background: #fdf3f3; border-left-color: var(--biru); }
+</style>
