@@ -39,7 +39,7 @@ Satu keluarga sans-serif. Pilihan: **Plus Jakarta Sans** (Google Fonts, bobot 40
 ## Header (semua halaman)
 
 ```
-[Logo Genio] [Logo OMI]  Try Out OMI 2026 / CBT                 [Login admin]
+[Logo Genio]  Genio Exclusive / Test        Beranda  Pilih ujian  Tentang GET   [Login admin]
 ```
 Tinggi ±64 px, putih, garis bawah 1 px. Logo tinggi 40 px. Pada halaman ujian, tombol Login admin disembunyikan. Footer halaman beranda: "Dibuat oleh Genio Institute Yogyakarta".
 
@@ -68,11 +68,11 @@ MTs
 - Keadaan memuat: baris kerangka abu-abu sederhana, bukan spinner besar.
 
 **Desain beranda terbaru (selaras redesign admin, hijau lembut)**. Berlaku di `body[data-halaman="beranda"]` (token warna hijau `--biru: #1f8a4c`, `--latar: #f3f7f3`, radius kartu 16 px):
-1. Header putih datar (tidak melayang, tanpa blur) dengan menu Beranda / Pilih ujian / Tentang OMI / Jadwal dan penilaian yang menggulir ke bagian terkait (disembunyikan di bawah 960 px).
-2. Hero berilustrasi: gambar santri di ruang komputer tertanam sebagai data URI di `Css.html` (variabel `--foto`, JPEG 1280 px; sumber asli `assets/hero.jpg`). Untuk menggantinya, ubah ulang data URI itu. Lapisan hijau tua menutup foto agar teks terbaca: rata di desktop, bergradasi gelap dari atas ke bawah di HP (satu-satunya gradien di luar halaman ujian, atas permintaan pemilik). Kuning hanya titik kecil di label "Try Out OMI 2026".
+1. Header putih datar (tidak melayang, tanpa blur) dengan logo Genio dan teks "Genio Exclusive" lalu "Test" (baris kedua hijau), menu Beranda / Pilih ujian / Tentang GET yang menggulir ke bagian terkait (disembunyikan di bawah 960 px).
+2. Hero berilustrasi: gambar santri di ruang komputer tertanam sebagai data URI di `Css.html` (variabel `--foto`, JPEG 1280 px; sumber asli `assets/hero.jpg`). Untuk menggantinya, ubah ulang data URI itu. Lapisan hijau tua menutup foto agar teks terbaca: rata di desktop, bergradasi gelap dari atas ke bawah di HP (satu-satunya gradien di luar halaman ujian, atas permintaan pemilik). Kuning hanya titik kecil di label "Genio Exclusive Test".
 3. Kartu tiga langkah (Pilih ujian, Isi data dan token, Kerjakan dan lihat hasil) menempel di perbatasan hero.
 4. Pilih ujian: filter jenjang berbentuk segmen; kartu paket berisi ikon mapel, nama, jenjang, mapel, sesi, chip jumlah soal per tipe, durasi, dan "Mulai ujian".
-5. Di bawah Pilih ujian hanya tiga bagian: Apa itu OMI, Bentuk tes dan jadwal, dan Penilaian (kartu putih bergaris tipis). Kartu jenjang, daftar yang disiapkan, dan larangan sudah dihapus.
+5. Di bawah Pilih ujian hanya bagian Tentang GET (kartu teks dan daftar fakta) lalu footer. Kartu paket menampilkan label lomba kecil berlatar kuning muda di atas nama paket.
 6. Footer: kotak putih berisi logo dan catatan simulasi, dengan aksen kuning kecil di tepi atas dan garis bawah tautan resmi.
 Info "120 menit" tidak lagi tampil di hero.
 
@@ -122,7 +122,7 @@ Satu kolom lebar maks. 860 px, putih dengan garis (rapor ringkas). Isi urut:
 4. Tabel: No, Jawaban Anda, (Kunci jika diaktifkan), Hasil. Status ditulis kata ("Benar", "Salah", "Kosong") dengan warna teks hijau/merah/abu, bukan hanya warna.
 5. Di luar area cetak: tombol "Download PDF" (utama), "Cetak", "Kembali ke beranda".
 
-PDF dibuat dari dokumen terpisah (`bangunPdf`), bukan salinan layar: A4 potret satu halaman, margin 10 mm, kop logo + "Laporan Hasil Try Out OMI 2026" (garis biru), kotak nilai "84/100", baris empat angka, tabel No/Jawaban Anda/Hasil dalam dua kolom, tanpa kolom kunci, catatan kaki "Dokumen ini dibuat otomatis oleh sistem Try Out OMI 2026." Cetak (`window.print`) memakai tampilan layar tanpa banner.
+PDF dibuat dari dokumen terpisah (`bangunPdf`), bukan salinan layar: A4 potret satu halaman, margin 10 mm, kop logo Genio (+ logo lomba sesuai tema) + "Laporan Hasil Simulasi <lomba>" (tanpa lomba: "Laporan Hasil Genio Exclusive Test"), kotak nilai "84/100", baris empat angka, tabel No/Jawaban Anda/Hasil dalam dua kolom, tanpa kolom kunci, catatan kaki "Dokumen ini dibuat otomatis oleh GET (Genio Exclusive Test)." Cetak (`window.print`) memakai tampilan layar tanpa banner.
 
 ## 5. Admin
 
@@ -170,7 +170,9 @@ Kontras teks ≥ 4,5:1. Semua kontrol bisa dicapai dengan keyboard, fokus `outli
 
 Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emoji. Label huruf kapital semua. Tanda "→" di tombol. Animasi masuk di tiap bagian. Hiasan angka "01/02/03" selain nomor soal yang memang berurutan. Kata pemasaran di antarmuka.
 
-## 9. Halaman ujian meniru CBT OMI (pengecualian yang disengaja)
+## 9. Halaman ujian: tema lomba (tema `omi` meniru CBT OMI, pengecualian yang disengaja)
+
+Tema dipilih per ujian (`ujian.tema`) dan dipasang sebagai `body[data-tema="..."]` selama ruang ujian tampil. Gaya di bagian ini adalah tema `omi` (bawaan). Tema lain menimpa gaya ini lewat selektor `body[data-tema="x"] .ujian ...` di Css.html; logika ujian tetap satu. Daftar tema ada di `TEMA_UJIAN_` (Nilai.gs) dan `window.TEMA_UJIAN` (JsCommon.html), keduanya harus sama.
 
 Tujuan situs adalah simulasi, jadi **halaman ujian** (dan kartu soal pada pratinjau admin) meniru tampilan CBT OMI asli (`referensi/halaman-ujian-omi.png`). Halaman lain (beranda, hasil, admin) tetap mengikuti aturan minimalis di atas. Pengecualian di halaman ujian:
 

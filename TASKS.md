@@ -157,3 +157,18 @@ Pembahasan soal, analisis per soal, skor parsial pgk, ganti sandi admin dari web
 - [x] View `ujian_ringkas` menambah `n_gambar_kosong`, `n_selesai`, `n_berjalan` (jalankan ulang `supabase/schema.sql`; tanpa itu kolomnya tampil "-").
 - [ ] Tahap 2: tab Soal dan Hasil dengan bahasa visual yang sama.
 - [x] Tema A2 (hijau lembut) diterapkan ke seluruh panel admin; dropdown dan pemilih tanggal/jam buatan sendiri menggantikan select dan datetime-local.
+
+## GET (Genio Exclusive Test): platform multi-lomba
+
+Tahap 1: rebranding dan landing baru
+- [x] Nama situs GET, header logo Genio + "Genio Exclusive / Test", judul halaman dan panel admin.
+- [x] Kolom `ujian.lomba` dan `ujian.tema` (bawaan `omi`) di `supabase/schema.sql` dan database; ujian lama diberi `lomba = 'OMI 2026'`. View `ujian_ringkas` ditulis dengan kolom eksplisit agar kolom baru bisa ditambah di akhir.
+- [x] Beranda tiga bagian: hero umum, Pilih ujian (label lomba di kartu), Tentang GET. Bagian Apa itu OMI dan Jadwal/penilaian dihapus.
+- [x] Form ujian admin: pilihan Lomba (boleh ketik baru) dan Tampilan ruang ujian; lomba tampil di tabel ujian. Duplikat menyalin lomba dan tema.
+- [x] Ruang ujian: `body[data-tema]`, logo Genio + logo lomba (tema omi), nama lomba di sidebar. PDF hasil berkop lomba.
+- [ ] Ilustrasi hero yang lebih umum (prompt diberikan ke pemilik; ganti data URI `--foto` di Css.html).
+- Uji: `node tests/jalankan.js` lulus; uji browser beranda 1280/390 px, form admin, ruang ujian.
+
+Tahap 2: tema "GET Standar" dan pratinjau tema di form admin.
+Tahap 3: tema KSN (kompetisi sains), perlu tangkapan layar CBT aslinya.
+Tahap 4: penilaian per ujian (poin benar, salah, kosong; skor minus).

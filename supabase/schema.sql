@@ -1,5 +1,5 @@
 -- =====================================================
--- Try Out OMI 2026 CBT (Genio Institute) - Skema Supabase
+-- GET (Genio Exclusive Test) - Skema Supabase
 -- Jalankan di Supabase: SQL Editor > New query > Run
 -- Aman dijalankan ulang (memakai IF NOT EXISTS).
 -- =====================================================
@@ -25,6 +25,10 @@ create table if not exists ujian (
   tutup_at      timestamptz,                    -- jadwal tutup otomatis (kosong = tanpa batas)
   created_at    timestamptz not null default now()
 );
+-- Platform multi-lomba: nama lomba (label di kartu, ruang ujian, dan PDF) dan tema tampilan ruang ujian.
+-- Nilai tema yang dikenal server: lihat TEMA_UJIAN_ di src/Nilai.gs (nilai lain disimpan sebagai 'omi').
+alter table ujian add column if not exists lomba text;
+alter table ujian add column if not exists tema  text not null default 'omi';
 
 -- -----------------------------------------------------
 -- SOAL
@@ -75,14 +79,17 @@ create index if not exists sesi_peserta_idx on sesi(ujian_id, lower(nama), nomor
 -- Hanya dibaca dari server (service_role). Server WAJIB membuang kolom token
 -- sebelum mengirim ke siswa.
 -- -----------------------------------------------------
+-- Kolom ditulis eksplisit; kolom baru selalu ditambah di akhir agar "create or replace" tetap berlaku tanpa drop.
 create or replace view ujian_ringkas
 with (security_invoker = true) as
 select
-  u.*,
+  u.id, u.nama, u.jenjang, u.mapel, u.sesi, u.token, u.durasi_menit, u.aktif, u.acak_soal, u.acak_opsi,
+  u.tampil_kunci, u.catatan, u.buka_at, u.tutup_at, u.created_at,
   count(s.id)                                  as jumlah_soal,
   count(s.id) filter (where s.tipe = 'pg')     as n_pg,
   count(s.id) filter (where s.tipe = 'pgk')    as n_pgk,
   count(s.id) filter (where s.tipe = 'isian')  as n_isian,
+  u.lomba, u.tema,
   count(s.id) filter (where jsonb_path_exists(s.blok, '$[*] ? (@.tipe == "gambar" && @.isi == "")')) as n_gambar_kosong,
   (select count(*) from sesi x where x.ujian_id = u.id and x.status = 'selesai')  as n_selesai,
   (select count(*) from sesi x where x.ujian_id = u.id and x.status = 'berjalan') as n_berjalan

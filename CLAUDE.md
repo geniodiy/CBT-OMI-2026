@@ -4,8 +4,9 @@ Panduan untuk Claude Code di repo ini. Baca file ini dulu, lalu `docs/PRD.md` da
 
 ## Proyek
 
-**Try Out OMI 2026 CBT**, dibuat oleh Genio Institute Yogyakarta. Website ujian berbasis komputer yang meniru tampilan CBT Olimpiade Madrasah Indonesia (OMI) 2026 untuk simulasi/try out siswa. Referensi tampilan: `docs/referensi/halaman-ujian-omi.png`.
+**GET (Genio Exclusive Test)**, dibuat oleh Genio Institute Yogyakarta. Platform simulasi ujian berbasis komputer untuk berbagai lomba (OMI, KSN, dan lainnya). Setiap ujian punya label **lomba** dan **tema tampilan ruang ujian** yang dipilih admin; tema pertama adalah tampilan CBT OMI 2026 (referensi: `docs/referensi/halaman-ujian-omi.png`). Situs, beranda, dan panel admin memakai identitas GET (logo Genio + "Genio Exclusive / Test"). Nama repo dan deployment masih `CBT-OMI-2026`.
 
+- Beranda hanya tiga bagian: hero, Pilih ujian, Tentang GET.
 - Siswa: pilih kontainer ujian, isi data diri dan token, baca info, kerjakan, lihat hasil, download PDF.
 - Admin: kelola ujian dan soal (manual atau import JSON), lihat hasil.
 - Bahasa antarmuka dan semua pesan: **Bahasa Indonesia**.
@@ -82,7 +83,7 @@ Secret disimpan di **Script Properties** (Project Settings di editor Apps Script
 
 ## Aturan tampilan (ringkas, rinci di `docs/UI.md`)
 
-Simpel dan tegas, bukan tampilan "template AI". **Pengecualian:** halaman ujian meniru CBT OMI asli (kaca tembus pandang, bayangan lembut, ikon garis, label Title Case, animasi halus), lihat bagian 9 `docs/UI.md`. Di luar halaman ujian berlaku **Dilarang:** gradien, glassmorphism, bayangan tebal, kartu bertumpuk di dalam kartu, ikon dekoratif berlebihan, emoji di antarmuka, animasi masuk di setiap bagian, label huruf kapital semua, tanda panah "→" di tombol. Warna diambil dari logo (biru OMI, merah kecil, hijau Kemenag).
+Simpel dan tegas, bukan tampilan "template AI". **Pengecualian:** halaman ujian memakai tema lomba (`body[data-tema]`); tema `omi` meniru CBT OMI asli (kaca tembus pandang, bayangan lembut, ikon garis, label Title Case, animasi halus), lihat bagian 9 `docs/UI.md`. Di luar halaman ujian berlaku **Dilarang:** gradien, glassmorphism, bayangan tebal, kartu bertumpuk di dalam kartu, ikon dekoratif berlebihan, emoji di antarmuka, animasi masuk di setiap bagian, label huruf kapital semua, tanda panah "→" di tombol. Warna diambil dari logo (biru OMI, merah kecil, hijau Kemenag).
 
 ## Cara bekerja
 

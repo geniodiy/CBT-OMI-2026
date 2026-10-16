@@ -285,8 +285,17 @@ function normUjian_(u) {
     acak_soal: u.acak_soal === true,
     acak_opsi: u.acak_opsi === true,
     tampil_kunci: u.tampil_kunci === true,
-    catatan: teks(u.catatan) || null
+    catatan: teks(u.catatan) || null,
+    lomba: teks(u.lomba).slice(0, 60) || null,
+    tema: temaUjian_(u.tema)
   };
+}
+
+/** Tema tampilan ruang ujian yang dikenal. Tema pertama adalah bawaan; nilai lain diganti bawaan. */
+var TEMA_UJIAN_ = ['omi'];
+function temaUjian_(t) {
+  var v = String(t == null ? '' : t).trim().toLowerCase();
+  return TEMA_UJIAN_.indexOf(v) >= 0 ? v : TEMA_UJIAN_[0];
 }
 
 /**

@@ -61,3 +61,7 @@ a(/^[A-HJ-NP-Z2-9]{6}$/.test(ctx.tokenAcak_(6)));
 console.log('uji jadwal lulus');}
 
 a.strictEqual(T.urlGambarDrive_('1AbC_dEf-GHi'),'https://lh3.googleusercontent.com/d/1AbC_dEf-GHi');
+// Lomba dan tema ujian (platform GET multi-lomba)
+{const dasar={nama:'Paket 1',jenjang:'MTs',mapel:'IPA',token:'AB12',durasi_menit:90};
+const u1=T.normUjian_(Object.assign({},dasar,{lomba:'  KSN 2026 ',tema:'OMI'}));a.strictEqual(u1.lomba,'KSN 2026');a.strictEqual(u1.tema,'omi');
+const u2=T.normUjian_(Object.assign({},dasar,{tema:'tak-dikenal'}));a.strictEqual(u2.lomba,null);a.strictEqual(u2.tema,'omi');}

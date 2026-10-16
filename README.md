@@ -1,8 +1,8 @@
-# Try Out OMI 2026 CBT
+# GET (Genio Exclusive Test)
 
-Website ujian berbasis komputer bergaya CBT Olimpiade Madrasah Indonesia (OMI) 2026 untuk simulasi siswa. Dibuat oleh Genio Institute Yogyakarta.
+Platform simulasi ujian berbasis komputer untuk berbagai lomba (OMI, KSN, dan lainnya), dengan tema tampilan ruang ujian yang dipilih per ujian. Dibuat oleh Genio Institute Yogyakarta. Repo ini dulu bernama Try Out OMI 2026 CBT.
 
-Stack: Google Apps Script (server + halaman) dan Supabase (database + penyimpanan gambar). Bukan sistem resmi panitia OMI.
+Stack: Google Apps Script (server + halaman) dan Supabase (database + penyimpanan gambar). Bukan sistem resmi panitia lomba mana pun.
 
 ## Dokumen
 

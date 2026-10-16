@@ -32,7 +32,7 @@
   var daftarBeranda = null;      // daftar terakhir yang diketahui; ditampilkan dulu, lalu disegarkan di belakang layar
   var terakhirSegar = 0;
   var filterAktif = 'semua';
-  var halaman = null;            // bagian halaman yang tetap (hero, tentang, aturan, footer)
+  var halaman = null;            // bagian halaman yang tetap (hero, langkah, tentang, footer)
   var pengamat = null;
 
   function ikonTeks(nama, teks) {
@@ -59,6 +59,7 @@
       el('span', { class: 'kontainer-kepala' },
         el('span', { class: 'kontainer-ikon' }, window.ikon(ikonMapel(u.mapel), 22)),
         el('span', { class: 'kontainer-judul' },
+          u.lomba ? el('span', { class: 'kontainer-lomba' }, u.lomba) : null,
           el('strong', { class: 'kontainer-nama' }, u.nama),
           el('span', { class: 'kontainer-sub' }, [u.jenjang, u.mapel, u.sesi].filter(Boolean).join(' \u00b7 ')))),
       el('span', { class: 'kontainer-chip' }, rincian),
@@ -157,11 +158,11 @@
     // hero: ilustrasi latar tertanam di Css.html (--foto)
     var aksi = el('div', { class: 'hero-aksi' },
       el('button', { type: 'button', class: 'btn btn-hero', onclick: function () { gulirKe('ujian'); } }, 'Pilih ujian'),
-      el('button', { type: 'button', class: 'btn btn-hero-garis', onclick: function () { gulirKe('tentang'); } }, 'Pelajari OMI'));
+      el('button', { type: 'button', class: 'btn btn-hero-garis', onclick: function () { gulirKe('tentang'); } }, 'Tentang GET'));
     var hero = el('section', { class: 'hero', id: 'atas' }, el('div', { class: 'isi' },
-      el('p', { class: 'eyebrow' }, 'Try Out OMI 2026'),
-      el('h1', null, 'Berlatih untuk Olimpiade Madrasah Indonesia'),
-      el('p', { class: 'hero-sub' }, 'OMI adalah ajang sains madrasah dari Kemenag. Kerjakan simulasinya dengan tampilan dan aturan seperti ujian sesungguhnya.'),
+      el('p', { class: 'eyebrow' }, 'Genio Exclusive Test'),
+      el('h1', null, 'Simulasi CBT untuk olimpiade dan kompetisi sains'),
+      el('p', { class: 'hero-sub' }, 'Berlatih dengan tampilan ruang ujian dan aturan yang meniru lomba aslinya, lalu lihat nilai Anda begitu selesai.'),
       aksi));
     var langkahData = [['daftar', 'Pilih ujian', 'Sesuai jenjang dan mapel'], ['kunciToken', 'Isi data dan token', 'Token dari pengawas'], ['selesai', 'Kerjakan dan lihat hasil', 'Nilai langsung keluar']];
     var langkahIsi = [];
@@ -178,48 +179,27 @@
       el('div', { class: 'judul-bagian judul-utama' }, el('div', { class: 'judul-baris' }, el('h2', null, 'Pilih ujian'), halaman.jumlah), el('p', null, 'Pilih sesuai jenjang dan mata pelajaran Anda, lalu masukkan token dari pengawas.')),
       halaman.lanjut, halaman.filter, halaman.daftar));
 
-    // tentang OMI
+    // tentang GET
     var tentang = el('section', { class: 'pita muncul', id: 'tentang' }, el('div', { class: 'isi' },
       el('div', { class: 'tentang' },
         el('div', null,
-          el('div', { class: 'judul-bagian' }, el('h2', null, 'Apa itu OMI?')),
-          el('p', null, 'Olimpiade Madrasah Indonesia diselenggarakan Direktorat Jenderal Pendidikan Islam, Kementerian Agama, sebagai instrumen pembinaan talenta madrasah di bidang sains dan riset. OMI tidak hanya menjadi ajang kompetisi, tetapi juga wahana untuk mengidentifikasi, membina, dan mengakselerasi talenta melalui budaya riset, berpikir kritis, kreativitas, dan inovasi.'),
-          el('p', { class: 'tema' }, 'Islam, Sains, dan Ekoteologi: Menumbuhkan Talenta serta Menggerakkan Inovasi Madrasah untuk Indonesia Maju.')),
+          el('div', { class: 'judul-bagian' }, el('h2', null, 'Tentang GET')),
+          el('p', null, 'GET (Genio Exclusive Test) adalah ruang latihan ujian berbasis komputer dari Genio Institute Yogyakarta. Setiap paket memakai tampilan ruang ujian, jenis soal, dan durasi yang menyesuaikan lomba sasarannya, sehingga peserta terbiasa sebelum hari pelaksanaan.'),
+          el('p', null, 'Nilai dihitung otomatis di server begitu ujian dikirim. Hasil dan rincian jawaban dapat diunduh sebagai PDF.')),
         el('dl', { class: 'fakta' },
-          [['Penyelenggara', 'Ditjen Pendidikan Islam, Kementerian Agama'], ['Dasar', 'Keputusan Dirjen Pendidikan Islam Nomor 6843 Tahun 2026'], ['Bidang', 'Sains dan Riset'], ['Peserta sains', 'Siswa kelas V–VI, VII–IX, dan X–XII, satu bidang per peserta'], ['Tahap', 'Satuan pendidikan, kabupaten/kota, provinsi, nasional']].map(function (r) {
+          [['Penyelenggara', 'Genio Institute Yogyakarta'], ['Lomba', 'Olimpiade dan kompetisi sains, misalnya OMI dan KSN'], ['Jenis soal', 'Pilihan ganda, pilihan ganda kompleks, dan isian singkat'], ['Akses', 'Token dari pengawas untuk setiap paket']].map(function (r) {
             return el('div', null, el('dt', null, r[0]), el('dd', null, r[1]));
           })))));
-
-    // aturan dan penilaian
-    var tahap = [['Kabupaten/Kota', '25 soal pilihan ganda', '7–8 September 2026'],
-      ['Provinsi', '20 pilihan ganda dan 5 pilihan ganda kompleks', '5–6 Oktober 2026'],
-      ['Nasional', '10 isian singkat dan 5 esai', '10–11 November 2026']];
-    var aturan = el('section', { class: 'pita muncul', id: 'aturan' }, el('div', { class: 'isi' },
-      el('div', { class: 'aturan' },
-        el('div', null,
-          el('div', { class: 'judul-bagian' }, el('h2', null, 'Bentuk tes dan jadwal'), el('p', null, 'Format resmi bidang sains menurut Petunjuk Teknis OMI 2026.')),
-          el('div', { class: 'tahap' }, tahap.map(function (t) {
-            return el('div', { class: 'tahap-baris' }, el('strong', null, t[0]), el('span', null, t[1]), el('span', { class: 'tgl' }, t[2]));
-          })),
-          el('p', { class: 'catatan-kecil' }, 'Simulasi ini memakai pilihan ganda, pilihan ganda kompleks, dan isian singkat.')),
-        el('div', null,
-          el('div', { class: 'judul-bagian' }, el('h2', null, 'Penilaian')),
-          el('ol', { class: 'urutan' }, [
-            'Nilai ditentukan dari jawaban benar. Soal kosong tidak dihitung salah dan jawaban salah tidak mengurangi nilai.',
-            'Bila nilai sama, peringkat ditentukan oleh jumlah benar terbanyak.',
-            'Berikutnya jumlah salah tersedikit.',
-            'Terakhir waktu penyelesaian tercepat.'].map(function (t) { return el('li', null, el('span', null, t)); }))))));
 
     // footer
     var logoFooter = el('div', { class: 'footer-logo' });
     document.querySelectorAll('.header-logo img').forEach(function (g) { logoFooter.appendChild(el('img', { src: g.src, alt: g.alt })); });
     var footer = el('footer', { class: 'footer-situs' }, el('div', { class: 'isi' }, logoFooter,
       el('div', null,
-        el('p', null, el('strong', null, 'Dibuat oleh Genio Institute Yogyakarta.')),
-        el('p', null, 'Situs ini adalah simulasi (try out) untuk berlatih dan bukan sistem resmi panitia OMI. Rujukan: Keputusan Direktur Jenderal Pendidikan Islam Nomor 6843 Tahun 2026 tentang Petunjuk Teknis Pelaksanaan OMI Tahun 2026.'),
-        el('p', null, 'Informasi resmi: ', el('a', { href: 'https://omi.kemenag.go.id', target: '_blank', rel: 'noopener noreferrer' }, 'omi.kemenag.go.id')))));
+        el('p', null, el('strong', null, 'GET (Genio Exclusive Test), dibuat oleh Genio Institute Yogyakarta.')),
+        el('p', null, 'Situs ini adalah simulasi (try out) untuk berlatih dan bukan sistem resmi panitia lomba mana pun. Nama dan logo lomba dipakai sebagai penanda paket latihan.'))));
 
-    [hero, langkahKartu, ujian, tentang, aturan, footer].forEach(function (b) { s.appendChild(b); });
+    [hero, langkahKartu, ujian, tentang, footer].forEach(function (b) { s.appendChild(b); });
     amatiMuncul(s);
   }
 
@@ -425,9 +405,9 @@
     s.textContent = '';
     var inisial = (p.nama || '?').trim().split(/\s+/).slice(0, 2).map(function (x) { return x.charAt(0); }).join('').toUpperCase();
 
-    var logoSide = el('div', { class: 'u-logo' }, Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
-      return el('img', { src: g.src, alt: g.alt });
-    }), el('div', null, el('strong', null, 'Try Out OMI 2026'), el('span', null, 'CBT')));
+    document.body.setAttribute('data-tema', window.temaUjian(U.ujian.tema));
+    var logoSide = el('div', { class: 'u-logo' }, window.logoUjian(U.ujian.tema),
+      el('div', null, el('strong', null, U.ujian.lomba || 'Genio Exclusive Test'), el('span', null, U.ujian.lomba ? 'Simulasi oleh GET' : 'CBT')));
     var side = el('aside', { class: 'u-side', 'aria-label': 'Data peserta' },
       logoSide,
       el('div', { class: 'u-identitas' },
@@ -780,10 +760,8 @@
     });
   }
 
-  function logoKop() {
-    return el('div', { class: 'hasil-logo' }, Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
-      return el('img', { src: g.src, alt: g.alt, crossOrigin: 'anonymous' });
-    }));
+  function logoKop(ujian) {
+    return el('div', { class: 'hasil-logo' }, window.logoUjian(ujian && ujian.tema, { crossOrigin: 'anonymous' }));
   }
 
   function angkaNilai(n) { return String(Math.round(Number(n) * 100) / 100).replace('.', ','); }
@@ -850,14 +828,14 @@
     var kepalaBaris = el('tr', null, kepala(), kepala());
     kepalaBaris.children[3].classList.add('pisah');
     return el('div', { class: 'hasil hasil-pdf' },
-      el('div', { class: 'hasil-kop' }, logoKop(),
-        el('div', null, el('strong', null, 'Laporan Hasil Try Out OMI 2026'), el('div', { class: 'redup' }, 'Dibuat oleh Genio Institute Yogyakarta'))),
+      el('div', { class: 'hasil-kop' }, logoKop(h.ujian),
+        el('div', null, el('strong', null, 'Laporan Hasil ' + (h.ujian.lomba ? 'Simulasi ' + h.ujian.lomba : 'Genio Exclusive Test')), el('div', { class: 'redup' }, 'GET (Genio Exclusive Test), Genio Institute Yogyakarta'))),
       el('div', { class: 'hasil-atas' },
         el('div', null, el('h1', null, h.ujian.nama), el('p', { class: 'hasil-ujian' }, infoUjian(h)), identitas(h)),
         el('div', { class: 'hasil-kotak' }, el('div', { class: 'redup' }, 'Nilai'), skorTampil(h))),
       angkaRingkas(h),
       el('table', { class: 'tabel hasil-tabel' }, el('thead', null, kepalaBaris), badan),
-      el('div', { class: 'hasil-kaki' }, 'Dokumen ini dibuat otomatis oleh sistem Try Out OMI 2026.'));
+      el('div', { class: 'hasil-kaki' }, 'Dokumen ini dibuat otomatis oleh GET (Genio Exclusive Test).'));
   }
 
   function namaBerkas(h) {

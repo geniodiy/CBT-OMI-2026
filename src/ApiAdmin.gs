@@ -81,7 +81,7 @@ function adminUjianDuplikat(tok, id, namaSalinan) {
   var baru = sb_('POST', 'ujian', {
     nama: String(namaSalinan || '').trim().slice(0, 150) || (String(u.nama).slice(0, 138) + ' (salinan)'), jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi,
     token: tokenAcak_(6), durasi_menit: u.durasi_menit, aktif: false, acak_soal: u.acak_soal, acak_opsi: u.acak_opsi,
-    tampil_kunci: u.tampil_kunci, catatan: u.catatan, buka_at: null, tutup_at: null
+    tampil_kunci: u.tampil_kunci, catatan: u.catatan, lomba: u.lomba, tema: u.tema, buka_at: null, tutup_at: null
   })[0];
   try {
     var soal = sb_('GET', 'soal?ujian_id=eq.' + enc_(id) + '&order=urutan.asc,created_at.asc') || [];
@@ -151,7 +151,7 @@ function adminSoalUrut(tok, ujianId, idsBerurutan) {
 var MIME_GAMBAR_ = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif' };
 var MAKS_GAMBAR_BYTE_ = 3 * 1024 * 1024;
 
-var NAMA_FOLDER_GAMBAR_ = 'Try Out OMI - Gambar Soal';
+var NAMA_FOLDER_GAMBAR_ = 'GET - Gambar Soal';
 
 /** Folder Drive tujuan gambar: DRIVE_FOLDER_ID bila diisi, selain itu dibuat sekali lalu diingat di Script Properties. */
 function folderGambar_() {
@@ -286,7 +286,7 @@ function adminHasilDetail(tok, sesiId) {
   });
   delete sesi.jawaban;
   sesi.poin = h.poin; sesi.maks = h.maks;
-  var u = sb_('GET', 'ujian?select=nama,jenjang,mapel,sesi&id=eq.' + enc_(sesi.ujian_id));
+  var u = sb_('GET', 'ujian?select=nama,jenjang,mapel,sesi,lomba,tema&id=eq.' + enc_(sesi.ujian_id));
   return { sesi: sesi, rincian: rincian, ujian: (u && u[0]) || { nama: '', jenjang: '', mapel: '', sesi: '' } };
 }
 

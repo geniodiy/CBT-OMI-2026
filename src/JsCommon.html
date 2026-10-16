@@ -716,6 +716,21 @@
     return wadah;
   };
 
+  /** Tema tampilan ruang ujian (sama dengan TEMA_UJIAN_ di Nilai.gs). Tema pertama adalah bawaan. */
+  window.TEMA_UJIAN = [{ nilai: 'omi', label: 'CBT OMI', lomba: 'OMI 2026' }];
+  window.temaUjian = function (t) {
+    return window.TEMA_UJIAN.some(function (x) { return x.nilai === t; }) ? t : window.TEMA_UJIAN[0].nilai;
+  };
+  /** Logo situs (Genio) ditambah logo lomba bila tema ujian punya logo. Mengembalikan daftar elemen img. */
+  window.logoUjian = function (tema, atribut) {
+    var hasil = Array.prototype.map.call(document.querySelectorAll('.header-logo img'), function (g) {
+      return window.el('img', Object.assign({ src: g.src, alt: g.alt }, atribut || {}));
+    });
+    var src = (window.LOGO_LOMBA || {})[window.temaUjian(tema)];
+    if (src) hasil.push(window.el('img', Object.assign({ src: src, alt: 'Logo lomba', referrerPolicy: 'no-referrer' }, atribut || {})));
+    return hasil;
+  };
+
   window.showView = function (nama) {
     document.querySelectorAll('[data-view]').forEach(function (s) { s.hidden = s.getAttribute('data-view') !== nama; });
     var btnAdmin = document.getElementById('btnAdmin');
@@ -723,6 +738,7 @@
     document.body.classList.toggle('mode-ujian', nama === 'ujian');
     document.documentElement.classList.toggle('adm-aktif', nama === 'admin');
     document.body.setAttribute('data-halaman', nama);
+    if (nama !== 'ujian') document.body.removeAttribute('data-tema');
     window.scrollTo(0, 0);
   };
 

@@ -1,6 +1,14 @@
-# PRD: Try Out OMI 2026 CBT
+# PRD: GET (Genio Exclusive Test)
 
 Pemilik: Genio Institute Yogyakarta. Referensi: Juknis OMI 2026 (Keputusan Dirjen Pendidikan Islam No. 6843 Tahun 2026) dan tampilan CBT OMI (`referensi/halaman-ujian-omi.png`).
+
+## 0. Arah produk (Oktober 2026)
+
+Situs berganti nama menjadi **GET (Genio Exclusive Test)**: simulasi CBT untuk berbagai lomba, bukan hanya OMI.
+- Tabel `ujian` mendapat kolom `lomba` (teks bebas, misalnya "OMI 2026" atau "KSN") dan `tema` (tema tampilan ruang ujian, bawaan `omi`). Ujian lama diisi `lomba = 'OMI 2026'`.
+- Beranda: hero, Pilih ujian (kartu berlabel lomba), Tentang GET. Bagian khusus OMI dihapus.
+- Ruang ujian memakai tema sesuai `ujian.tema`; logo lomba tampil di samping logo Genio bila tema punya logo. PDF hasil berkop "Laporan Hasil Simulasi <lomba>".
+- Rencana: tema "GET Standar", tema KSN (kompetisi sains), lalu penilaian per ujian (poin benar, salah, kosong). Lihat `TASKS.md`.
 
 ## 1. Tujuan
 

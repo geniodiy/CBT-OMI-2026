@@ -133,7 +133,7 @@
     var side = el('aside', { class: 'adm-side' },
       el('div', { class: 'adm-merek' },
         el('div', { class: 'adm-logo' }, Array.prototype.map.call(logo, function (g) { return el('img', { src: g.src, alt: g.alt }); })),
-        el('div', { class: 'adm-judul' }, el('strong', null, 'Try Out OMI 2026'), el('span', null, 'Panel admin'))),
+        el('div', { class: 'adm-judul' }, el('strong', null, 'Genio Exclusive Test'), el('span', null, 'Panel admin'))),
       navEl,
       el('div', { class: 'adm-kaki' },
         el('button', { class: 'adm-nav-btn', type: 'button', onclick: keBerandaTetapMasuk }, window.ikon('beranda', 17), el('span', null, 'Lihat beranda')),
@@ -321,7 +321,7 @@
     return el('div', { class: 'adm-baris' },
       el('div', { class: 'adm-nama' },
         el('strong', { title: u.nama }, u.nama),
-        el('span', null, u.mapel + (u.sesi ? ', ' + u.sesi : ''),
+        el('span', null, (u.lomba ? u.lomba + ' \u00b7 ' : '') + u.mapel + (u.sesi ? ', ' + u.sesi : ''),
           kosong ? el('em', null, kosong + ' gambar kosong') : null),
         el('span', { class: 'adm-ringkas' }, u.jenjang + ' | ' + u.jumlah_soal + ' soal | ' + u.durasi_menit + ' menit')),
       el('span', { class: 'adm-jenjang' }, u.jenjang),
@@ -396,6 +396,14 @@
     f.jenjang = window.dropdown({ aria: 'Jenjang', nilai: d.jenjang || '', placeholder: 'Pilih jenjang', bebas: 'Jenjang lain, tekan Enter',
       pilihan: ['MI', 'MTs', 'MA'].map(function (j) { return { nilai: j, label: j }; }) });
     var jenjangField = el('div', { class: 'field' }, el('span', null, 'Jenjang *'), f.jenjang);
+    // Daftar lomba: bawaan tema ditambah lomba yang sudah pernah dipakai; admin boleh mengetik lomba baru.
+    var lombaAda = {};
+    window.TEMA_UJIAN.forEach(function (t) { if (t.lomba) lombaAda[t.lomba] = true; });
+    ['KSN'].concat(daftarUjian.map(function (x) { return x.lomba; })).forEach(function (l) { if (l) lombaAda[l] = true; });
+    f.lomba = window.dropdown({ aria: 'Lomba', nilai: d.lomba || '', placeholder: 'Tanpa lomba (label GET)', bebas: 'Lomba lain, tekan Enter',
+      pilihan: [{ nilai: '', label: 'Tanpa lomba' }].concat(Object.keys(lombaAda).map(function (l) { return { nilai: l, label: l }; })) });
+    f.tema = window.dropdown({ aria: 'Tampilan ruang ujian', nilai: window.temaUjian(d.tema),
+      pilihan: window.TEMA_UJIAN.map(function (t) { return { nilai: t.nilai, label: t.label }; }) });
     f.token = el('input', { type: 'text', value: d.token || '', maxLength: 30, autocapitalize: 'characters' });
     var tokenField = el('div', { class: 'field' }, el('span', null, 'Token *'),
       el('div', { class: 'baris-token' }, f.token,
@@ -407,6 +415,9 @@
 
     var badan = el('div', { class: 'adm-form' },
       isian('nama', 'Nama ujian *', 'text', { maxLength: 150 }),
+      el('div', { class: 'grid2' },
+        el('div', { class: 'field' }, el('span', null, 'Lomba'), f.lomba),
+        el('div', { class: 'field' }, el('span', null, 'Tampilan ruang ujian'), f.tema)),
       el('div', { class: 'grid3' }, jenjangField, isian('mapel', 'Mata pelajaran *'),
         isian('sesi', 'Sesi (opsional)', 'text', { placeholder: 'Contoh: Sesi 1' })),
       el('div', { class: 'grid2' }, isian('durasi_menit', 'Durasi (menit) *', 'number', { min: 1, step: 1 }), tokenField),
@@ -426,6 +437,7 @@
         id: u ? u.id : undefined,
         nama: f.nama.value, jenjang: f.jenjang.value, mapel: f.mapel.value, sesi: f.sesi.value,
         token: f.token.value, durasi_menit: Number(f.durasi_menit.value), catatan: f.catatan.value,
+        lomba: f.lomba.value, tema: f.tema.value,
         buka_at: dariInputWaktu(f.buka_at.value), tutup_at: dariInputWaktu(f.tutup_at.value),
         aktif: f.aktif.checked, acak_soal: f.acak_soal.checked, acak_opsi: f.acak_opsi.checked, tampil_kunci: f.tampil_kunci.checked
       };

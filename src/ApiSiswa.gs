@@ -1,6 +1,6 @@
 /** Fungsi publik siswa (tanpa autentikasi). Jangan pernah mengirim kolom token atau kunci. */
 
-var KOLOM_KONTAINER_ = 'id,nama,jenjang,mapel,sesi,durasi_menit,jumlah_soal,n_pg,n_pgk,n_isian';
+var KOLOM_KONTAINER_ = 'id,nama,jenjang,mapel,sesi,durasi_menit,jumlah_soal,n_pg,n_pgk,n_isian,lomba,tema';
 var CACHE_BERANDA_DETIK_ = 300;
 
 /**
@@ -149,7 +149,7 @@ function apiSinkron(sesiId, jawaban) {
   return { ok: true, serverNow: Date.now(), akhirMs: Date.parse(r[0].mulai_at) + durasiUjian_(r[0].ujian_id) * 60000 };
 }
 
-var KOLOM_UJIAN_HASIL_ = 'nama,jenjang,mapel,sesi,durasi_menit,tampil_kunci';
+var KOLOM_UJIAN_HASIL_ = 'nama,jenjang,mapel,sesi,durasi_menit,tampil_kunci,lomba,tema';
 
 function apiSelesai(sesiId, jawaban) {
   // Sesi dan ujiannya dibaca sekaligus lewat relasi (satu panggilan).
