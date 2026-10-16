@@ -166,7 +166,7 @@ Tahap 1: rebranding dan landing baru
 - [x] Beranda tiga bagian: hero umum, Pilih ujian (label lomba di kartu), Tentang GET. Bagian Apa itu OMI dan Jadwal/penilaian dihapus.
 - [x] Form ujian admin: pilihan Lomba (boleh ketik baru) dan Tampilan ruang ujian; lomba tampil di tabel ujian. Duplikat menyalin lomba dan tema.
 - [x] Ruang ujian: `body[data-tema]`, logo Genio + logo lomba (tema omi), nama lomba di sidebar. PDF hasil berkop lomba.
-- [ ] Ilustrasi hero yang lebih umum (prompt diberikan ke pemilik; ganti data URI `--foto` di Css.html).
+- [x] Ilustrasi hero umum bernuansa merah (`assets/hero.jpg`, tertanam sebagai data URI `--foto` di Css.html).
 - Uji: `node tests/jalankan.js` lulus; uji browser beranda 1280/390 px, form admin, ruang ujian.
 
 Tahap 2: tema "GET Standar" dan pratinjau tema di form admin.
