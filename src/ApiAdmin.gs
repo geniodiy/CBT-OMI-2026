@@ -166,9 +166,21 @@ function folderGambar_() {
   return folder;
 }
 
+/** Unggah ke Drive lalu buka untuk "siapa saja dengan tautan". Pesan galat menyebut tahap yang gagal agar mudah ditelusuri. */
 function unggahKeDrive_(bytes, mime, ext) {
-  var berkas = folderGambar_().createFile(Utilities.newBlob(bytes, mime, Utilities.getUuid() + '.' + ext));
-  berkas.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  var berkas;
+  try {
+    berkas = folderGambar_().createFile(Utilities.newBlob(bytes, mime, Utilities.getUuid() + '.' + ext));
+  } catch (e) {
+    throw new Error('DRIVE_SIMPAN: ' + e.message);
+  }
+  try {
+    berkas.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  } catch (e) {
+    // Akun Google Workspace sering melarang berbagi ke luar domain; berkas yang tidak bisa dibuka siswa dibuang.
+    try { berkas.setTrashed(true); } catch (e2) { /* abaikan */ }
+    throw new Error('DRIVE_BAGI: ' + e.message);
+  }
   return urlGambarDrive_(berkas.getId());
 }
 
@@ -201,18 +213,40 @@ function adminUpload(tok, base64, mime, nama) {
   try {
     return unggahKeDrive_(bytes, mime, ext);
   } catch (e) {
-    Logger.log('Upload gambar %s ke Drive gagal: %s', nama, e.message);
-    if (/izin|permission|authorization|access/i.test(e.message)) {
-      throw new Error('Aplikasi belum diberi izin Google Drive. Jalankan fungsi izinkanDrive di editor Apps Script sekali, lalu deploy versi baru.');
+    // Drive gagal (izin belum diberikan, folder hilang, atau kebijakan berbagi domain): pakai Supabase agar admin tetap bisa bekerja.
+    Logger.log('Upload gambar %s ke Drive gagal, beralih ke Supabase: %s', nama, e.message);
+    try {
+      return unggahKeSupabase_(bytes, mime, ext, nama);
+    } catch (e2) {
+      throw new Error('Gambar gagal diunggah. Drive: ' + pesanDrive_(e.message) + ' Supabase: ' + e2.message);
     }
-    throw new Error(e.message && e.message.indexOf('Folder Drive') === 0 ? e.message : 'Gambar gagal diunggah ke Drive. Coba lagi.');
   }
 }
 
 /** Jalankan sekali dari editor Apps Script untuk memberi izin Drive dan membuat folder gambar. */
+function pesanDrive_(m) {
+  m = String(m || '');
+  if (m.indexOf('DRIVE_BAGI') === 0) return 'berkas tidak boleh dibagikan untuk "siapa saja dengan tautan" (kebijakan akun atau domain).';
+  if (/permission|izin|authoriz|scope/i.test(m)) return 'aplikasi belum diberi izin Google Drive (jalankan izinkanDrive lalu deploy versi baru).';
+  return m.replace(/^DRIVE_SIMPAN: /, '');
+}
+
+/**
+ * Jalankan sekali dari editor Apps Script: meminta izin Drive, membuat folder gambar, lalu menguji simpan dan berbagi
+ * dengan berkas kecil. Hasil dan penyebab galat terlihat di Log eksekusi.
+ */
 function izinkanDrive() {
   var folder = folderGambar_();
-  Logger.log('Folder gambar siap: %s (%s)', folder.getName(), folder.getUrl());
+  Logger.log('Folder gambar: %s (%s)', folder.getName(), folder.getUrl());
+  var uji = folder.createFile(Utilities.newBlob('uji', 'text/plain', 'uji-izin.txt'));
+  try {
+    uji.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    Logger.log('Berhasil: Drive siap dipakai untuk gambar soal.');
+  } catch (e) {
+    Logger.log('Simpan berhasil, tetapi berbagi ditolak: %s. Akun ini tidak bisa membagikan berkas ke publik; gambar akan memakai Supabase.', e.message);
+  } finally {
+    uji.setTrashed(true);
+  }
 }
 
 // ---- Import JSON ----
