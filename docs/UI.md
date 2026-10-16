@@ -170,6 +170,8 @@ Kontras teks ≥ 4,5:1. Semua kontrol bisa dicapai dengan keyboard, fokus `outli
 
 Gradien. Efek kaca/blur. Bayangan tebal di banyak elemen. Kartu dalam kartu. Emoji. Label huruf kapital semua. Tanda "→" di tombol. Animasi masuk di tiap bagian. Hiasan angka "01/02/03" selain nomor soal yang memang berurutan. Kata pemasaran di antarmuka.
 
+**Warna GET (Oktober 2026):** beranda, popup, dan panel admin memakai merah `#c62828` (tua `#9e1b1b`, muda `#fdeaea`, latar `#faf5f5`, garis `#eee0e0`) menggantikan hijau lembut sebelumnya; kuning `#e3b505` tetap sebagai aksen kecil; hijau `#17803d` hanya untuk status aktif atau berhasil. Ruang ujian tidak berubah (warna tema lomba).
+
 ## 9. Halaman ujian: tema lomba (tema `omi` meniru CBT OMI, pengecualian yang disengaja)
 
 Tema dipilih per ujian (`ujian.tema`) dan dipasang sebagai `body[data-tema="..."]` selama ruang ujian tampil. Gaya di bagian ini adalah tema `omi` (bawaan). Tema lain menimpa gaya ini lewat selektor `body[data-tema="x"] .ujian ...` di Css.html; logika ujian tetap satu. Daftar tema ada di `TEMA_UJIAN_` (Nilai.gs) dan `window.TEMA_UJIAN` (JsCommon.html), keduanya harus sama.
