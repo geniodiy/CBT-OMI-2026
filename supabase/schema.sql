@@ -11,7 +11,7 @@ create extension if not exists pgcrypto;
 create table if not exists ujian (
   id            uuid primary key default gen_random_uuid(),
   nama          text not null,
-  jenjang       text not null,                  -- MI / MTs / MA (bebas diketik admin)
+  jenjang       text not null,                  -- SD/MI, SMP/MTs, SMA/MA, atau isi sendiri
   mapel         text not null,
   sesi          text,                           -- label opsional, contoh "Sesi 1"
   token         text not null,

@@ -136,7 +136,7 @@ function apiMulai(ujianId, token, peserta) {
   });
   return {
     sesiId: sesi.id, serverNow: sekarang, akhirMs: Date.parse(sesi.mulai_at) + u.durasi_menit * 60000,
-    ujian: { nama: u.nama, jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi, durasi_menit: u.durasi_menit },
+    ujian: { nama: u.nama, jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi, durasi_menit: u.durasi_menit, lomba: u.lomba || null, tema: temaUjian_(u.tema) },
     peserta: { nama: sesi.nama, nomor: sesi.nomor_peserta || '', kelas: sesi.kelas || '', sekolah: sesi.sekolah || '' },
     soal: soal, jawaban: lanjut ? (sesi.jawaban || {}) : {}, lanjut: lanjut
   };
@@ -177,7 +177,7 @@ function apiSelesai(sesiId, jawaban) {
   }
   return {
     nama: sesi.nama, nomor: sesi.nomor_peserta || '', kelas: sesi.kelas || '', sekolah: sesi.sekolah || '',
-    ujian: { nama: u.nama, jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi },
+    ujian: { nama: u.nama, jenjang: u.jenjang, mapel: u.mapel, sesi: u.sesi, lomba: u.lomba || null, tema: temaUjian_(u.tema) },
     selesaiAt: selesaiAt, durasi: durasi,
     benar: h.benar, salah: h.salah, kosong: h.kosong, total: soal.length, skor: h.skor, poin: h.poin, maks: h.maks,
     tampilKunci: u.tampil_kunci === true,

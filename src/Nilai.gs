@@ -336,13 +336,15 @@ function ringkasImport_(daftar) {
   return out;
 }
 
-var URUTAN_JENJANG_ = ['mi', 'mts', 'ma'];
+// Satu kelompok = satu tingkat; label lama (MI, MTs, MA) dan label gabungan (SD/MI, ...) diurutkan bersama.
+var URUTAN_JENJANG_ = [['sd/mi', 'sd', 'mi'], ['smp/mts', 'smp', 'mts'], ['sma/ma', 'sma', 'ma', 'smk', 'sma/smk/ma']];
 
-/** Urut kontainer beranda: MI, MTs, MA dulu, jenjang lain abjad; lalu mapel; lalu nama. Mengembalikan salinan. */
+/** Urut kontainer beranda: SD/MI, SMP/MTs, SMA/MA dulu, jenjang lain abjad; lalu mapel; lalu nama. Mengembalikan salinan. */
 function urutKontainer_(daftar) {
   function peringkat(j) {
-    var i = URUTAN_JENJANG_.indexOf(String(j || '').toLowerCase().trim());
-    return i < 0 ? URUTAN_JENJANG_.length : i;
+    var k = String(j || '').toLowerCase().replace(/\s+/g, '');
+    for (var i = 0; i < URUTAN_JENJANG_.length; i++) if (URUTAN_JENJANG_[i].indexOf(k) >= 0) return i;
+    return URUTAN_JENJANG_.length;
   }
   function banding(a, b) { return String(a || '').localeCompare(String(b || ''), 'id', { sensitivity: 'base' }); }
   return daftar.slice().sort(function (x, y) {

@@ -44,7 +44,7 @@ a.throws(()=>ctx.ringkasImport_('x'),/array JSON/);a.throws(()=>ctx.ringkasImpor
 const bad=JSON.parse(JSON.stringify(d));bad[3].kunci=['Z'];a.throws(()=>ctx.ringkasImport_(bad),/Soal #4: kunci Z/);
 console.log('peringatan contoh:',r.peringatan.length);console.log('uji import lulus');}
 {const L=[{id:1,jenjang:'MA',mapel:'Fisika',nama:'B'},{id:2,jenjang:'SD',mapel:'IPA',nama:'A'},{id:3,jenjang:'MI',mapel:'Mat',nama:'Z'},{id:4,jenjang:'MTs',mapel:'IPA',nama:'A'},{id:5,jenjang:'ma',mapel:'Biologi',nama:'C'},{id:6,jenjang:'MI',mapel:'IPA',nama:'A'},{id:7,jenjang:'Adab',mapel:'x',nama:'a'}];
-const o=ctx.urutKontainer_(L).map(x=>x.id);a.strictEqual(JSON.stringify(o),JSON.stringify([6,3,4,5,1,7,2]));
+const o=ctx.urutKontainer_(L).map(x=>x.id);a.strictEqual(JSON.stringify(o),JSON.stringify([2,6,3,4,5,1,7]));
 a(ctx.tokenCocok_(' ab12 ','AB12'));a(!ctx.tokenCocok_('','')) ;a(!ctx.tokenCocok_('x','y'));
 console.log('uji beranda lulus');}
 

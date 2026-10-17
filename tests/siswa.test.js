@@ -159,3 +159,10 @@ a.throws(()=>ctx.adminUjianDuplikat('T','tidak-ada'),/tidak ditemukan/);
 }
 console.log('uji performa lulus');
 console.log('uji siswa lulus');
+
+// Tema dan lomba ikut terkirim ke ruang ujian dan hasil (tema GET Standar tidak boleh jatuh ke bawaan OMI)
+{const sb=DB.ujian[0].tema, lb=DB.ujian[0].lomba;DB.ujian[0].tema='get';DB.ujian[0].lomba='KSNR';
+const mt=ctx.apiMulai('U1','tok1',{nama:'Rara Tema',sekolah:'SMP 1'});a.strictEqual(mt.ujian.tema,'get');a.strictEqual(mt.ujian.lomba,'KSNR');
+const ht=ctx.apiSelesai(mt.sesiId,{});a.strictEqual(ht.ujian.tema,'get');a.strictEqual(ht.ujian.lomba,'KSNR');
+DB.ujian[0].tema=sb;DB.ujian[0].lomba=lb;}
+console.log('uji tema lulus');

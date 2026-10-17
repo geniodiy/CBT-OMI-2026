@@ -393,14 +393,16 @@
       f[kunci] = el('input', { type: 'checkbox', checked: !!d[kunci] });
       return el('label', { class: 'cek' }, f[kunci], el('span', null, label));
     }
-    f.jenjang = window.dropdown({ aria: 'Jenjang', nilai: d.jenjang || '', placeholder: 'Pilih jenjang', bebas: 'Jenjang lain, tekan Enter',
-      pilihan: ['MI', 'MTs', 'MA'].map(function (j) { return { nilai: j, label: j }; }) });
+    var jenjangAda = ['SD/MI', 'SMP/MTs', 'SMA/MA'];
+    daftarUjian.forEach(function (x) { if (x.jenjang && jenjangAda.indexOf(x.jenjang) < 0) jenjangAda.push(x.jenjang); });
+    f.jenjang = window.dropdown({ aria: 'Jenjang', nilai: d.jenjang || '', placeholder: 'Pilih jenjang', bebas: 'Lainnya (isi sendiri), tekan Enter',
+      pilihan: jenjangAda.map(function (j) { return { nilai: j, label: j }; }) });
     var jenjangField = el('div', { class: 'field' }, el('span', null, 'Jenjang *'), f.jenjang);
     // Daftar lomba: bawaan tema ditambah lomba yang sudah pernah dipakai; admin boleh mengetik lomba baru.
     var lombaAda = {};
     window.TEMA_UJIAN.forEach(function (t) { if (t.lomba) lombaAda[t.lomba] = true; });
-    ['KSN'].concat(daftarUjian.map(function (x) { return x.lomba; })).forEach(function (l) { if (l) lombaAda[l] = true; });
-    f.lomba = window.dropdown({ aria: 'Lomba', nilai: d.lomba || '', placeholder: 'Tanpa lomba (label GET)', bebas: 'Lomba lain, tekan Enter',
+    daftarUjian.forEach(function (x) { if (x.lomba) lombaAda[x.lomba] = true; });
+    f.lomba = window.dropdown({ aria: 'Lomba', nilai: d.lomba || '', placeholder: 'Tanpa lomba (label GET)', bebas: 'Lainnya (isi sendiri), tekan Enter',
       pilihan: [{ nilai: '', label: 'Tanpa lomba' }].concat(Object.keys(lombaAda).map(function (l) { return { nilai: l, label: l }; })) });
     f.tema = window.dropdown({ aria: 'Tampilan ruang ujian', nilai: window.temaUjian(d.tema),
       pilihan: window.TEMA_UJIAN.map(function (t) { return { nilai: t.nilai, label: t.label }; }) });
