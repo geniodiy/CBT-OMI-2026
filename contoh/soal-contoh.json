@@ -1,0 +1,72 @@
+[
+  {
+    "tipe": "pg",
+    "blok": [
+      { "tipe": "teks", "isi": "Sebuah robot bergerak dari titik asal $(0,0)$ ke titik $(6,8)$ dalam garis lurus." },
+      { "tipe": "teks", "isi": "<b>Pertanyaan</b><br>Jarak robot dari titik asal setelah bergerak adalah ..." }
+    ],
+    "opsi": {
+      "A": "$10$",
+      "B": "$14$",
+      "C": "$2\\sqrt{14}$",
+      "D": "$48$"
+    },
+    "kunci": ["A"],
+    "bobot": 1
+  },
+  {
+    "tipe": "pg",
+    "blok": [
+      { "tipe": "teks", "isi": "Perhatikan gambar segitiga siku-siku berikut." },
+      { "tipe": "gambar", "isi": "" },
+      { "tipe": "teks", "isi": "Jika alas $=3$ cm dan tinggi $=4$ cm, panjang sisi miring adalah ..." }
+    ],
+    "opsi": ["$5$ cm", "$6$ cm", "$7$ cm", "$\\sqrt{7}$ cm"],
+    "kunci": ["A"],
+    "bobot": 1
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      { "tipe": "teks", "isi": "Pilih <b>semua</b> bilangan prima di bawah ini." }
+    ],
+    "opsi": {
+      "A": "$2$",
+      "B": "$9$",
+      "C": "$11$",
+      "D": "$15$"
+    },
+    "kunci": ["A", "C"],
+    "bobot": 2
+  },
+  {
+    "tipe": "pgk",
+    "blok": [
+      { "tipe": "teks", "isi": "Reaksi pembentukan air: $\\ce{2H2 + O2 -> 2H2O}$. Pernyataan yang <i>benar</i> adalah ..." }
+    ],
+    "opsi": {
+      "A": "Reaksi melibatkan gas hidrogen dan oksigen",
+      "B": "Hasil reaksi berupa $\\ce{H2O2}$",
+      "C": "Jumlah atom H di kiri dan kanan sama",
+      "D": "Koefisien $\\ce{O2}$ adalah 2"
+    },
+    "kunci": ["A", "C"],
+    "bobot": 2
+  },
+  {
+    "tipe": "isian",
+    "blok": [
+      { "tipe": "teks", "isi": "Hasil dari $\\frac{3}{4} + \\frac{1}{4}$ adalah ..." }
+    ],
+    "kunci": ["1"],
+    "bobot": 1
+  },
+  {
+    "tipe": "isian",
+    "blok": [
+      { "tipe": "teks", "isi": "Sebuah benda menempuh $25$ m dalam $2$ s dengan kecepatan tetap. Kecepatannya adalah ... m/s (tulis angkanya saja)." }
+    ],
+    "kunci": ["12,5", "12.5"],
+    "bobot": 1
+  }
+]
